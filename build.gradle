@@ -1,0 +1,27 @@
+plugins {
+    id 'pmd'
+    id 'checkstyle'
+    id 'io.spring.javaformat' version '0.0.41'
+}
+
+allprojects {
+    apply plugin: 'pmd'
+    apply plugin: 'checkstyle'
+    apply plugin: 'io.spring.javaformat'
+
+    group = 'org.jax'
+    version = '0.0.1-SNAPSHOT'
+
+    checkstyle {
+        ignoreFailures = true
+    }
+
+    pmd {
+        ignoreFailures = true
+    }
+
+    dependencies {
+        checkstyle 'io.spring.javaformat:spring-javaformat-checkstyle:0.0.41'
+    }
+}
+

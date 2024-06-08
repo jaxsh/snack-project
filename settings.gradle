@@ -1,0 +1,29 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "io.spring.javaformat") {
+                useModule "io.spring.javaformat:spring-javaformat-gradle-plugin:${requested.version}"
+            }
+        }
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url 'https://maven.aliyun.com/repository/public/'
+        }
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'snack-java'
+
+include ":snack-project:framework"
+include ":snack-project:business"
+include ":snack-project:modules"
+include ":snack-project:aggregation"
