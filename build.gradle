@@ -1,0 +1,4 @@
+allprojects {
+    group = 'org.jax'
+    version = '0.0.1-SNAPSHOT'
+}
