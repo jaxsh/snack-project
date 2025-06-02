@@ -3,11 +3,13 @@ org-springframework-boot = '3.5.0'
 io-spring-javaformat = '0.0.45'
 
 [libraries]
-spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "org-springframework-boot" }
+spring-boot-dependencies = { module = 'org.springframework.boot:spring-boot-dependencies', version.ref = 'org-springframework-boot' }
 # https://mvnrepository.com/artifact/org.mockito/mockito-core
-org-mockito-mockito-core = "org.mockito:mockito-core:5.18.0"
+org-mockito-mockito-core = 'org.mockito:mockito-core:5.18.0'
+# https://mvnrepository.com/artifact/org.zalando/logbook-spring-boot-starter
+org-zalando = 'org.zalando:logbook-spring-boot-starter:3.12.1'
 
 # buildSrc dependencies
-org-springframework-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "org-springframework-boot" }
-io-spring-javaformat-spring-javaformat-checkstyle = { module = "io.spring.javaformat:spring-javaformat-checkstyle", version.ref = "io-spring-javaformat" }
-io-spring-javaformat-spring-javaformat-gradle-plugin = { module = "io.spring.javaformat:spring-javaformat-gradle-plugin", version.ref = "io-spring-javaformat" }
+org-springframework-boot-gradle-plugin = { module = 'org.springframework.boot:spring-boot-gradle-plugin', version.ref = 'org-springframework-boot' }
+io-spring-javaformat-spring-javaformat-checkstyle = { module = 'io.spring.javaformat:spring-javaformat-checkstyle', version.ref = 'io-spring-javaformat' }
+io-spring-javaformat-spring-javaformat-gradle-plugin = { module = 'io.spring.javaformat:spring-javaformat-gradle-plugin', version.ref = 'io-spring-javaformat' }

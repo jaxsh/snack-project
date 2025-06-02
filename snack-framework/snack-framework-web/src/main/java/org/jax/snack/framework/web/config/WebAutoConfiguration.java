@@ -1,0 +1,130 @@
+/*
+ * Copyright 2023-2025 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jax.snack.framework.web.config;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.validator.HibernateValidatorConfiguration;
+import org.jax.snack.framework.web.advice.GlobalExceptionAdvice;
+import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
+import org.jax.snack.framework.web.exception.InterfaceException;
+import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
+
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.client.RestClientCustomizer;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+
+/**
+ * Web 自动配置类. 提供全局异常处理、响应体处理、国际化、参数校验配置、RestClient自定义等功能.
+ *
+ * @author Jax Jiang
+ * @since 2025-05-30
+ */
+@Configuration
+@AutoConfigureBefore(WebMvcAutoConfiguration.class)
+@EnableConfigurationProperties(ValidationProperties.class)
+public class WebAutoConfiguration implements WebMvcConfigurer {
+
+	/**
+	 * 全局异常处理器. 用于处理系统中的各种异常并转换为标准响应格式.
+	 * @param messageSource 消息源, 用于国际化
+	 * @return 全局异常处理器实例
+	 */
+	@Bean
+	public GlobalExceptionAdvice exceptionAdvice(MessageSource messageSource) {
+		return new GlobalExceptionAdvice(messageSource);
+	}
+
+	/**
+	 * 全局响应体处理器. 用于统一处理控制器返回的响应体.
+	 * @param objectMapper json对象映射器
+	 * @return 全局响应体处理器实例
+	 */
+	@Bean
+	public GlobalResponseBodyAdvice responseBodyAdvice(ObjectMapper objectMapper) {
+		return new GlobalResponseBodyAdvice(objectMapper);
+	}
+
+	/**
+	 * 本地化解析器. 支持通过请求参数和 Accept-Header 切换语言.
+	 * @return 本地化解析器实例
+	 */
+	@Bean
+	public LocaleResolver localeResolver() {
+		return new ParameterAwareAcceptHeaderLocaleResolver();
+	}
+
+	/**
+	 * 语言切换拦截器. 用于处理请求参数中的语言设置.
+	 * @return 语言切换拦截器实例
+	 */
+	@Bean
+	public LocaleChangeInterceptor localeChangeInterceptor() {
+		return new LocaleChangeInterceptor();
+	}
+
+	/**
+	 * 添加拦截器. 注册语言切换拦截器到拦截器链中.
+	 * @param registry 拦截器注册表
+	 */
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(localeChangeInterceptor());
+	}
+
+	/**
+	 * 配置Hibernate Validator是否快速失败.
+	 * @param validationProperties 参数校验配置
+	 * @return 配置定制器
+	 */
+	@Bean
+	public ValidationConfigurationCustomizer hibernateFailFastCustomizer(ValidationProperties validationProperties) {
+		return (configuration) -> configuration.addProperty(HibernateValidatorConfiguration.FAIL_FAST,
+				validationProperties.getFailFast().toString());
+	}
+
+	/**
+	 * RestClient自定义配置, 包括异常处理、日志拦截、消息转换等.
+	 * @param objectMapper jackson对象映射器
+	 * @param interceptor 日志拦截器
+	 * @return restClient定制器
+	 */
+	@Bean
+	public RestClientCustomizer clientCustomizer(ObjectMapper objectMapper, ClientHttpRequestInterceptor interceptor) {
+		return (restClientBuilder) -> restClientBuilder
+			.requestInterceptor((request, body, execution) -> execution.execute(request, body))
+			.defaultStatusHandler((status) -> !status.is2xxSuccessful(), (request, response) -> {
+				throw new InterfaceException(response.getStatusText());
+			})
+			.requestInterceptors((interceptors) -> interceptors.add(interceptor))
+			.messageConverters((converters) -> converters.stream()
+				.filter(MappingJackson2HttpMessageConverter.class::isInstance)
+				.map(MappingJackson2HttpMessageConverter.class::cast)
+				.forEach((converter) -> converter.setObjectMapper(objectMapper)));
+	}
+
+}

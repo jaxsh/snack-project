@@ -1,0 +1,10 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	api 'org.springframework.boot:spring-boot-starter-web'
+	api 'org.springframework.boot:spring-boot-starter-validation'
+	api 'org.zalando:logbook-spring-boot-starter'
+}

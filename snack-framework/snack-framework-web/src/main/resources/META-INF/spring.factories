@@ -1,0 +1,1 @@
+org.springframework.boot.env.EnvironmentPostProcessor=org.jax.snack.framework.web.config.EnvironmentPostProcessor
