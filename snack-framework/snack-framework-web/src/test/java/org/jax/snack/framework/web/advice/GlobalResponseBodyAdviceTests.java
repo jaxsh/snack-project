@@ -59,10 +59,10 @@ class GlobalResponseBodyAdviceTests {
 	}
 
 	private Object simulateSpringMvcHandling(Object body, MethodParameter param, MediaType mediaType,
-			Class<? extends org.springframework.http.converter.HttpMessageConverter<?>> converter,
 			ServletServerHttpRequest request, ServletServerHttpResponse response) {
-		if (this.advice.supports(param, converter)) {
-			return this.advice.beforeBodyWrite(body, param, mediaType, converter, request, response);
+		if (this.advice.supports(param, MappingJackson2HttpMessageConverter.class)) {
+			return this.advice.beforeBodyWrite(body, param, mediaType, MappingJackson2HttpMessageConverter.class,
+					request, response);
 		}
 		return body;
 	}
@@ -74,7 +74,7 @@ class GlobalResponseBodyAdviceTests {
 
 		String body = "hello";
 		Object result = simulateSpringMvcHandling(body, param, MediaType.TEXT_HTML,
-				MappingJackson2HttpMessageConverter.class, new ServletServerHttpRequest(new MockHttpServletRequest()),
+				new ServletServerHttpRequest(new MockHttpServletRequest()),
 				new ServletServerHttpResponse(new MockHttpServletResponse()));
 
 		assertThat(result).isEqualTo(body);
@@ -87,11 +87,11 @@ class GlobalResponseBodyAdviceTests {
 
 		String body = "hello";
 		Object result = simulateSpringMvcHandling(body, param, MediaType.APPLICATION_JSON,
-				MappingJackson2HttpMessageConverter.class, new ServletServerHttpRequest(new MockHttpServletRequest()),
+				new ServletServerHttpRequest(new MockHttpServletRequest()),
 				new ServletServerHttpResponse(new MockHttpServletResponse()));
 
 		ApiResponse<?> apiResponse = this.objectMapper.readValue((String) result, ApiResponse.class);
-		assertThat(apiResponse.getCode()).isEqualTo(HttpStatus.OK.getReasonPhrase());
+		assertThat(apiResponse.getCode()).isEqualTo(String.valueOf(HttpStatus.OK.value()));
 		assertThat(apiResponse.getMsg()).isEqualTo("Success");
 		assertThat(apiResponse.getData()).isEqualTo("hello");
 	}
@@ -103,7 +103,7 @@ class GlobalResponseBodyAdviceTests {
 
 		Map<String, String> body = Map.of("key", "value");
 		Object result = simulateSpringMvcHandling(body, param, MediaType.APPLICATION_JSON,
-				MappingJackson2HttpMessageConverter.class, new ServletServerHttpRequest(new MockHttpServletRequest()),
+				new ServletServerHttpRequest(new MockHttpServletRequest()),
 				new ServletServerHttpResponse(new MockHttpServletResponse()));
 
 		assertThat(result).isInstanceOf(ApiResponse.class);
@@ -118,7 +118,7 @@ class GlobalResponseBodyAdviceTests {
 
 		ResponseEntity<String> body = ResponseEntity.ok("test");
 		Object result = simulateSpringMvcHandling(body, param, MediaType.APPLICATION_JSON,
-				MappingJackson2HttpMessageConverter.class, new ServletServerHttpRequest(new MockHttpServletRequest()),
+				new ServletServerHttpRequest(new MockHttpServletRequest()),
 				new ServletServerHttpResponse(new MockHttpServletResponse()));
 
 		assertThat(result).isEqualTo(body);
@@ -131,7 +131,7 @@ class GlobalResponseBodyAdviceTests {
 
 		ApiResponse<String> body = ApiResponse.success("test");
 		Object result = simulateSpringMvcHandling(body, param, MediaType.APPLICATION_JSON,
-				MappingJackson2HttpMessageConverter.class, new ServletServerHttpRequest(new MockHttpServletRequest()),
+				new ServletServerHttpRequest(new MockHttpServletRequest()),
 				new ServletServerHttpResponse(new MockHttpServletResponse()));
 
 		assertThat(result).isEqualTo(body);

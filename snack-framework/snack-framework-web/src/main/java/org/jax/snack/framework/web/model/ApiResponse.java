@@ -58,7 +58,7 @@ public class ApiResponse<T> {
 	 * @return 包含成功数据的 {@link ApiResponse} 实例
 	 */
 	public static <T> ApiResponse<T> success(T data) {
-		return new ApiResponse<>(HttpStatus.OK.getReasonPhrase(), "Success", data);
+		return new ApiResponse<>(String.valueOf(HttpStatus.OK.value()), "Success", data);
 	}
 
 	/**

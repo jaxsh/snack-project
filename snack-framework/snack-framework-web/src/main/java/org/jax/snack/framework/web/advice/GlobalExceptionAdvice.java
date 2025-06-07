@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.web.constant.ErrorCode;
 import org.jax.snack.framework.web.exception.BusinessException;
+import org.jax.snack.framework.web.exception.InterfaceBusinessException;
 import org.jax.snack.framework.web.exception.InterfaceException;
 import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.framework.web.model.ApiResponseFieldError;
@@ -62,9 +63,7 @@ public class GlobalExceptionAdvice {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiResponse<Object> handleException(Exception e, HttpServletRequest request) {
 		log.error("Unhandled Exception: Path - {}", request.getRequestURI(), e);
-		return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(),
-				this.messageSource.getMessage(ErrorCode.SYSTEM_ERROR.getCode(), null, LocaleContextHolder.getLocale()),
-				e.getMessage());
+		return ApiResponse.error(ErrorCode.SYSTEM_ERROR, getLocalizedMessage(ErrorCode.SYSTEM_ERROR), null);
 	}
 
 	/**
@@ -73,22 +72,34 @@ public class GlobalExceptionAdvice {
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(BusinessException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiResponse<Object> handleBusinessException(BusinessException e) {
-		return ApiResponse.error(e.getErrorCode().getCode(), this.messageSource.getMessage(e.getErrorCode().getCode(),
-				e.getMessageArgs(), LocaleContextHolder.getLocale()));
+		return ApiResponse.error(e.getErrorCode(), getLocalizedMessage(e.getErrorCode()));
 	}
 
 	/**
 	 * 处理外部接口错误.
 	 * @param e 错误信息
-	 * @param request http请求
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(InterfaceException.class)
-	public ApiResponse<Object> handleInterfaceException(InterfaceException e, HttpServletRequest request) {
-		log.error("Interface Exception: Path - {}", request.getRequestURI(), e);
-		return ApiResponse.error(ErrorCode.INTERFACE_ERROR.getCode(), this.messageSource
-			.getMessage(ErrorCode.INTERFACE_ERROR.getCode(), null, LocaleContextHolder.getLocale()), e.getMessage());
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public ApiResponse<Object> handleInterfaceException(InterfaceException e) {
+		if (e.getCause() != null) {
+			log.error("Interface Exception: ", e.getCause());
+		}
+		return ApiResponse.error(ErrorCode.INTERFACE_ERROR, getLocalizedMessage(ErrorCode.INTERFACE_ERROR));
+	}
+
+	/**
+	 * 处理外部接口返回的业务级错误.
+	 * @param e 错误信息
+	 * @return 返回报文
+	 */
+	@ExceptionHandler(InterfaceBusinessException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public ApiResponse<Object> handleInterfaceBusinessException(InterfaceBusinessException e) {
+		return ApiResponse.error(ErrorCode.INTERFACE_ERROR, e.getMessage());
 	}
 
 	/**
@@ -100,8 +111,7 @@ public class GlobalExceptionAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ApiResponse<Object> handleMissingServletRequestParameterException(
 			MissingServletRequestParameterException e) {
-		return ApiResponse.error(ErrorCode.PARAM_INVALID.getCode(),
-				this.messageSource.getMessage(ErrorCode.PARAM_INVALID.getCode(), null, LocaleContextHolder.getLocale()),
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
 				e.getBody().getDetail());
 	}
 
@@ -112,7 +122,7 @@ public class GlobalExceptionAdvice {
 	 */
 	@ExceptionHandler(HandlerMethodValidationException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<Object> handlerHandlerMethodValidationException(HandlerMethodValidationException e) {
+	public ApiResponse<Object> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
 		List<ApiResponseFieldError> apiResponseFieldErrors = e.getParameterValidationResults()
 			.stream()
 			.flatMap((result) -> {
@@ -123,8 +133,7 @@ public class GlobalExceptionAdvice {
 			})
 			.collect(Collectors.toList());
 
-		return ApiResponse.error(ErrorCode.PARAM_INVALID.getCode(),
-				this.messageSource.getMessage(ErrorCode.PARAM_INVALID.getCode(), null, LocaleContextHolder.getLocale()),
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
 				apiResponseFieldErrors);
 	}
 
@@ -142,9 +151,12 @@ public class GlobalExceptionAdvice {
 			.map((fieldError) -> new ApiResponseFieldError(fieldError.getField(), fieldError.getDefaultMessage()))
 			.collect(Collectors.toList());
 
-		return ApiResponse.error(ErrorCode.PARAM_INVALID.getCode(),
-				this.messageSource.getMessage(ErrorCode.PARAM_INVALID.getCode(), null, LocaleContextHolder.getLocale()),
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
 				apiResponseFieldErrors);
+	}
+
+	private String getLocalizedMessage(String code, Object... args) {
+		return this.messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 
 }
