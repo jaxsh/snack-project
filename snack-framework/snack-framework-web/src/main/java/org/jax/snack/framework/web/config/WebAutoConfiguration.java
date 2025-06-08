@@ -20,19 +20,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.jax.snack.framework.web.advice.GlobalExceptionAdvice;
 import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
-import org.jax.snack.framework.web.exception.InterfaceException;
 import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.client.RestClientCustomizer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -105,26 +101,6 @@ public class WebAutoConfiguration implements WebMvcConfigurer {
 	public ValidationConfigurationCustomizer hibernateFailFastCustomizer(ValidationProperties validationProperties) {
 		return (configuration) -> configuration.addProperty(HibernateValidatorConfiguration.FAIL_FAST,
 				validationProperties.getFailFast().toString());
-	}
-
-	/**
-	 * RestClient自定义配置, 包括异常处理、日志拦截、消息转换等.
-	 * @param objectMapper jackson对象映射器
-	 * @param interceptor 日志拦截器
-	 * @return restClient定制器
-	 */
-	@Bean
-	public RestClientCustomizer clientCustomizer(ObjectMapper objectMapper, ClientHttpRequestInterceptor interceptor) {
-		return (restClientBuilder) -> restClientBuilder
-			.requestInterceptor((request, body, execution) -> execution.execute(request, body))
-			.defaultStatusHandler((status) -> !status.is2xxSuccessful(), (request, response) -> {
-				throw new InterfaceException(response.getStatusText());
-			})
-			.requestInterceptors((interceptors) -> interceptors.add(interceptor))
-			.messageConverters((converters) -> converters.stream()
-				.filter(MappingJackson2HttpMessageConverter.class::isInstance)
-				.map(MappingJackson2HttpMessageConverter.class::cast)
-				.forEach((converter) -> converter.setObjectMapper(objectMapper)));
 	}
 
 }
