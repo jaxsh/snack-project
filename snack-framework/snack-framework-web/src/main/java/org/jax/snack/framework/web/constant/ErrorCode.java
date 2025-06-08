@@ -16,34 +16,31 @@
 
 package org.jax.snack.framework.web.constant;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * 错误码枚举类. 定义了系统中可能出现的各种错误类型.
  *
  * @author Jax Jiang
  * @since 2025-05-31
  */
-@Getter
-@AllArgsConstructor
-public enum ErrorCode {
+public class ErrorCode {
+
+	protected ErrorCode() {
+
+	}
 
 	/**
 	 * 系统错误. 表示系统内部发生的未预期错误.
 	 */
-	SYSTEM_ERROR("1000"),
+	public static final String SYSTEM_ERROR = "1000";
 
 	/**
 	 * 接口错误. 表示接口调用过程中发生的错误.
 	 */
-	INTERFACE_ERROR("1001"),
+	public static final String INTERFACE_ERROR = "1001";
 
 	/**
 	 * 参数无效. 表示请求参数不符合要求.
 	 */
-	PARAM_INVALID("1002");
-
-	private final String code;
+	public static final String PARAM_INVALID = "1002";
 
 }

@@ -24,12 +24,8 @@ package org.jax.snack.framework.web.exception;
  */
 public class InterfaceException extends RuntimeException {
 
-	/**
-	 * 创建一个接口异常实例.
-	 * @param msg 异常消息
-	 */
-	public InterfaceException(String msg) {
-		super(msg);
+	public InterfaceException(String errorCode, Throwable cause) {
+		super(errorCode, cause);
 	}
 
 }

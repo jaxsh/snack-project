@@ -16,30 +16,20 @@
 
 package org.jax.snack.framework.web.exception;
 
-import lombok.Getter;
-
 /**
- * 业务异常类. 用于表示业务逻辑处理过程中发生的异常.
+ * 接口异常类. 用于表示与外部系统返回的业务级错误.
  *
  * @author Jax Jiang
  * @since 2025-05-31
  */
-@Getter
-public class BusinessException extends RuntimeException {
-
-	private final String errorCode;
-
-	private final transient Object[] messageArgs;
+public class InterfaceBusinessException extends RuntimeException {
 
 	/**
-	 * 创建一个业务异常实例.
-	 * @param errorCode 错误码
-	 * @param messageArgs 消息参数
+	 * 创建一个接口异常实例.
+	 * @param msg 异常消息
 	 */
-	public BusinessException(String errorCode, Object... messageArgs) {
-		super(errorCode);
-		this.errorCode = errorCode;
-		this.messageArgs = messageArgs;
+	public InterfaceBusinessException(String msg) {
+		super(msg);
 	}
 
 }
