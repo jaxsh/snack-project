@@ -46,6 +46,12 @@ public final class LdapUtils {
 	private LdapUtils() {
 	}
 
+	/**
+	 * 将字节数组转换为GUID. 字节数组必须是16字节长度.
+	 * @param source 16字节的字节数组
+	 * @return 转换后的UUID对象
+	 * @throws IllegalArgumentException 如果输入不是16字节的数组
+	 */
 	public static UUID byteArrayToGUID(byte[] source) {
 		if (source == null || source.length != 16) {
 			throw new IllegalArgumentException("Input must be a 16-byte array.");
@@ -70,6 +76,11 @@ public final class LdapUtils {
 		return new UUID(mostSigBits, leastSigBits);
 	}
 
+	/**
+	 * 将LDAP时间戳转换为ZonedDateTime. 如果时间戳为0或Long.MAX_VALUE, 返回null.
+	 * @param ldapTimestamp ldap时间戳
+	 * @return 转换后的ZonedDateTime对象, 如果时间戳无效则返回null
+	 */
 	public static ZonedDateTime fileTimeToDateTime(long ldapTimestamp) {
 		if (ldapTimestamp == 0 || ldapTimestamp == Long.MAX_VALUE) {
 			return null;
@@ -83,6 +94,11 @@ public final class LdapUtils {
 		return ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
 	}
 
+	/**
+	 * 将ZonedDateTime转换为LDAP时间戳. 如果输入为null, 返回0.
+	 * @param zonedDateTime 要转换的zonedDateTime对象
+	 * @return ldap时间戳
+	 */
 	public static long toLdapTimestamp(ZonedDateTime zonedDateTime) {
 		if (zonedDateTime == null) {
 			return 0L;

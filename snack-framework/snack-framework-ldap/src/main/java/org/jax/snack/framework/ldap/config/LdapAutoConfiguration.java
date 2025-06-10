@@ -29,9 +29,19 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.odm.core.ObjectDirectoryMapper;
 import org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper;
 
+/**
+ * LDAP自动配置类. 提供LDAP相关的配置, 包括对象目录映射器和LDAP模板的定制.
+ *
+ * @author Jax Jiang
+ * @since 2025-05-30
+ */
 @AutoConfiguration
 public class LdapAutoConfiguration {
 
+	/**
+	 * 创建对象目录映射器. 配置LDAP对象与Java对象之间的转换规则.
+	 * @return 配置好的对象目录映射器
+	 */
 	@Bean
 	public ObjectDirectoryMapper objectDirectoryMapper() {
 		DefaultObjectDirectoryMapper mapper = new DefaultObjectDirectoryMapper();
@@ -43,6 +53,12 @@ public class LdapAutoConfiguration {
 		return mapper;
 	}
 
+	/**
+	 * 定制LDAP模板. 配置LDAP模板使用自定义的对象目录映射器.
+	 * @param ldapTemplate ldap模板
+	 * @param objectDirectoryMapper 对象目录映射器
+	 * @return 定制后的ldap模板
+	 */
 	@Bean
 	@ConditionalOnBean(LdapTemplate.class)
 	public LdapTemplate customizeLdapTemplate(LdapTemplate ldapTemplate, ObjectDirectoryMapper objectDirectoryMapper) {

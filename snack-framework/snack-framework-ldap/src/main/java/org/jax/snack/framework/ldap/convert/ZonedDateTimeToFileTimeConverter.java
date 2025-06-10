@@ -23,8 +23,19 @@ import org.jax.snack.framework.ldap.util.LdapUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 
+/**
+ * 带时区的时间到微软FileTime的转换器. 用于将Java的带时区的时间类型转换为LDAP中的微软FileTime格式.
+ *
+ * @author Jax Jiang
+ * @since 2025-05-30
+ */
 public class ZonedDateTimeToFileTimeConverter implements Converter<ZonedDateTime, String> {
 
+	/**
+	 * 将带时区的时间转换为微软FileTime格式的字符串.
+	 * @param source 带时区的时间对象
+	 * @return 微软FileTime格式的字符串
+	 */
 	@Override
 	public String convert(@NonNull ZonedDateTime source) {
 		return String.valueOf(LdapUtils.toLdapTimestamp(source));

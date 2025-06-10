@@ -23,8 +23,19 @@ import org.jax.snack.framework.ldap.util.LdapUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 
+/**
+ * objectGUID到UUID的转换器. 用于将LDAP中的ObjectGUID转换为Java的UUID类型.
+ *
+ * @author Jax Jiang
+ * @since 2025-05-30
+ */
 public class ObjectGUIDToUUIDConverter implements Converter<byte[], UUID> {
 
+	/**
+	 * 将字节数组形式的objectGUID转换为UUID.
+	 * @param source objectGUID的字节数组
+	 * @return 转换后的uuid对象
+	 */
 	@Override
 	public UUID convert(@NonNull byte[] source) {
 		return LdapUtils.byteArrayToGUID(source);
