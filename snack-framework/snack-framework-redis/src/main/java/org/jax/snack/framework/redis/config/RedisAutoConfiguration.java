@@ -18,7 +18,6 @@ package org.jax.snack.framework.redis.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -26,21 +25,26 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+/**
+ * Redis自动配置类. 提供Redis相关的配置, 包括RedisTemplate的定制.
+ *
+ * @author Jax Jiang
+ * @since 2025-05-30
+ */
 @AutoConfiguration
 public class RedisAutoConfiguration {
 
-	private final ObjectMapper objectMapper;
-
-	@Autowired(required = false)
-	public RedisAutoConfiguration(ObjectMapper objectMapper) {
-		this.objectMapper = (objectMapper != null) ? objectMapper : new ObjectMapper();
-	}
-
+	/**
+	 * 创建RedisTemplate实例. 配置使用Jackson2JsonRedisSerializer进行序列化.
+	 * @param redisConnection redis连接工厂
+	 * @param objectMapper 用于JSON序列化的ObjectMapper实例
+	 * @return 配置好的RedisTemplate实例
+	 */
 	@Bean
-	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnection) {
-
+	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnection,
+			ObjectMapper objectMapper) {
 		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
-				this.objectMapper, Object.class);
+				objectMapper, Object.class);
 
 		RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 		redisTemplate.setConnectionFactory(redisConnection);
