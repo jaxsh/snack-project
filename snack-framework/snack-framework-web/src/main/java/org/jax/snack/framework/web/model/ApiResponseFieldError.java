@@ -21,10 +21,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 参数校验错误字段信息. 用于封装参数校验失败时的字段名和错误信息.
+ * API响应的字段错误信息. 用于封装参数校验失败时的字段名和错误信息.
  *
  * @author Jax Jiang
- * @since 2025-06-01
+ * @since 2025-05-30
  */
 @Getter
 @Setter

@@ -33,11 +33,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 /**
- * 全局响应体处理器. 用于统一处理控制器返回的响应体, 将其包装为标准的 {@link ApiResponse} 格式. 主要功能: 1. 对 JSON 类型的响应进行包装
- * 2. 对字符串类型的响应进行特殊处理 3. 保持非 JSON 类型响应的原始格式
+ * 全局响应体处理器. 用于处理控制器返回的响应体, 确保返回格式统一.
  *
  * @author Jax Jiang
- * @since 2025-05-29
+ * @since 2025-05-30
  */
 @RequiredArgsConstructor
 @RestControllerAdvice(annotations = RestController.class)

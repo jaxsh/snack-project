@@ -17,10 +17,10 @@
 package org.jax.snack.framework.web.exception;
 
 /**
- * 接口异常类. 用于表示与外部系统返回的业务级错误.
+ * 当调用外部系统发生业务错误时抛出的异常.
  *
  * @author Jax Jiang
- * @since 2025-05-31
+ * @since 2025-05-30
  */
 public class InterfaceBusinessException extends RuntimeException {
 

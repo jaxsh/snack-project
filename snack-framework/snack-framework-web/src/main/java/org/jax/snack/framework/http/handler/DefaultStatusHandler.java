@@ -26,18 +26,28 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.lang.NonNull;
 
 /**
- * TODO.
+ * 默认HTTP状态码处理器. 用于处理HTTP响应中的非成功状态码, 将其转换为统一的接口异常.
  *
  * @author Jax Jiang
  * @since 2025-06-08
  */
 public class DefaultStatusHandler implements CustomResponseErrorHandler {
 
+	/**
+	 * 测试是否需要处理该状态码. 对于2xx和500状态码不进行处理.
+	 * @param status http状态码
+	 * @return 如果需要处理返回true, 否则返回false
+	 */
 	@Override
 	public boolean test(HttpStatusCode status) {
 		return !status.is2xxSuccessful() && !status.isSameCodeAs(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	/**
+	 * 处理非2xx和500状态码的响应. 抛出接口异常.
+	 * @param request http请求
+	 * @param response http响应
+	 */
 	@Override
 	public void handle(@NonNull HttpRequest request, @NonNull ClientHttpResponse response) {
 		throw new InterfaceException(ErrorCode.INTERFACE_ERROR, null);

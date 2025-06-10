@@ -19,10 +19,10 @@ package org.jax.snack.framework.web.exception;
 import lombok.Getter;
 
 /**
- * 业务异常类. 用于表示业务逻辑处理过程中发生的异常.
+ * 当系统中发生业务错误时抛出的异常.
  *
  * @author Jax Jiang
- * @since 2025-05-31
+ * @since 2025-05-30
  */
 @Getter
 public class BusinessException extends RuntimeException {

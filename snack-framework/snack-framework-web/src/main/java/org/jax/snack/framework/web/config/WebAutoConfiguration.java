@@ -35,7 +35,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 /**
- * Web 自动配置类. 提供全局异常处理、响应体处理、国际化、参数校验配置、RestClient自定义等功能.
+ * Web自动配置类. 提供全局异常处理、响应体处理、国际化、验证配置等功能.
  *
  * @author Jax Jiang
  * @since 2025-05-30

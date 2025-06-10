@@ -27,7 +27,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 /**
- * 自定义属性环境后处理器. 用于在应用启动时添加自定义的配置属性.
+ * 环境后处理器. 用于在应用程序启动时处理环境变量和配置.
  *
  * @author Jax Jiang
  * @since 2025-05-30

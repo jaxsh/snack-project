@@ -41,10 +41,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 /**
- * 全局异常处理器. 统一处理系统中的各种异常并转换为标准响应格式. 支持处理未知错误、业务错误、外部接口错误、参数校验错误等.
+ * 全局异常处理器. 用于处理系统中的各种异常并转换为标准响应格式.
  *
  * @author Jax Jiang
- * @since 2025-05-31
+ * @since 2025-05-30
  */
 @Slf4j
 @RequiredArgsConstructor

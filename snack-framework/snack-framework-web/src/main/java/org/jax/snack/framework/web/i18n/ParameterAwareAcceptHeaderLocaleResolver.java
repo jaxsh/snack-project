@@ -28,13 +28,18 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 /**
- * 支持参数和Accept-Header的本地化解析器. 优先使用请求参数中的语言设置, 如果参数无效则回退到Accept-Header.
+ * 支持通过请求参数和Accept-Header切换语言的区域解析器.
  *
  * @author Jax Jiang
- * @since 2025-05-31
+ * @since 2025-05-30
  */
 public class ParameterAwareAcceptHeaderLocaleResolver extends AcceptHeaderLocaleResolver {
 
+	/**
+	 * 解析请求的区域设置. 优先从请求参数中获取, 如果参数不存在则从Accept-Header中获取.
+	 * @param request http请求
+	 * @return 解析出的区域设置
+	 */
 	@NonNull
 	@Override
 	public Locale resolveLocale(HttpServletRequest request) {
@@ -48,6 +53,12 @@ public class ParameterAwareAcceptHeaderLocaleResolver extends AcceptHeaderLocale
 		return super.resolveLocale(request);
 	}
 
+	/**
+	 * 设置请求的区域设置. 由于使用Accept-Header方式, 此方法不执行任何操作.
+	 * @param request http请求
+	 * @param response http响应
+	 * @param locale 区域设置
+	 */
 	@Override
 	public void setLocale(@NonNull HttpServletRequest request, @Nullable HttpServletResponse response,
 			@Nullable Locale locale) {

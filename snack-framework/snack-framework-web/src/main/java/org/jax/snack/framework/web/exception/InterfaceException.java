@@ -17,13 +17,18 @@
 package org.jax.snack.framework.web.exception;
 
 /**
- * 接口异常类. 用于表示与外部系统交互过程中发生的异常. 通常用于包装第三方接口调用时的异常, 以便统一处理.
+ * 当调用外部系统发生错误时抛出的异常.
  *
  * @author Jax Jiang
- * @since 2025-05-31
+ * @since 2025-05-30
  */
 public class InterfaceException extends RuntimeException {
 
+	/**
+	 * 创建一个接口异常实例.
+	 * @param errorCode 错误码
+	 * @param cause 异常原因
+	 */
 	public InterfaceException(String errorCode, Throwable cause) {
 		super(errorCode, cause);
 	}

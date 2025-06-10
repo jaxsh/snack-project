@@ -23,10 +23,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * 参数校验配置类. 用于配置参数校验的相关属性，如是否启用快速失败模式.
+ * 参数校验配置属性. 用于配置校验相关的属性, 如是否启用快速失败模式.
  *
  * @author Jax Jiang
- * @since 2025-06-01
+ * @since 2025-05-30
  */
 @Getter
 @Setter

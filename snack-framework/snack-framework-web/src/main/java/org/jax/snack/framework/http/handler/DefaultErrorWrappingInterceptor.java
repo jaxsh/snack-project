@@ -25,13 +25,21 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.lang.NonNull;
 
 /**
- * TODO.
+ * 默认错误包装拦截器实现. 用于拦截HTTP请求过程中的异常, 并将其转换为统一的接口异常格式.
  *
  * @author Jax Jiang
  * @since 2025-06-08
  */
 public class DefaultErrorWrappingInterceptor implements ErrorWrappingInterceptor {
 
+	/**
+	 * 拦截HTTP请求, 处理可能发生的异常.
+	 * @param request http请求
+	 * @param body 请求体
+	 * @param execution 请求执行器
+	 * @return http响应
+	 * @throws InterfaceException 当请求执行过程中发生异常时
+	 */
 	@Override
 	public ClientHttpResponse intercept(@NonNull HttpRequest request, @NonNull byte[] body,
 			@NonNull ClientHttpRequestExecution execution) {

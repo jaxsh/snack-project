@@ -32,27 +32,43 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 /**
- * TODO.
+ * RestClient自动配置类. 用于配置RestClient相关的属性和Bean.
  *
  * @author Jax Jiang
- * @since 2025-06-08
+ * @since 2025-05-30
  */
 @Configuration
 @AutoConfiguration
 public class RestClientAutoConfiguration {
 
+	/**
+	 * 创建一个默认的错误包装拦截器.
+	 * @return 返回一个默认的错误包装拦截器实例
+	 */
 	@Bean
 	@ConditionalOnMissingBean(ErrorWrappingInterceptor.class)
 	public ErrorWrappingInterceptor errorWrappingInterceptor() {
 		return new DefaultErrorWrappingInterceptor();
 	}
 
+	/**
+	 * 创建一个默认的状态处理器.
+	 * @return 返回一个默认的状态处理器实例
+	 */
 	@Bean
 	@ConditionalOnMissingBean(CustomResponseErrorHandler.class)
 	public CustomResponseErrorHandler defaultStatusHandler() {
 		return new DefaultStatusHandler();
 	}
 
+	/**
+	 * 自定义RestClient的配置.
+	 * @param objectMapper 对象映射器
+	 * @param interceptor 日志拦截器
+	 * @param errorWrappingInterceptor 错误包装拦截器
+	 * @param defaultStatusHandler 默认状态处理器
+	 * @return 返回一个RestClientCustomizer实例
+	 */
 	@Bean
 	public RestClientCustomizer clientCustomizer(ObjectMapper objectMapper,
 			LogbookClientHttpRequestInterceptor interceptor, ErrorWrappingInterceptor errorWrappingInterceptor,

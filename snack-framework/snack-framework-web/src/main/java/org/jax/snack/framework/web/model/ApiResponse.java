@@ -24,11 +24,11 @@ import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 /**
- * 通用API响应封装类. 用于向客户端返回标准化的响应结构.
+ * 标准API响应模型. 用于统一控制器返回的响应格式.
  *
  * @param <T> 响应数据的类型.
  * @author Jax Jiang
- * @since 2025-05-29
+ * @since 2025-05-30
  */
 @Getter
 @Setter
