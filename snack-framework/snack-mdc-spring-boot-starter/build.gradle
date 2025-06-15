@@ -1,0 +1,15 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+
+	api('ch.qos.logback:logback-classic')
+	api('org.springframework.boot:spring-boot-autoconfigure-processor')
+
+	annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
+
+	compileOnlyApi('org.springframework.boot:spring-boot-starter-web')
+
+}
