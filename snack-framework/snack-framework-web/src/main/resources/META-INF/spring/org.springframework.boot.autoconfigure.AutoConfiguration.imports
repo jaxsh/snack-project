@@ -1,4 +1,2 @@
 org.jax.snack.framework.web.config.WebAutoConfiguration
 org.jax.snack.framework.http.config.RestClientAutoConfiguration
-org.jax.snack.framework.mdc.MdcAutoConfiguration
-
