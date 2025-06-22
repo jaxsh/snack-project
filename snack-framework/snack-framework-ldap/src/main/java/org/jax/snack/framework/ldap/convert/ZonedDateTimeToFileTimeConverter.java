@@ -24,17 +24,17 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 
 /**
- * 带时区的时间到微软FileTime的转换器. 用于将Java的带时区的时间类型转换为LDAP中的微软FileTime格式.
+ * 将 Java {@link ZonedDateTime} 转换为 Active Directory FileTime 格式 (字符串) 的转换器.
  *
  * @author Jax Jiang
- * @since 2025-05-30
+ * @since 2024-05-30
  */
 public class ZonedDateTimeToFileTimeConverter implements Converter<ZonedDateTime, String> {
 
 	/**
-	 * 将带时区的时间转换为微软FileTime格式的字符串.
-	 * @param source 带时区的时间对象
-	 * @return 微软FileTime格式的字符串
+	 * 将 {@link ZonedDateTime} 对象转换为代表 100 纳秒间隔的 FileTime 字符串.
+	 * @param source 要转换的 {@link ZonedDateTime} 对象.
+	 * @return 转换后的 FileTime 格式字符串.
 	 */
 	@Override
 	public String convert(@NonNull ZonedDateTime source) {

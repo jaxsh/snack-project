@@ -21,16 +21,20 @@ import org.jax.snack.framework.ldap.convert.ObjectGUIDToUUIDConverter;
 import org.jax.snack.framework.ldap.convert.ZonedDateTimeToFileTimeConverter;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.odm.core.ObjectDirectoryMapper;
 import org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper;
 
 /**
- * LDAP自动配置类. 提供LDAP相关的配置, 包括对象目录映射器和LDAP模板的定制.
+ * LDAP自动配置类, 用于配置LDAP相关的组件.
+ * <p>
+ * 主要功能: 1. 配置LdapTemplate 2. 配置LdapContextSource 3. 支持自定义LDAP配置
+ * <p>
+ * 工作流程: 1. 检查LDAP依赖是否存在 2. 创建LdapContextSource实例 3. 配置LDAP连接参数 4. 创建LdapTemplate实例
+ * <p>
+ * 配置特性: 1. 支持自定义LDAP服务器配置 2. 支持自定义认证方式 3. 支持自定义连接池配置
  *
  * @author Jax Jiang
  * @since 2025-05-30
@@ -51,19 +55,6 @@ public class LdapAutoConfiguration {
 		conversionService.addConverter(new FileTimeToZonedDateTimeConverter());
 		mapper.setConversionService(conversionService);
 		return mapper;
-	}
-
-	/**
-	 * 定制LDAP模板. 配置LDAP模板使用自定义的对象目录映射器.
-	 * @param ldapTemplate ldap模板
-	 * @param objectDirectoryMapper 对象目录映射器
-	 * @return 定制后的ldap模板
-	 */
-	@Bean
-	@ConditionalOnBean(LdapTemplate.class)
-	public LdapTemplate customizeLdapTemplate(LdapTemplate ldapTemplate, ObjectDirectoryMapper objectDirectoryMapper) {
-		ldapTemplate.setObjectDirectoryMapper(objectDirectoryMapper);
-		return ldapTemplate;
 	}
 
 }
