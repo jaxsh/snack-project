@@ -7,7 +7,7 @@ spring-boot-dependencies = { module = 'org.springframework.boot:spring-boot-depe
 # https://mvnrepository.com/artifact/org.mockito/mockito-core
 org-mockito-mockito-core = 'org.mockito:mockito-core:5.18.0'
 # https://mvnrepository.com/artifact/org.zalando/logbook-spring-boot-starter
-org-zalando = 'org.zalando:logbook-spring-boot-starter:3.12.1'
+org-zalando-logbook-spring-boot-starter = 'org.zalando:logbook-spring-boot-starter:3.12.1'
 
 # buildSrc dependencies
 org-springframework-boot-gradle-plugin = { module = 'org.springframework.boot:spring-boot-gradle-plugin', version.ref = 'org-springframework-boot' }

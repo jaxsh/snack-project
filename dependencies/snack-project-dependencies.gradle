@@ -11,6 +11,6 @@ dependencies {
 
     constraints {
         api libs.org.mockito.mockito.core
-		api libs.org.zalando
+		api libs.org.zalando.logbook.spring.boot.starter
     }
 }
