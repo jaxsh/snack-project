@@ -23,7 +23,6 @@ import org.jax.snack.framework.mdc.generator.TraceIdGenerator;
 import org.jax.snack.framework.mdc.generator.UuidTraceIdGenerator;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,7 +33,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -116,34 +114,6 @@ public class MdcAutoConfiguration {
 			registry.addInterceptor(this.mdcInterceptor())
 				.addPathPatterns(this.properties.getIncludePatterns())
 				.excludePathPatterns(this.properties.getExcludePatterns());
-		}
-
-	}
-
-	/**
-	 * 仅在 Classpath 中存在 ThreadPoolTaskScheduler 时, 才激活的用于定时任务的 MDC 自动配置.
-	 * <p>
-	 * 设计为静态内部类, 可以让它拥有自己独立的条件注解, 而不影响外部 MdcAutoConfiguration 的加载.
-	 */
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(ThreadPoolTaskScheduler.class)
-	@RequiredArgsConstructor
-	public static class MdcSchedulingAutoConfiguration {
-
-		private final MdcProperties properties;
-
-		private final TraceIdGenerator traceIdGenerator;
-
-		/**
-		 * 创建 MdcSchedulingConfigurer 的 Bean.
-		 * <p>
-		 * 这是一个 {@link BeanPostProcessor}, 它会"增强" Spring 默认的 TaskScheduler, 使所有通过
-		 * {@code @Scheduled} 注解调度的任务都能自动获得 MDC 上下文.
-		 * @return {@link MdcSchedulingConfigurer} 的实例.
-		 */
-		@Bean
-		public MdcSchedulingConfigurer mdcSchedulingConfigurer() {
-			return new MdcSchedulingConfigurer(this.properties, this.traceIdGenerator);
 		}
 
 	}

@@ -16,7 +16,6 @@
 
 package org.jax.snack.framework.mdc;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.mdc.generator.TraceIdGenerator;
 import org.slf4j.MDC;
@@ -24,6 +23,8 @@ import org.slf4j.MDC;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -37,12 +38,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * @since 2025-06-15
  */
 @Slf4j
-@RequiredArgsConstructor
-public class MdcSchedulingConfigurer implements BeanPostProcessor {
+public class MdcSchedulingConfigurer implements BeanPostProcessor, ApplicationContextAware {
 
-	private final MdcProperties properties;
+	private ApplicationContext applicationContext;
 
-	private final TraceIdGenerator traceIdGenerator;
+	@Override
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
 
 	/**
 	 * 在每个 Bean 初始化完成之后被调用. 此方法用于识别并包装 Spring 默认的 {@link ThreadPoolTaskScheduler}.
@@ -78,7 +81,10 @@ public class MdcSchedulingConfigurer implements BeanPostProcessor {
 				// 创建一个新的包装任务, 以实现 MDC 功能.
 				Runnable wrappedTask = () -> {
 					// 1. 在任务执行前, 使用通用的 traceId 生成器创建一个新的 traceId.
-					MDC.put(this.properties.getTraceIdKey(), this.traceIdGenerator.generate());
+					MdcProperties properties = this.applicationContext.getBean(MdcProperties.class);
+					TraceIdGenerator traceIdGenerator = this.applicationContext.getBean(TraceIdGenerator.class);
+
+					MDC.put(properties.getTraceIdKey(), traceIdGenerator.generate());
 					try {
 						// 2. 执行真正的、原始的任务逻辑.
 						originalTask.run();

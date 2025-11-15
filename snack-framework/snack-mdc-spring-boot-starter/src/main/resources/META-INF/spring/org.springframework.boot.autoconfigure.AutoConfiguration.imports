@@ -1,2 +1,2 @@
 org.jax.snack.framework.mdc.MdcAutoConfiguration
-
+org.jax.snack.framework.mdc.MdcBeanPostProcessorConfiguration
