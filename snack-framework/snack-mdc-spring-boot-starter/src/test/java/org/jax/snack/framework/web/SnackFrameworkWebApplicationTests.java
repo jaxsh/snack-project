@@ -16,9 +16,21 @@
 
 package org.jax.snack.framework.web;
 
+import org.junit.jupiter.api.Test;
+
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class SnackFrameworkWebApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+	@SpringBootApplication
+	static class ApplicationConfig {
+
+	}
 
 }
