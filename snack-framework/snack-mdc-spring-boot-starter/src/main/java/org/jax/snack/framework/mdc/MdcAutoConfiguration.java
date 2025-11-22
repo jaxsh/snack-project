@@ -48,6 +48,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "logging.mdc", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MdcProperties.class)
+@org.springframework.boot.autoconfigure.AutoConfigureAfter(TaskExecutionAutoConfiguration.class)
 public class MdcAutoConfiguration {
 
 	private final MdcProperties properties;
@@ -127,6 +128,8 @@ public class MdcAutoConfiguration {
 	 */
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(TaskExecutor.class)
+	@org.springframework.boot.autoconfigure.condition.ConditionalOnBean(
+			name = TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
 	public static class MdcCompletableFutureExecutorConfiguration {
 
 		/**
