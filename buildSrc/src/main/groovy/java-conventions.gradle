@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'io.spring.javaformat'
+	id 'pmd'
 }
 
 java {
@@ -35,4 +36,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     checkstyle libs.io.spring.javaformat.spring.javaformat.checkstyle
+	pmd libs.net.sourceforge.pmd.pmd.ant
+	pmd libs.net.sourceforge.pmd.pmd.java
 }
