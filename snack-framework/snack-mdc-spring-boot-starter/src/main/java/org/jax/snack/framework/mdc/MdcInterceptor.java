@@ -90,12 +90,7 @@ public class MdcInterceptor implements HandlerInterceptor {
 		if (this.isExcluded(request.getRequestURI())) {
 			return;
 		}
-		try {
-			MDC.clear();
-		}
-		catch (Exception ex) {
-			log.error("Failed to clear MDC context.", ex);
-		}
+		MDC.clear();
 	}
 
 	/**
