@@ -37,12 +37,17 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * MDC (Mapped Diagnostic Context) 相关组件的自动配置类.
+ * MDC (Mapped Diagnostic Context) 自动配置类.
  * <p>
- * 该类会自动配置处理 traceId 所需的 Bean, 包括日志格式注入、HTTP 请求拦截、 以及异步和定时任务的上下文传播. 默认情况下启用, 可通过配置属性禁用.
+ * 该配置类负责初始化 Snack Framework 中与全链路追踪（Trace ID）相关的所有组件. 功能包括：
+ * <ul>
+ * <li>自动配置 {@link MdcLogbackConfigurer} 以支持 Logback 日志格式的动态注入.</li>
+ * <li>自动配置 {@link MdcTaskDecorator} 以支持 {@code @Async} 异步任务的上下文传播.</li>
+ * <li>提供默认的 {@link TraceIdGenerator} 实现（UUID）.</li>
+ * <li>在 Web 环境下，注册 {@link MdcInterceptor} 以处理 HTTP 请求的 Trace ID.</li>
+ * </ul>
  *
  * @author Jax Jiang
- * @since 2025-06-09
  */
 @Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
@@ -54,8 +59,10 @@ public class MdcAutoConfiguration {
 	private final MdcProperties properties;
 
 	/**
-	 * 创建 MdcLogbackConfigurer 的 Bean, 用于动态地将 traceId 注入到日志格式中.
-	 * @return {@link MdcLogbackConfigurer} 的实例.
+	 * 配置 Logback 日志修改器.
+	 * <p>
+	 * 用于在应用启动时，动态修改 Logback 的 Appender 配置，将 Trace ID 格式注入到日志模式中.
+	 * @return {@link MdcLogbackConfigurer} 实例
 	 */
 	@Bean
 	public MdcLogbackConfigurer logbackConfigurer() {
@@ -63,8 +70,10 @@ public class MdcAutoConfiguration {
 	}
 
 	/**
-	 * 创建 MdcTaskDecorator 的 Bean, 确保 MDC 上下文能够跨 {@code @Async} 异步任务传播.
-	 * @return {@link MdcTaskDecorator} 的实例.
+	 * 配置异步任务装饰器.
+	 * <p>
+	 * 确保使用 {@code @Async} 注解执行的异步任务能够继承父线程的 MDC 上下文（Trace ID） .
+	 * @return {@link MdcTaskDecorator} 实例
 	 */
 	@Bean
 	public MdcTaskDecorator mdcTaskDecorator() {
@@ -72,10 +81,11 @@ public class MdcAutoConfiguration {
 	}
 
 	/**
-	 * 创建一个默认的 TraceIdGenerator Bean.
+	 * 配置默认的 Trace ID 生成器.
 	 * <p>
-	 * 如果用户在自己的配置中定义了 {@link TraceIdGenerator} 类型的 Bean, 此默认 Bean 将不会被创建, 从而实现了生成策略的可替换性.
-	 * @return {@link TraceIdGenerator} 的默认实现.
+	 * 当容器中不存在 {@link TraceIdGenerator} 类型的 Bean 时，使用默认的 {@link UuidTraceIdGenerator}.
+	 * 开发者可以通过自定义 Bean 来替换此默认实现.
+	 * @return 默认的 {@link TraceIdGenerator} 实现
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -84,9 +94,11 @@ public class MdcAutoConfiguration {
 	}
 
 	/**
-	 * 仅在 Web 应用环境中生效的 Web 相关配置.
+	 * Web 环境专属配置.
 	 * <p>
-	 * 设计为静态内部类, 使其可以拥有独立的加载条件, 不影响非 Web 环境的应用.
+	 * 仅在 Servlet Web 应用环境下生效，用于配置 Spring MVC 拦截器.
+	 *
+	 * @author Jax Jiang
 	 */
 	@Configuration
 	@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -98,8 +110,10 @@ public class MdcAutoConfiguration {
 		private final TraceIdGenerator traceIdGenerator;
 
 		/**
-		 * 创建 MdcInterceptor 的 Bean, 负责处理 HTTP 请求的 MDC 上下文.
-		 * @return {@link MdcInterceptor} 的实例.
+		 * 配置 MDC 拦截器.
+		 * <p>
+		 * 负责在 HTTP 请求开始时生成或提取 Trace ID 并放入 MDC，请求结束时清理 MDC.
+		 * @return {@link MdcInterceptor} 实例
 		 */
 		@Bean
 		public MdcInterceptor mdcInterceptor() {
@@ -107,8 +121,10 @@ public class MdcAutoConfiguration {
 		}
 
 		/**
-		 * 注册 MdcInterceptor, 并根据配置应用包含和排除规则.
-		 * @param registry 拦截器注册表.
+		 * 注册拦截器到 Spring MVC.
+		 * <p>
+		 * 根据 {@link MdcProperties} 中的配置，应用包含和排除路径规则.
+		 * @param registry 拦截器注册表
 		 */
 		@Override
 		public void addInterceptors(InterceptorRegistry registry) {
@@ -120,11 +136,12 @@ public class MdcAutoConfiguration {
 	}
 
 	/**
-	 * 仅在 Classpath 中存在 {@link TaskExecutor} 时, 才激活的用于处理 {@code CompletableFuture} 的
-	 * Executor 配置.
+	 * CompletableFuture 线程池增强配置.
 	 * <p>
-	 * 此配置旨在提供一个即插即用的、支持 MDC 上下文传播的 {@link Executor}, 以解决在使用 {@code CompletableFuture}
-	 * 的异步方法时 traceId 丢失的问题.
+	 * 当 Classpath 中存在 {@link TaskExecutor} 时生效. 旨在提供一个支持 MDC 传递的 {@link Executor}，解决
+	 * {@code CompletableFuture} 等原生异步编程场景下 Trace ID 丢失的问题.
+	 *
+	 * @author Jax Jiang
 	 */
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(TaskExecutor.class)
@@ -133,30 +150,24 @@ public class MdcAutoConfiguration {
 	public static class MdcCompletableFutureExecutorConfiguration {
 
 		/**
-		 * 定义了我们提供的 MDC 增强版 Executor 的 Bean 名称. 方便在其他地方通过名称引用.
+		 * MDC 增强版 Executor 的 Bean 名称.
 		 */
 		public static final String MDC_AWARE_EXECUTOR_BEAN_NAME = "mdcAwareCompletableFutureExecutor";
 
 		/**
-		 * ... <b>核心功能:</b>
+		 * 配置 Executor.
+		 * <p>
+		 * <b>核心特性：</b>
 		 * <ul>
-		 * <li>通过 {@code @Primary} 注解, 此 Bean 将成为注入 {@code Executor} 时的<b>首选</b>实例.
-		 * 这使得开发者在代码中直接注入 {@code Executor} 时 (例如: {@code @Autowired Executor executor}),
-		 * 无需使用 {@code @Qualifier} 即可默认获得此 MDC 增强的实例.</li>
-		 * <li>它包装了 Spring Boot 默认的 {@code applicationTaskExecutor}, 从而复用了所有相关的线程池配置 (如:
-		 * {@code spring.task.execution.*}).</li>
+		 * <li><b>首选 Bean（@Primary）：</b> 标记为 {@code @Primary}，使得直接注入 {@code Executor}
+		 * 时默认使用此增强实例.</li>
+		 * <li><b>包装机制：</b> 内部包装了 Spring Boot 自动配置的
+		 * {@code applicationTaskExecutor}，复用其线程池参数配置.</li>
 		 * </ul>
 		 * <p>
-		 * <b>重要提示:</b>
-		 * <ul>
-		 * <li>此 {@code @Primary} 注解<b>不会</b>影响 {@code @Async} 的行为, 因为 {@code @Async}
-		 * 默认是按<b>名称</b>查找名为 'taskExecutor' 的 Bean (其别名为 'applicationTaskExecutor').</li>
-		 * <li>用户仍然可以通过 {@code @Qualifier("applicationTaskExecutor")}
-		 * 来精确注入原始的、未被包装的默认执行器.</li>
-		 * </ul>
-		 * @param applicationTaskExecutor the Spring Boot 自动配置的默认 TaskExecutor (bean name:
-		 * 'applicationTaskExecutor'), 通过 {@code @Qualifier} 精确注入.
-		 * @return 一个被 {@link MdcAwareExecutor} 包装过的、作为首选的 {@link Executor} 实例.
+		 * <b>注意：</b> 此 Bean 不会影响 {@code @Async} 的执行器选择（后者按名称匹配).
+		 * @param applicationTaskExecutor Spring Boot 自动配置的任务执行器
+		 * @return 包装后的 Executor 实例
 		 */
 		@Bean(name = MDC_AWARE_EXECUTOR_BEAN_NAME)
 		@ConditionalOnMissingBean(name = MDC_AWARE_EXECUTOR_BEAN_NAME)

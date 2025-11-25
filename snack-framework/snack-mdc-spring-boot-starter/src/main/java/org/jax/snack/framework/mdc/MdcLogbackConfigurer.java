@@ -38,11 +38,14 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
 /**
- * Spring Boot 应用的 Logback 自动配置器. 该组件在应用启动后，动态地将 MDC 信息（如全链路追踪 ID）注入到所有 使用
- * PatternLayoutEncoder 的 Appender 的日志格式中. 行为由 MdcProperties 类高度控制.
+ * Logback 动态配置器.
+ * <p>
+ * 监听 {@link ApplicationReadyEvent} 事件，在应用启动后动态修改 Logback 的 Appender 配置.
+ * <p>
+ * <b>核心逻辑：</b> 遍历所有 Logger 和 Appender，识别 PatternLayout，并将 Trace ID 格式（如
+ * {@code [%X{traceId}]}） 智能注入到现有的日志模式中（默认注入到线程名之后).
  *
  * @author Jax Jiang
- * @since 2025-06-02
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -51,7 +54,9 @@ public class MdcLogbackConfigurer {
 	private final MdcProperties properties;
 
 	/**
-	 * 监听 ApplicationReadyEvent 事件，以确保所有日志配置都已加载完毕. 这是执行日志格式修改的安全时机.
+	 * 执行 Logback 配置修改.
+	 * <p>
+	 * 仅在 MDC 功能开启时执行.
 	 */
 	@EventListener(ApplicationReadyEvent.class)
 	public void configureLogback() {
@@ -75,12 +80,15 @@ public class MdcLogbackConfigurer {
 	}
 
 	/**
-	 * 处理单个 Appender，如果符合条件，则修改其日志格式.
-	 * @param appender 要处理的 Appender.
-	 * @param context 当前的 LoggerContext.
+	 * 处理单个 Appender.
+	 * <p>
+	 * 检查 Appender 类型，解析当前日志模式，并决定如何注入 Trace ID.
+	 * @param appender 目标 Appender
+	 * @param context Logger 上下文
+	 * @throws ScanException 如果日志模式解析失败
 	 */
 	private void processAppender(Appender<ILoggingEvent> appender, LoggerContext context) throws ScanException {
-		// 阶段1: 前置条件检查，确保 Appender 和其组件是我们可以处理的类型.
+		// 阶段1: 前置条件检查
 		if (!(appender instanceof OutputStreamAppender<?> osAppender)) {
 			return;
 		}
@@ -95,7 +103,7 @@ public class MdcLogbackConfigurer {
 			return;
 		}
 
-		// 阶段2: 智能幂等性检查。解析当前模式，如果已存在任何 MDC 转换符，则跳过.
+		// 阶段2: 幂等性检查（避免重复注入）
 		Parser<Object> parser = new Parser<>(currentPattern);
 		parser.setContext(context);
 		Node topNode = parser.parse();
@@ -106,18 +114,18 @@ public class MdcLogbackConfigurer {
 			return;
 		}
 
-		// 阶段3: 执行注入逻辑.
+		// 阶段3: 执行注入
 		Class<?> targetClass = this.properties.getTargetConverter();
 		String traceIdContent = this.properties.getTraceIdPattern();
 
-		// 安全检查：不允许将注入目标设置为 MDCConverter 本身.
+		// 安全检查：目标不能是 MDCConverter 自身
 		if (MDCConverter.class.equals(targetClass)) {
 			log.debug("MDC injection skipped for appender [{}]: Target converter cannot be MDCConverter itself.",
 					appender.getName());
 			return;
 		}
 
-		// 如果未配置目标，执行回退策略：在头部添加.
+		// 回退策略：无目标转换器，添加到头部
 		if (targetClass == null) {
 			log.info(
 					"MDC Configurer for appender [{}]: No target converter configured. Prepending traceId to the beginning as a fallback.",
@@ -127,7 +135,7 @@ public class MdcLogbackConfigurer {
 			return;
 		}
 
-		// 准备注入操作，如果注入失败，则执行回退策略.
+		// 尝试注入到目标位置
 		Predicate<Node> injectionTargetPredicate = LogbackNodeUtils.getNodePredicateForConverter(targetClass, layout);
 		Parser<Object> injectParser = new Parser<>(traceIdContent);
 		injectParser.setContext(context);
@@ -146,10 +154,12 @@ public class MdcLogbackConfigurer {
 	}
 
 	/**
-	 * 封装更新 Encoder 的原子操作，并记录详细的变更日志.
-	 * @param appender 被修改的 Appender，用于日志记录.
-	 * @param encoder 要更新的 Encoder.
-	 * @param newPattern 新的日志格式.
+	 * 更新 Encoder 的日志模式.
+	 * <p>
+	 * 停止 Encoder，设置新模式，然后重新启动.
+	 * @param appender 关联的 Appender
+	 * @param encoder 需要更新的 Encoder
+	 * @param newPattern 新的日志模式字符串
 	 */
 	private void updateEncoder(Appender<ILoggingEvent> appender, PatternLayoutEncoder encoder, String newPattern) {
 		log.info("Updating log pattern for appender [{}]:\n  Old: {}\n  New: {}", appender.getName(),

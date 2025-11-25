@@ -29,12 +29,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * 一个用于管理 HTTP 请求的 MDC 上下文的 {@link HandlerInterceptor}.
+ * MDC HTTP 请求拦截器.
  * <p>
- * 它在请求开始时设置一个唯一的 traceId, 并在请求完成后清理它. 此拦截器支持排除特定的 URL 模式, 并可以将 traceId 包含在 HTTP 响应头中.
+ * 实现 {@link HandlerInterceptor} 接口，用于在 HTTP 请求处理全生命周期中管理 MDC 上下文. 主要功能：
+ * <ul>
+ * <li><b>Pre-Handle：</b> 生成或提取 Trace ID，放入 MDC，并可选写入响应头.</li>
+ * <li><b>After-Completion：</b> 清理 MDC，防止线程池污染.</li>
+ * </ul>
  *
  * @author Jax Jiang
- * @since 2025-06-09
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -47,11 +50,13 @@ public class MdcInterceptor implements HandlerInterceptor {
 	private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
 	/**
-	 * 在请求被处理前设置 MDC 上下文. 它会获取或生成一个 traceId, 并将其放入 MDC 中.
-	 * @param request 当前的 HTTP 请求.
-	 * @param response 当前的 HTTP 响应.
-	 * @param handler 被选择的处理器.
-	 * @return 返回 {@code true} 以继续处理该请求.
+	 * 请求前置处理.
+	 * <p>
+	 * 负责初始化 MDC 上下文.
+	 * @param request HTTP 请求对象
+	 * @param response HTTP 响应对象
+	 * @param handler 被调用的处理器
+	 * @return 总是返回 true
 	 */
 	@Override
 	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -71,11 +76,13 @@ public class MdcInterceptor implements HandlerInterceptor {
 	}
 
 	/**
-	 * 在请求完成后清理 MDC 上下文. 这对于防止线程间的上下文泄漏至关重要.
-	 * @param request 当前的 HTTP 请求.
-	 * @param response 当前的 HTTP 响应.
-	 * @param handler 被执行的处理器.
-	 * @param exception 处理器执行期间抛出的任何异常.
+	 * 请求完成后的清理处理.
+	 * <p>
+	 * 无论请求成功还是异常，都必须执行 MDC 清理操作.
+	 * @param request 当前 HTTP 请求
+	 * @param response 当前 HTTP 响应
+	 * @param handler 执行的处理器
+	 * @param exception 抛出的异常（如果有）
 	 */
 	@Override
 	public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -92,23 +99,24 @@ public class MdcInterceptor implements HandlerInterceptor {
 	}
 
 	/**
-	 * 从请求头中获取一个已存在的 traceId, 或者使用注入的生成器生成一个新的.
-	 * @param request 当前的 HTTP 请求.
-	 * @return traceId 字符串.
+	 * 获取现有 Trace ID 或生成新 ID.
+	 * <p>
+	 * 优先从请求头中获取（用于分布式追踪衔接），如果不存在则使用生成器创建.
+	 * @param request HTTP 请求
+	 * @return 有效的 Trace ID 字符串
 	 */
 	private String getOrGenerateTraceId(HttpServletRequest request) {
 		String traceId = request.getHeader(this.properties.getResponseHeaderName());
 		if (StringUtils.hasText(traceId)) {
 			return traceId;
 		}
-		// 使用注入的生成器来创建新的 traceId
 		return this.traceIdGenerator.generate();
 	}
 
 	/**
-	 * 检查给定的请求 URI 是否应该被排除在 MDC 处理之外.
-	 * @param requestURI 传入请求的 URI.
-	 * @return 如果该 URI 匹配任何已配置的排除模式, 则返回 {@code true}.
+	 * 判断请求 URI 是否在排除名单中.
+	 * @param requestURI 请求路径
+	 * @return 如果匹配排除模式则返回 {@code true}
 	 */
 	private boolean isExcluded(String requestURI) {
 		for (String pattern : this.properties.getExcludePatterns()) {

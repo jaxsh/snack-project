@@ -22,25 +22,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
- * 一个专门用于定义 MDC 相关 BeanPostProcessor 的配置类.
+ * MDC Bean 后置处理器配置类.
+ * <p>
+ * 专门负责注册与 MDC 相关的 {@link org.springframework.beans.factory.config.BeanPostProcessor}.
+ * 独立配置类的目的是为了隔离生命周期，避免因过早实例化 BeanPostProcessor 而导致的循环依赖或 AOP 失效问题.
  *
  * @author Jax Jiang
- * @since 2025-07-05
  */
 @Configuration(proxyBeanMethods = false)
 public class MdcBeanPostProcessorConfiguration {
 
 	/**
-	 * 定义用于增强定时任务的 MdcSchedulingConfigurer.
+	 * 注册定时任务调度器的 MDC 配置器.
 	 * <p>
-	 * 这是一个 {@link org.springframework.beans.factory.config.BeanPostProcessor}。
-	 * 将其定义在一个独立的配置类中，并使用静态 @Bean 方法，是避免循环依赖和启动时序问题的最佳实践。
-	 * @return {@link MdcSchedulingConfigurer} 的实例。
+	 * 该 Bean 是一个 {@link org.springframework.beans.factory.config.BeanPostProcessor}， 必须通过
+	 * static 方法注册，以防止触发过早的 Bean 初始化.
+	 * @return {@link MdcSchedulingConfigurer} 实例
 	 */
 	@Bean
 	@ConditionalOnClass(ThreadPoolTaskScheduler.class)
 	public static MdcSchedulingConfigurer mdcSchedulingConfigurer() {
-		// 创建一个没有任何依赖的实例
 		return new MdcSchedulingConfigurer();
 	}
 

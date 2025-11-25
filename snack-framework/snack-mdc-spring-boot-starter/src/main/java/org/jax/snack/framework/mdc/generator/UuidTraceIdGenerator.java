@@ -19,17 +19,20 @@ package org.jax.snack.framework.mdc.generator;
 import java.util.UUID;
 
 /**
- * 默认的 Trace ID 生成器实现.
+ * 基于 UUID 的 Trace ID 生成器默认实现.
  * <p>
- * 它基于 UUID 生成, 并截取前16位作为最终的 traceId.
+ * 生成策略：UUID 去除横杠，并截取前 16 位.
  *
  * @author Jax Jiang
- * @since 2025-06-15
  */
 public class UuidTraceIdGenerator implements TraceIdGenerator {
 
 	private static final int TRACE_ID_LENGTH = 16;
 
+	/**
+	 * 生成 Trace ID.
+	 * @return 16 位的 UUID 字符串
+	 */
 	@Override
 	public String generate() {
 		return UUID.randomUUID().toString().replace("-", "").substring(0, TRACE_ID_LENGTH);

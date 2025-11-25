@@ -24,60 +24,55 @@ import org.slf4j.MDC;
 import org.springframework.lang.NonNull;
 
 /**
- * 一个用于包装现有 {@link Executor} 的装饰器, 为其添加 MDC 上下文传播能力.
+ * 支持 MDC 传递的 Executor 装饰器.
  * <p>
- * 它遵循 "捕获与恢复" 模式, 会捕获提交任务时所在线程的 MDC 上下文, 并在任务真正执行时, 将该上下文恢复到执行线程中. 这对于确保
- * {@code CompletableFuture} 等异步操作的日志中包含正确的 traceId至关重要.
+ * 采用装饰器模式包装标准的 {@link Executor}，实现 Trace ID 的跨线程传递. 通常用于 {@code CompletableFuture}
+ * 或手动提交任务的场景.
+ * <p>
+ * <b>工作原理（捕获与恢复模式）：</b>
+ * <ol>
+ * <li><b>Capture：</b> 在任务提交时（父线程），捕获当前的 MDC 上下文快照.</li>
+ * <li><b>Restore：</b> 在任务执行时（子线程），将捕获的上下文恢复到当前线程.</li>
+ * <li><b>Clear：</b> 任务结束后，强制清理子线程的 MDC，防止线程污染.</li>
+ * </ol>
  *
  * @author Jax Jiang
- * @since 2025-06-09
  */
 public class MdcAwareExecutor implements Executor {
 
 	/**
-	 * 被包装的原始 Executor 实例. 真正的任务执行将委托给它.
+	 * 被包装的原始执行器.
 	 */
 	private final Executor delegate;
 
 	/**
-	 * 构造一个新的 MdcAwareExecutor.
-	 * @param delegate 需要被包装以添加 MDC 功能的原始 Executor 实例.
+	 * 构造函数.
+	 * @param delegate 被委托的原始执行器
 	 */
 	public MdcAwareExecutor(Executor delegate) {
 		this.delegate = delegate;
 	}
 
 	/**
-	 * 执行一个被 MDC 上下文包装过的任务.
-	 * <p>
-	 * 这是实现 MDC 传播的核心方法.
-	 * @param command 原始的、由调用者提交的 Runnable 任务.
+	 * 提交并执行任务.
+	 * @param command 原始任务
 	 */
 	@Override
 	public void execute(@NonNull Runnable command) {
-		// 1. 在父线程 (调用 execute 方法的线程) 中, 捕获当前的 MDC 上下文快照.
 		final Map<String, String> contextMap = MDC.getCopyOfContextMap();
 
-		// 2. 创建一个新的 Runnable 包装器.
-		// 这个包装器将在子线程 (执行任务的线程) 中运行.
 		Runnable wrappedCommand = () -> {
 			try {
-				// 3. 在任务执行前, 将之前捕获的 MDC 上下文恢复到当前子线程.
 				if (contextMap != null) {
 					MDC.setContextMap(contextMap);
 				}
-
-				// 4. 执行真正的、原始的任务逻辑.
 				command.run();
 			}
 			finally {
-				// 5. 无论任务成功还是失败, 在 finally 块中必须清理当前子线程的 MDC.
-				// 这可以防止线程池中的线程被"污染", 影响后续使用该线程的其他任务.
 				MDC.clear();
 			}
 		};
 
-		// 6. 将我们包装过的任务, 提交给原始的 Executor 去执行.
 		this.delegate.execute(wrappedCommand);
 	}
 

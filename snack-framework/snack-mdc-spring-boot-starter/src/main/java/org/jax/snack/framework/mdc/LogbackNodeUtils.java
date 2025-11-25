@@ -33,16 +33,20 @@ import ch.qos.logback.core.pattern.parser.Node;
 import ch.qos.logback.core.pattern.parser.SimpleKeywordNode;
 
 /**
- * 用于程序化操作 Logback 日志格式（Pattern）内部节点树的工具类. 此类提供底层能力，以可靠的方式检查和修改已解析的日志格式.
+ * Logback Pattern 节点操作工具类.
+ * <p>
+ * 提供对 Logback {@link ch.qos.logback.core.pattern.parser.Node} 链表的底层操作能力，
+ * 用于解析、查找、注入和重建日志格式字符串.
  *
  * @author Jax Jiang
- * @since 2025-06-02
  */
 public final class LogbackNodeUtils {
 
 	/**
-	 * 缓存 Converter 类与其对应的格式关键字（如 "level", "p"）之间的映射. 键由 PatternLayout 实例的
-	 * identityHashCode 和 Converter 类名构成，以确保缓存的正确性. 用于避免在每次检查时重复计算，提高性能.
+	 * Converter 关键字缓存.
+	 * <p>
+	 * 缓存 PatternLayout 实例 + Converter 类名对应的关键字集合（例如 {@code ThreadConverter} ->
+	 * {@code {"t", "thread"}}）. 避免重复反射查找，提升性能.
 	 */
 	private static final ConcurrentMap<String, Set<String>> KEYWORD_CACHE = new ConcurrentHashMap<>();
 
@@ -50,10 +54,12 @@ public final class LogbackNodeUtils {
 	}
 
 	/**
-	 * 在节点树中进行深度优先搜索，查找第一个满足条件的节点. 此方法会递归进入复合节点（CompositeNode）进行搜索.
-	 * @param node 搜索的起始节点.
-	 * @param predicate 用于测试每个节点的断言.
-	 * @return 第一个匹配的节点；如果未找到，则返回 null.
+	 * 递归查找节点.
+	 * <p>
+	 * 深度优先搜索，支持遍历复合节点（CompositeNode）.
+	 * @param node 起始节点
+	 * @param predicate 匹配条件
+	 * @return 匹配的节点，未找到返回 null
 	 */
 	public static Node findNode(Node node, Predicate<Node> predicate) {
 		while (node != null) {
@@ -72,11 +78,13 @@ public final class LogbackNodeUtils {
 	}
 
 	/**
-	 * 在给定的节点树中，向目标节点后注入一个新的节点链.
-	 * @param topNode 要操作的节点树的起始节点.
-	 * @param injectHead 要注入的新节点链的头节点.
-	 * @param targetNodePredicate 用于识别注入位置的断言.
-	 * @return 如果成功注入，则返回 true；否则返回 false.
+	 * 递归注入节点.
+	 * <p>
+	 * 在目标节点之后插入新的节点链表. 如果目标节点位于复合节点内，也会正确处理.
+	 * @param topNode 根节点
+	 * @param injectHead 待注入节点链表的头节点
+	 * @param targetNodePredicate 目标节点匹配条件
+	 * @return 注入成功返回 true
 	 */
 	public static boolean recursiveInject(Node topNode, Node injectHead, Predicate<Node> targetNodePredicate) {
 		Node injectionTarget = findInjectionTargetNode(topNode, targetNodePredicate);
@@ -88,9 +96,10 @@ public final class LogbackNodeUtils {
 		Node insertionPointPrev = injectionTarget;
 		Node walker = injectionTarget.getNext();
 
-		// 跳过紧跟在目标后面的任何字面量节点（如空格），以确保注入位置正确.
+		// 跳过目标后的字面量节点（如空格），寻找最佳插入点
 		while (walker != null) {
-			if (walker.getType() != 0) { // 0 代表字面量 (literal)
+			// 0 = LITERAL
+			if (walker.getType() != 0) {
 				break;
 			}
 			insertionPointPrev = walker;
@@ -107,17 +116,18 @@ public final class LogbackNodeUtils {
 	}
 
 	/**
-	 * 根据指定的 Converter 类，动态地创建一个用于识别相关节点的断言（Predicate）.
-	 * @param targetConverterClass 目标 Converter 的 Class 对象.
-	 * @param layout 当前的 PatternLayout 实例，用于访问其转换器映射.
-	 * @return 一个可以判断节点是否与目标 Converter 关联的 Predicate.
+	 * 创建 Converter 匹配断言.
+	 * <p>
+	 * 生成一个 Predicate，用于判断某个 Node 是否对应指定的 Converter 类.
+	 * @param targetConverterClass 目标 Converter 类
+	 * @param layout 当前 PatternLayout
+	 * @return 节点断言
 	 */
 	@SuppressWarnings("rawtypes")
 	public static Predicate<Node> getNodePredicateForConverter(Class<?> targetConverterClass, PatternLayout layout) {
 		String cacheKey = System.identityHashCode(layout) + ":" + targetConverterClass.getName();
 		Set<String> keywords = KEYWORD_CACHE.computeIfAbsent(cacheKey, (k) -> {
 			Set<String> foundKeywords = new HashSet<>();
-			// 此处存在由 Logback API 引起的、不可避免的 raw type 警告
 			Map<String, Supplier<DynamicConverter>> supplierMap = layout.getDefaultConverterSupplierMap();
 			for (Map.Entry<String, Supplier<DynamicConverter>> entry : supplierMap.entrySet()) {
 				DynamicConverter instance = entry.getValue().get();
@@ -132,9 +142,11 @@ public final class LogbackNodeUtils {
 	}
 
 	/**
-	 * 将一个 Logback 节点树重新序列化为等效的日志格式字符串. 此方法能正确处理简单节点、复合节点以及带有格式化信息的节点.
-	 * @param node 要重建的节点树的头节点.
-	 * @return 重建后的日志格式字符串.
+	 * 重建日志格式字符串.
+	 * <p>
+	 * 将 Node 链表序列化回字符串格式，支持处理参数和格式修饰符.
+	 * @param node 链表头节点
+	 * @return 日志格式字符串
 	 */
 	public static String rebuildPattern(Node node) {
 		StringBuilder sb = new StringBuilder();
@@ -180,10 +192,10 @@ public final class LogbackNodeUtils {
 	}
 
 	/**
-	 * 定位注入操作的目标节点，这是一个带有特殊逻辑的内部查找方法. 如果目标在复合节点内部，它会返回该复合节点本身作为注入点.
-	 * @param currentNode 搜索的起始节点.
-	 * @param targetNodePredicate 用于识别注入目标的断言.
-	 * @return 应该在其后进行注入的节点.
+	 * 查找注入目标节点.
+	 * @param currentNode 当前节点
+	 * @param targetNodePredicate 目标匹配条件
+	 * @return 目标节点，未找到返回 null
 	 */
 	static Node findInjectionTargetNode(Node currentNode, Predicate<Node> targetNodePredicate) {
 		while (currentNode != null) {
@@ -201,9 +213,9 @@ public final class LogbackNodeUtils {
 	}
 
 	/**
-	 * 查找一个节点链表中的最后一个节点（尾节点）.
-	 * @param head 链表的头节点.
-	 * @return 链表的尾节点.
+	 * 查找链表尾节点.
+	 * @param head 头节点
+	 * @return 尾节点
 	 */
 	private static Node findTail(Node head) {
 		if (head == null) {

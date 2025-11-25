@@ -24,19 +24,21 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.lang.NonNull;
 
 /**
- * 一个用于将 MDC 上下文传播到异步任务执行器中线程的 {@link TaskDecorator}.
+ * MDC 异步任务装饰器.
  * <p>
- * 这可以确保在异步任务中产生的日志, 能够包含发起该任务的父线程中的正确 traceId.
+ * 实现 Spring 的 {@link TaskDecorator} 接口，用于在线程池执行任务时传递 MDC 上下文. 确保主线程的 Trace ID 能够正确传递到
+ * {@code @Async} 执行的子线程中.
  *
  * @author Jax Jiang
- * @since 2025-06-09
  */
 public class MdcTaskDecorator implements TaskDecorator {
 
 	/**
-	 * 装饰给定的 {@link Runnable} 任务, 包装它以管理 MDC 上下文.
-	 * @param runnable 原始的待执行任务.
-	 * @return 一个新的 {@link Runnable} 实例, 它将在父线程的 MDC 上下文中执行.
+	 * 装饰 Runnable 任务.
+	 * <p>
+	 * 捕获当前线程的 MDC 上下文，并返回一个新的 Runnable. 新的 Runnable 在执行时会将捕获的上下文恢复到执行线程中，执行完毕后清理.
+	 * @param runnable 原始任务
+	 * @return 包装了 MDC 上下文处理的新任务
 	 */
 	@Override
 	@NonNull

@@ -25,15 +25,15 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * MDC配置属性类, 用于配置MDC相关的属性.
+ * MDC (Mapped Diagnostic Context) 功能配置属性类.
  * <p>
- * 主要功能: 1. 配置traceId的生成和位置 2. 配置响应头中的traceId 3. 配置需要排除的路径
+ * 定义了 Trace ID 的生成规则、日志注入行为以及 Web 请求的拦截规则等配置项. 对应配置文件前缀：{@code logging.mdc}.
  * <p>
- * 配置示例: <pre>
+ * <b>配置示例：</b> <pre>
  * logging:
  *   mdc:
  *     enabled: true
- *     target-converter: ch.qos.logback.classic.pattern.LevelConverter
+ *     trace-id-key: traceId
  *     include-patterns:
  *       - /api/**
  *     exclude-patterns:
@@ -41,7 +41,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * </pre>
  *
  * @author Jax Jiang
- * @since 2025-06-09
  */
 @Getter
 @Setter
@@ -49,77 +48,72 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MdcProperties {
 
 	/**
-	 * 是否启用MDC traceId功能.
+	 * 是否启用 MDC Trace ID 功能.
 	 * <p>
-	 * 默认值: true. 配置项: logging.mdc.enabled.
+	 * 默认为 {@code true}.
 	 */
 	private boolean enabled = true;
 
 	/**
-	 * traceId在MDC (Mapped Diagnostic Context) 中的键名.
+	 * MDC 中 Trace ID 的键名（Key）.
 	 * <p>
-	 * 这个键名将用于在日志格式中通过 {@code %X} 或 {@code %mdc} 来引用.
+	 * 该键名用于在日志配置文件中通过 {@code %X{...}} 引用.
 	 * <p>
-	 * 默认值: {@code traceId}. 配置项: {@code logging.mdc.trace-id-key}.
+	 * 默认值：{@code traceId}.
 	 */
 	private String traceIdKey = "traceId";
 
 	/**
-	 * 定义将要注入到日志格式中的 traceId 内容模板.
+	 * Trace ID 注入日志的格式模板.
 	 * <p>
-	 * 模板中的 {@code {traceIdKey}} 占位符会被实际的 {@code traceIdKey} 属性值动态替换.
-	 * Logback 的默认值语法 (如 {@code :-}) 也是支持的, 用于在 traceId 不存在时提供默认值.
+	 * 模板中的 {@code {traceIdKey}} 将被替换为实际的 {@link #traceIdKey} 值. 支持 Logback 默认值语法（例如
+	 * {@code :-}），用于在 Trace ID 不存在时输出空字符串.
 	 * <p>
-	 * 默认值: {@code "[%X{{traceIdKey}:-}] "}. 配置项: {@code logging.mdc.trace-id-pattern}.
+	 * 默认值：{@code "[%X{{traceIdKey}:-}] "}.
 	 */
 	private String traceIdPattern = "[%X{{traceIdKey}:-}] ";
 
 	/**
-	 * 指定traceId注入位置的目标转换器.
+	 * 指定 Trace ID 注入在哪个 Logback 转换器（Converter）之后.
 	 * <p>
-	 * 用于定位注入点, 默认情况下, 会尝试将 traceId 注入到线程名 (ThreadConverter, 即 %thread 或 %t) 之后.
-	 * 您可以配置为其他转换器的全限定类名, 例如: 'ch.qos.logback.classic.pattern.LevelConverter'.
-	 * <p>
-	 * 默认值: {@code ch.qos.logback.classic.pattern.ThreadConverter.class}. 配置项:
-	 * logging.mdc.target-converter.
+	 * 系统会尝试在 Logback Pattern 中找到此转换器，并将 Trace ID 插入其后. 默认为 {@link ThreadConverter}（即
+	 * {@code %t} 或 {@code %thread}）.
 	 */
 	private Class<? extends DynamicConverter<ILoggingEvent>> targetConverter = ThreadConverter.class;
 
 	/**
-	 * 是否在HTTP响应头中包含traceId.
+	 * 是否将 Trace ID 添加到 HTTP 响应头中.
 	 * <p>
-	 * 默认值: true. 配置项: logging.mdc.include-in-response.
+	 * 默认为 {@code true}.
 	 */
 	private boolean includeInResponse = true;
 
 	/**
-	 * 响应头中traceId的键名.
+	 * HTTP 响应头中 Trace ID 的字段名称.
 	 * <p>
-	 * 默认值: X-Trace-Id. 配置项: logging.mdc.response-header-name.
+	 * 默认为 {@code X-Trace-Id}.
 	 */
 	private String responseHeaderName = "X-Trace-Id";
 
 	/**
-	 * 需要包含 traceId 处理的 URL 路径模式.
+	 * 需要拦截并处理 Trace ID 的 URL 路径模式列表.
 	 * <p>
-	 * 默认拦截所有路径. 配置项: logging.mdc.include-patterns.
+	 * 默认为 {@code /**}（拦截所有请求）.
 	 */
 	private String[] includePatterns = { "/**" };
 
 	/**
-	 * 需要排除 traceId 处理的 URL 路径模式.
+	 * 需要排除 Trace ID 处理的 URL 路径模式列表.
 	 * <p>
-	 * 支持Ant风格的路径匹配. 配置项: logging.mdc.exclude-patterns.
+	 * 默认为：{@code /health}, {@code /actuator/**}, {@code /favicon.ico}.
 	 */
 	private String[] excludePatterns = { "/health", "/actuator/**", "/favicon.ico" };
 
 	/**
-	 * 获取最终经过处理的、将要注入到日志格式中的 traceId 内容.
+	 * 获取解析后的 Trace ID 日志格式字符串.
 	 * <p>
-	 * 此方法会将 {@code traceIdPattern} 模板中的 {@code {traceIdKey}} 占位符
-	 * 替换为当前配置的 {@code traceIdKey} 的值.
-	 *
-	 * @return 准备好注入的最终日志格式字符串.
+	 * 将 {@link #traceIdPattern} 中的 {@code {traceIdKey}} 占位符替换为实际的键名.
+	 * @return 可直接用于 Logback Pattern 的字符串
 	 */
 	public String getTraceIdPattern() {
 		return this.traceIdPattern.replace("{traceIdKey}", this.traceIdKey);

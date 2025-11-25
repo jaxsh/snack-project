@@ -19,16 +19,15 @@ package org.jax.snack.framework.mdc.generator;
 /**
  * Trace ID 生成器接口.
  * <p>
- * 实现此接口以提供自定义的 traceId 生成逻辑.
+ * 定义了生成全链路追踪 ID 的规范. 用户可以通过实现此接口来定制 ID 的生成策略（如 UUID、Snowflake 等）.
  *
  * @author Jax Jiang
- * @since 2025-06-15
  */
 public interface TraceIdGenerator {
 
 	/**
-	 * 生成一个新的 traceId.
-	 * @return 一个唯一的 traceId 字符串.
+	 * 生成一个新的 Trace ID.
+	 * @return 唯一的 Trace ID 字符串
 	 */
 	String generate();
 
