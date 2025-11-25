@@ -27,7 +27,6 @@ import java.util.UUID;
  * Ldap工具类.
  *
  * @author Jax Jiang
- * @since 2024-03-02
  */
 public final class LdapUtils {
 

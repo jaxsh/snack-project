@@ -37,7 +37,6 @@ import org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper;
  * 配置特性: 1. 支持自定义LDAP服务器配置 2. 支持自定义认证方式 3. 支持自定义连接池配置
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @AutoConfiguration
 public class LdapAutoConfiguration {

@@ -16,29 +16,28 @@
 
 package org.jax.snack.framework.ldap.convert;
 
-import java.util.UUID;
+import java.time.ZonedDateTime;
 
 import org.jax.snack.framework.ldap.util.LdapUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 
 /**
- * 将 Active Directory 的 objectGUID (字节数组) 转换为 Java {@link UUID} 的转换器.
+ * 将 Active Directory 的 FileTime 格式 (字符串) 转换为 Java {@link ZonedDateTime} 的转换器.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
-public class ObjectGUIDToUUIDConverter implements Converter<byte[], UUID> {
+public class FileTimeToZonedDateTimeConverter implements Converter<String, ZonedDateTime> {
 
 	/**
-	 * 将 objectGUID 的字节数组表示形式转换为标准的 {@link UUID}.
-	 * @param source ldap 中的 objectGUID 字节数组.
-	 * @return 转换后的 {@link UUID} 对象.
+	 * 将一个代表 100 纳秒间隔的 FileTime 字符串转换为 {@link ZonedDateTime}.
+	 * @param source ldap 中 FileTime 格式的字符串.
+	 * @return 转换后的 {@link ZonedDateTime} 对象, 时区为 UTC.
 	 */
 	@Override
-	public UUID convert(@NonNull byte[] source) {
-		return LdapUtils.byteArrayToGUID(source);
+	public ZonedDateTime convert(@NonNull String source) {
+		return LdapUtils.fileTimeToDateTime(Long.parseLong(source));
 	}
 
 }

@@ -19,26 +19,25 @@ package org.jax.snack.framework.ldap.convert;
 import java.time.ZonedDateTime;
 
 import org.jax.snack.framework.ldap.util.LdapUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 
 /**
- * 将 Active Directory 的 FileTime 格式 (字符串) 转换为 Java {@link ZonedDateTime} 的转换器.
+ * 将 Java {@link ZonedDateTime} 转换为 Active Directory FileTime 格式 (字符串) 的转换器.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
-public class FileTimeToZonedDateTimeConverter implements Converter<String, ZonedDateTime> {
+public class ZonedDateTimeToFileTimeConverter implements Converter<ZonedDateTime, String> {
 
 	/**
-	 * 将一个代表 100 纳秒间隔的 FileTime 字符串转换为 {@link ZonedDateTime}.
-	 * @param source ldap 中 FileTime 格式的字符串.
-	 * @return 转换后的 {@link ZonedDateTime} 对象, 时区为 UTC.
+	 * 将 {@link ZonedDateTime} 对象转换为代表 100 纳秒间隔的 FileTime 字符串.
+	 * @param source 要转换的 {@link ZonedDateTime} 对象.
+	 * @return 转换后的 FileTime 格式字符串.
 	 */
 	@Override
-	public ZonedDateTime convert(@NonNull String source) {
-		return LdapUtils.fileTimeToDateTime(Long.parseLong(source));
+	public String convert(@NonNull ZonedDateTime source) {
+		return String.valueOf(LdapUtils.toLdapTimestamp(source));
 	}
 
 }
