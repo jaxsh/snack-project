@@ -24,8 +24,8 @@ import org.slf4j.MDC;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,10 +39,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * 测试 Web 请求中 traceId 的处理功能及其配置变体.
  * <p>
- * 包含： 1. 默认行为：请求头复用、自动生成、响应头回显。 2. 排除路径测试。 3. 配置变体：禁用响应头回显、自定义响应头名称。
+ * 包含: 1. 默认行为: 请求头复用, 自动生成, 响应头回显. 2. 排除路径测试. 3. 配置变体: 禁用响应头回显, 自定义响应头名称.
  *
  * @author Jax Jiang
- * @since 2025-11-22
  */
 class MdcWebIntegrationTests {
 

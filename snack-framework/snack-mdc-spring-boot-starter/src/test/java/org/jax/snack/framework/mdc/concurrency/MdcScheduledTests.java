@@ -25,13 +25,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jax.snack.framework.mdc.MdcProperties;
 import org.jax.snack.framework.mdc.MdcSchedulingConfigurer;
 import org.jax.snack.framework.mdc.generator.TraceIdGenerator;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.lang.NonNull;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
@@ -45,7 +45,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 验证定时任务执行时，能够自动生成新的 traceId 并在任务完成后清理.
  *
  * @author Jax Jiang
- * @since 2025-11-22
  */
 class MdcScheduledTests {
 
@@ -79,11 +78,9 @@ class MdcScheduledTests {
 
 	@Test
 	void shouldGenerateTraceIdForScheduledTask() throws InterruptedException {
-		// 配置 MdcSchedulingConfigurer
 		MdcSchedulingConfigurer configurer = new MdcSchedulingConfigurer();
 		configurer.setApplicationContext(this.applicationContext);
 
-		// 包装 scheduler
 		Object wrapped = Objects
 			.requireNonNull(configurer.postProcessAfterInitialization(this.scheduler, "taskScheduler"));
 		assertThat(wrapped).isInstanceOf(TaskScheduler.class);
@@ -92,20 +89,16 @@ class MdcScheduledTests {
 		AtomicReference<String> traceIdInTask = new AtomicReference<>();
 		CountDownLatch latch = new CountDownLatch(1);
 
-		// 调度一个立即执行的任务
 		taskScheduler.schedule(() -> {
 			traceIdInTask.set(MDC.get(TRACE_ID));
 			latch.countDown();
 		}, new ImmediateTrigger());
 
-		// 等待任务完成
 		assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
 
-		// 验证定时任务中自动生成了 traceId
 		assertThat(traceIdInTask.get()).isNotNull();
 		assertThat(traceIdInTask.get()).isEqualTo("fixed-trace-id");
 
-		// 验证任务执行后，主线程的 MDC 没有被污染
 		assertThat(MDC.get(TRACE_ID)).isNull();
 	}
 
@@ -123,13 +116,11 @@ class MdcScheduledTests {
 		AtomicReference<String> traceId2 = new AtomicReference<>();
 		CountDownLatch latch = new CountDownLatch(2);
 
-		// 调度两个任务
 		taskScheduler.schedule(() -> {
 			traceId1.set(MDC.get(TRACE_ID));
 			latch.countDown();
 		}, new ImmediateTrigger());
 
-		// 等待第一个任务完成
 		Thread.sleep(50);
 
 		taskScheduler.schedule(() -> {
@@ -139,7 +130,6 @@ class MdcScheduledTests {
 
 		assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
 
-		// 验证两个任务都生成了 traceId（虽然这里使用的是固定生成器，但验证逻辑正确）
 		assertThat(traceId1.get()).isNotNull();
 		assertThat(traceId2.get()).isNotNull();
 	}

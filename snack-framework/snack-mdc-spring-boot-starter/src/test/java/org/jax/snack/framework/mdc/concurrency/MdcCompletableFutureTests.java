@@ -40,7 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 验证在使用 MdcAwareExecutor 时，CompletableFuture 中的异步任务能够正确获取父线程的 traceId.
  *
  * @author Jax Jiang
- * @since 2025-11-22
  */
 @SpringBootTest(classes = { MdcCompletableFutureTests.CompletableFutureConfig.class,
 		TaskExecutionAutoConfiguration.class, MdcAutoConfiguration.class })
@@ -58,27 +57,22 @@ class MdcCompletableFutureTests {
 
 	@Test
 	void shouldPropagateTraceIdInCompletableFuture() throws Exception {
-		// 在主线程中设置 traceId
 		String parentTraceId = "cf-trace-12345";
 		MDC.put(TRACE_ID, parentTraceId);
 
 		AtomicReference<String> traceIdInFuture = new AtomicReference<>();
 		CountDownLatch latch = new CountDownLatch(1);
 
-		// 使用 CompletableFuture 执行异步任务
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			traceIdInFuture.set(MDC.get(TRACE_ID));
 			latch.countDown();
 		}, this.executor);
 
-		// 等待异步任务完成
 		future.get(2, TimeUnit.SECONDS);
 		assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
 
-		// 验证异步线程中能够获取到父线程的 traceId
 		assertThat(traceIdInFuture.get()).isEqualTo(parentTraceId);
 
-		// 验证主线程的 traceId 仍然存在
 		assertThat(MDC.get(TRACE_ID)).isEqualTo(parentTraceId);
 	}
 
@@ -91,7 +85,6 @@ class MdcCompletableFutureTests {
 		AtomicReference<String> traceIdInSecondStage = new AtomicReference<>();
 		CountDownLatch latch = new CountDownLatch(2);
 
-		// 创建链式异步任务
 		CompletableFuture.supplyAsync(() -> {
 			traceIdInFirstStage.set(MDC.get(TRACE_ID));
 			latch.countDown();
@@ -104,7 +97,6 @@ class MdcCompletableFutureTests {
 
 		assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
 
-		// 验证两个阶段的异步任务都能获取到 traceId
 		assertThat(traceIdInFirstStage.get()).isEqualTo(parentTraceId);
 		assertThat(traceIdInSecondStage.get()).isEqualTo(parentTraceId);
 	}
@@ -117,7 +109,6 @@ class MdcCompletableFutureTests {
 		CountDownLatch latch = new CountDownLatch(1);
 
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			// 在异步任务中修改 traceId
 			MDC.put(TRACE_ID, "async-modified-trace");
 			latch.countDown();
 		}, this.executor);
@@ -125,18 +116,13 @@ class MdcCompletableFutureTests {
 		future.get(2, TimeUnit.SECONDS);
 		assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
 
-		// 等待一段时间，确保异步线程已经清理了 MDC
 		Thread.sleep(100);
 
-		// 验证主线程的 traceId 不受影响
 		assertThat(MDC.get(TRACE_ID)).isEqualTo(parentTraceId);
 	}
 
 	@Configuration
 	static class CompletableFutureConfig {
-
-		// MdcAutoConfiguration 会自动创建 MdcAwareExecutor 并标记为 @Primary
-		// 这里不需要额外配置
 
 	}
 

@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 验证属性类的默认值以及占位符替换逻辑.
  *
  * @author Jax Jiang
- * @since 2025-11-22
  */
 class MdcPropertiesUnitTests {
 

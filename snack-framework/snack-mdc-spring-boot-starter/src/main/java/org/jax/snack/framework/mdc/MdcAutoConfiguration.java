@@ -173,7 +173,7 @@ public class MdcAutoConfiguration {
 		@ConditionalOnMissingBean(name = MDC_AWARE_EXECUTOR_BEAN_NAME)
 		@Primary
 		public Executor mdcAwareCompletableFutureExecutor(
-				@Qualifier(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME) Executor applicationTaskExecutor) {
+				@Qualifier(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME) TaskExecutor applicationTaskExecutor) {
 			return new MdcAwareExecutor(applicationTaskExecutor);
 		}
 

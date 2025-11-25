@@ -18,6 +18,7 @@ package org.jax.snack.framework.mdc;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.mdc.generator.TraceIdGenerator;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
 
 import org.springframework.aop.framework.ProxyFactory;
@@ -25,7 +26,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.lang.NonNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
@@ -82,8 +82,9 @@ public class MdcSchedulingConfigurer implements BeanPostProcessor, ApplicationCo
 	private Object wrapTaskScheduler(ThreadPoolTaskScheduler scheduler) {
 		ProxyFactory proxyFactory = new ProxyFactory(scheduler);
 		proxyFactory.addAdvice((org.aopalliance.intercept.MethodInterceptor) (invocation) -> {
-			if (isTaskSubmissionMethod(invocation.getMethod().getName())) {
-				Runnable originalTask = (Runnable) invocation.getArguments()[0];
+			String methodName = invocation.getMethod().getName();
+			Object[] args = invocation.getArguments();
+			if (isTaskSubmissionMethod(methodName) && args.length > 0 && args[0] instanceof Runnable originalTask) {
 				Runnable wrappedTask = () -> {
 					// 动态获取 Bean 以避免循环依赖
 					MdcProperties properties = this.applicationContext.getBean(MdcProperties.class);
@@ -98,7 +99,7 @@ public class MdcSchedulingConfigurer implements BeanPostProcessor, ApplicationCo
 					}
 				};
 
-				Object[] newArgs = invocation.getArguments().clone();
+				Object[] newArgs = args.clone();
 				newArgs[0] = wrappedTask;
 				return invocation.getMethod().invoke(scheduler, newArgs);
 			}

@@ -47,11 +47,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * 测试 {@link MdcAutoConfiguration} 的自动配置逻辑.
  * <p>
- * 包括： 1. 默认 Bean 的加载。 2. 条件属性 {@code logging.mdc.enabled} 的控制。 3. 自定义 Bean 的替换。 4.
- * Logback 模式的动态修改（作为配置的副作用）。
+ * 包括: 1. 默认 Bean 的加载. 2. 条件属性 {@code logging.mdc.enabled} 的控制. 3. 自定义 Bean 的替换. 4.
+ * Logback 模式的动态修改（作为配置的副作用）.
  *
  * @author Jax Jiang
- * @since 2025-11-22
  */
 class MdcAutoConfigurationTests {
 
@@ -68,7 +67,6 @@ class MdcAutoConfigurationTests {
 
 	@Test
 	void shouldProvideDefaultBeansWhenEnabled() {
-		// 排除 MdcCompletableFutureExecutorConfiguration，因为它需要 applicationTaskExecutor
 		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(MdcAutoConfiguration.class))
 			.run((context) -> {
 				assertThat(context).hasSingleBean(MdcLogbackConfigurer.class);
@@ -116,11 +114,9 @@ class MdcAutoConfigurationTests {
 
 		@Test
 		void shouldModifyLogbackPattern() {
-			// 获取 Logback 上下文
 			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 			Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
 
-			// 查找 ConsoleAppender 并验证 Pattern
 			Iterator<Appender<ILoggingEvent>> iterator = rootLogger.iteratorForAppenders();
 			while (iterator.hasNext()) {
 				Appender<ILoggingEvent> appender = iterator.next();

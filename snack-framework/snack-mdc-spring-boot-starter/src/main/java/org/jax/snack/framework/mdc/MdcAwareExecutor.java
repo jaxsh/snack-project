@@ -19,9 +19,8 @@ package org.jax.snack.framework.mdc;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
-
-import org.springframework.lang.NonNull;
 
 /**
  * 支持 MDC 传递的 Executor 装饰器.

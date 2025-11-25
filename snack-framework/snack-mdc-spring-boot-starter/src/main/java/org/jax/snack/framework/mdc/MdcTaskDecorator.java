@@ -18,10 +18,10 @@ package org.jax.snack.framework.mdc;
 
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
 
 import org.springframework.core.task.TaskDecorator;
-import org.springframework.lang.NonNull;
 
 /**
  * MDC 异步任务装饰器.
@@ -41,8 +41,7 @@ public class MdcTaskDecorator implements TaskDecorator {
 	 * @return 包装了 MDC 上下文处理的新任务
 	 */
 	@Override
-	@NonNull
-	public Runnable decorate(@NonNull Runnable runnable) {
+	@NonNull public Runnable decorate(@NonNull Runnable runnable) {
 		Map<String, String> contextMap = MDC.getCopyOfContextMap();
 		return () -> {
 			try {
