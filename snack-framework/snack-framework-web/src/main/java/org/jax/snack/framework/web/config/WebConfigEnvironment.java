@@ -21,19 +21,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.jspecify.annotations.NullMarked;
 
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 /**
+ *
  * 环境后处理器. 用于在应用程序启动时处理环境变量和配置.
  *
  * @author Jax Jiang
- * @since 2025-05-30
+ *
  */
-public class EnvironmentPostProcessor implements org.springframework.boot.env.EnvironmentPostProcessor {
 
+public class WebConfigEnvironment implements EnvironmentPostProcessor {
+
+	@NullMarked
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
 
@@ -42,13 +47,12 @@ public class EnvironmentPostProcessor implements org.springframework.boot.env.En
 		customerProperties.put("spring.messages.basename", "i18n/messages");
 		customerProperties.put("spring.messages.use-code-as-default-message", true);
 
-		customerProperties.put("spring.jackson.default-property-inclusion", JsonInclude.Include.NON_NULL.name());
-
-		customerProperties.put("spring.http.client.connect-timeout", Duration.ofSeconds(5));
-		customerProperties.put("spring.http.client.read-timeout", Duration.ofSeconds(10));
+		customerProperties.put("spring.http.clients.connect-timeout", Duration.ofSeconds(5));
+		customerProperties.put("spring.http.clients.read-timeout", Duration.ofSeconds(10));
 
 		customerProperties.put("logbook.filter.enabled", false);
 
+		customerProperties.put("spring.jackson.default-property-inclusion", JsonInclude.Include.NON_NULL.name());
 		customerProperties.put("spring.jackson.deserialization.fail-on-unknown-properties", false);
 		customerProperties.put("spring.jackson.serialization.fail-on-empty-beans", false);
 

@@ -20,9 +20,9 @@ import java.util.Locale;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -31,7 +31,6 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
  * 支持通过请求参数和Accept-Header切换语言的区域解析器.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 public class ParameterAwareAcceptHeaderLocaleResolver extends AcceptHeaderLocaleResolver {
 

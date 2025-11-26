@@ -16,20 +16,23 @@
 
 package org.jax.snack.framework.http.handler;
 
+import java.io.IOException;
+
 import org.jax.snack.framework.web.constant.ErrorCode;
 import org.jax.snack.framework.web.exception.InterfaceException;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.lang.NonNull;
 
 /**
  * 默认错误包装拦截器实现. 用于拦截HTTP请求过程中的异常, 并将其转换为统一的接口异常格式.
  *
  * @author Jax Jiang
- * @since 2025-06-08
  */
+@NullMarked
 public class DefaultErrorWrappingInterceptor implements ErrorWrappingInterceptor {
 
 	/**
@@ -38,15 +41,14 @@ public class DefaultErrorWrappingInterceptor implements ErrorWrappingInterceptor
 	 * @param body 请求体
 	 * @param execution 请求执行器
 	 * @return http响应
-	 * @throws InterfaceException 当请求执行过程中发生异常时
 	 */
 	@Override
-	public ClientHttpResponse intercept(@NonNull HttpRequest request, @NonNull byte[] body,
+	public ClientHttpResponse intercept(HttpRequest request, byte[] body,
 			@NonNull ClientHttpRequestExecution execution) {
 		try {
 			return execution.execute(request, body);
 		}
-		catch (Exception ex) {
+		catch (IOException ex) {
 			throw new InterfaceException(ErrorCode.INTERFACE_ERROR, ex);
 		}
 	}

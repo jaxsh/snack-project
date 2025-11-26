@@ -20,17 +20,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * 参数校验配置属性. 用于配置校验相关的属性, 如是否启用快速失败模式.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @Getter
 @Setter
-@Component
 @ConfigurationProperties(prefix = "spring.mvc.validation")
 public class ValidationProperties {
 

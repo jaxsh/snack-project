@@ -16,13 +16,17 @@
 
 package org.jax.snack.framework.web.exception;
 
+import java.io.Serial;
+
 /**
  * 当调用外部系统发生错误时抛出的异常.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 public class InterfaceException extends RuntimeException {
+
+	@Serial
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * 创建一个接口异常实例.

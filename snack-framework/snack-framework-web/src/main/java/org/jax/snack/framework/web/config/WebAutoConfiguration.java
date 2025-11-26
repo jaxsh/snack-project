@@ -16,16 +16,14 @@
 
 package org.jax.snack.framework.web.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.jax.snack.framework.web.advice.GlobalExceptionAdvice;
 import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
 import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
+import tools.jackson.databind.json.JsonMapper;
 
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.validation.autoconfigure.ValidationConfigurationCustomizer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,13 +33,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 /**
- * Web自动配置类. 提供全局异常处理、响应体处理、国际化、验证配置等功能.
+ * Web自动配置类.
+ * <p>
+ * 提供全局异常处理, 响应体处理, 国际化, 验证配置等功能.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @Configuration
-@AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @EnableConfigurationProperties(ValidationProperties.class)
 public class WebAutoConfiguration implements WebMvcConfigurer {
 
@@ -57,12 +55,12 @@ public class WebAutoConfiguration implements WebMvcConfigurer {
 
 	/**
 	 * 全局响应体处理器. 用于统一处理控制器返回的响应体.
-	 * @param objectMapper json对象映射器
+	 * @param jsonMapper json对象映射器
 	 * @return 全局响应体处理器实例
 	 */
 	@Bean
-	public GlobalResponseBodyAdvice responseBodyAdvice(ObjectMapper objectMapper) {
-		return new GlobalResponseBodyAdvice(objectMapper);
+	public GlobalResponseBodyAdvice responseBodyAdvice(JsonMapper jsonMapper) {
+		return new GlobalResponseBodyAdvice(jsonMapper);
 	}
 
 	/**

@@ -18,18 +18,17 @@ package org.jax.snack.framework.http.handler;
 
 import org.jax.snack.framework.web.constant.ErrorCode;
 import org.jax.snack.framework.web.exception.InterfaceException;
+import org.jspecify.annotations.NonNull;
 
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.lang.NonNull;
 
 /**
  * 默认HTTP状态码处理器. 用于处理HTTP响应中的非成功状态码, 将其转换为统一的接口异常.
  *
  * @author Jax Jiang
- * @since 2025-06-08
  */
 public class DefaultStatusHandler implements CustomResponseErrorHandler {
 

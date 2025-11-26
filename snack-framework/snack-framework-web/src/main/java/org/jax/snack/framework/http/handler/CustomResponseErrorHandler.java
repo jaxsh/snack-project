@@ -22,12 +22,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.RestClient;
 
 /**
- * 自定义响应错误处理器接口 用于处理HTTP请求响应中的错误状态，提供统一的错误处理机制.
+ * 自定义响应错误处理器接口 用于处理HTTP请求响应中的错误状态, 提供统一的错误处理机制.
  * 继承自{@link RestClient.ResponseSpec.ErrorHandler}和{@link Predicate}{@code <}{@link HttpStatusCode}{@code >}接口.
  * 允许自定义错误处理逻辑和状态码判断条件.
  *
  * @author Jax Jiang
- * @since 2025-06-08
  */
 public interface CustomResponseErrorHandler extends RestClient.ResponseSpec.ErrorHandler, Predicate<HttpStatusCode> {
 

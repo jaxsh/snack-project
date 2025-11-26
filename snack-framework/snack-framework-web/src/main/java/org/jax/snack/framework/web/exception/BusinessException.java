@@ -16,16 +16,20 @@
 
 package org.jax.snack.framework.web.exception;
 
+import java.io.Serial;
+
 import lombok.Getter;
 
 /**
  * 当系统中发生业务错误时抛出的异常.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @Getter
 public class BusinessException extends RuntimeException {
+
+	@Serial
+	private static final long serialVersionUID = 1L;
 
 	private final String errorCode;
 

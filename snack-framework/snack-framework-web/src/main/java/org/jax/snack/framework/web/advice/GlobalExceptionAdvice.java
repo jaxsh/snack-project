@@ -44,7 +44,6 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
  * 全局异常处理器. 用于处理系统中的各种异常并转换为标准响应格式.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @Slf4j
 @RequiredArgsConstructor

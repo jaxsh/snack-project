@@ -24,7 +24,6 @@ import lombok.Setter;
  * API响应的字段错误信息. 用于封装参数校验失败时的字段名和错误信息.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @Getter
 @Setter

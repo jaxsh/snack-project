@@ -22,7 +22,6 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
  * 错误包装拦截器接口. 用于在HTTP请求过程中拦截和处理错误响应.
  *
  * @author Jax Jiang
- * @since 2025-06-08
  */
 public interface ErrorWrappingInterceptor extends ClientHttpRequestInterceptor {
 

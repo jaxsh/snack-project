@@ -28,7 +28,6 @@ import org.springframework.http.HttpStatus;
  *
  * @param <T> 响应数据的类型.
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @Getter
 @Setter

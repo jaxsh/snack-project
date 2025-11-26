@@ -20,7 +20,6 @@ package org.jax.snack.framework.web.constant;
  * 系统中使用的错误代码常量.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 public class ErrorCode {
 

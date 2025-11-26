@@ -16,10 +16,10 @@
 
 package org.jax.snack.framework.web.advice;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.web.model.ApiResponse;
+import org.jspecify.annotations.NonNull;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -27,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
@@ -36,13 +35,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  * 全局响应体处理器. 用于处理控制器返回的响应体, 确保返回格式统一.
  *
  * @author Jax Jiang
- * @since 2025-05-30
  */
 @RequiredArgsConstructor
 @RestControllerAdvice(annotations = RestController.class)
 public class GlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper jsonMapper;
 
 	/**
 	 * 判断是否需要处理响应体. 对于 {@link ResponseEntity} 和 {@link ApiResponse} 类型的响应不进行处理.
@@ -58,8 +56,12 @@ public class GlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 	}
 
 	/**
-	 * 在响应体写入之前进行处理. 对于 JSON 类型的响应: 1. 如果是字符串类型, 需要特殊处理以避免重复序列化 2. 其他类型直接包装为
-	 * {@link ApiResponse} 对于非 JSON 类型的响应, 保持原始格式不变.
+	 * 在响应体写入之前进行处理. 对于 JSON 类型的响应:
+	 * <ul>
+	 * <li>如果是字符串类型, 需要特殊处理以避免重复序列化.</li>
+	 * <li>其他类型直接包装为 {@link ApiResponse}.</li>
+	 * </ul>
+	 * 对于非 JSON 类型的响应, 保持原始格式不变.
 	 * @param body 响应体
 	 * @param returnType 返回类型
 	 * @param selectedContentType 选中的内容类型
@@ -74,12 +76,7 @@ public class GlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 			@NonNull ServerHttpResponse response) {
 		if (selectedContentType.equals(MediaType.APPLICATION_JSON)) {
 			if (body instanceof String) {
-				try {
-					return this.objectMapper.writeValueAsString(ApiResponse.success(body));
-				}
-				catch (JsonProcessingException ex) {
-					throw new RuntimeException("Error converting String to JSON", ex);
-				}
+				return this.jsonMapper.writeValueAsString(ApiResponse.success(body));
 			}
 			return ApiResponse.success(body);
 		}
