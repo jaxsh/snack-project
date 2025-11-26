@@ -35,9 +35,9 @@ import org.springframework.context.annotation.Configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 测试 CompletableFuture 异步执行时 traceId 的传播功能.
+ * CompletableFuture MDC 传递测试.
  * <p>
- * 验证在使用 MdcAwareExecutor 时，CompletableFuture 中的异步任务能够正确获取父线程的 traceId.
+ * 验证在使用 MdcAwareExecutor 时, CompletableFuture 中的异步任务能够正确获取父线程的 traceId.
  *
  * @author Jax Jiang
  */

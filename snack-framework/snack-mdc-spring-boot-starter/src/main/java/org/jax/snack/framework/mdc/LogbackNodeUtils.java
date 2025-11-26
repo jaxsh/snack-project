@@ -35,7 +35,7 @@ import ch.qos.logback.core.pattern.parser.SimpleKeywordNode;
 /**
  * Logback Pattern 节点操作工具类.
  * <p>
- * 提供对 Logback {@link ch.qos.logback.core.pattern.parser.Node} 链表的底层操作能力，
+ * 提供对 Logback {@link ch.qos.logback.core.pattern.parser.Node} 链表的底层操作能力,
  * 用于解析、查找、注入和重建日志格式字符串.
  *
  * @author Jax Jiang
@@ -45,8 +45,7 @@ public final class LogbackNodeUtils {
 	/**
 	 * Converter 关键字缓存.
 	 * <p>
-	 * 缓存 PatternLayout 实例 + Converter 类名对应的关键字集合（例如 {@code ThreadConverter} ->
-	 * {@code {"t", "thread"}}）. 避免重复反射查找，提升性能.
+	 * 存储 PatternLayout 实例与 Converter 类名对应的关键字集合.
 	 */
 	private static final ConcurrentMap<String, Set<String>> KEYWORD_CACHE = new ConcurrentHashMap<>();
 
@@ -56,10 +55,10 @@ public final class LogbackNodeUtils {
 	/**
 	 * 递归查找节点.
 	 * <p>
-	 * 深度优先搜索，支持遍历复合节点（CompositeNode）.
+	 * 深度优先搜索, 支持遍历复合节点 (CompositeNode).
 	 * @param node 起始节点
 	 * @param predicate 匹配条件
-	 * @return 匹配的节点，未找到返回 null
+	 * @return 匹配的节点, 未找到返回 null
 	 */
 	public static Node findNode(Node node, Predicate<Node> predicate) {
 		while (node != null) {
@@ -80,7 +79,7 @@ public final class LogbackNodeUtils {
 	/**
 	 * 递归注入节点.
 	 * <p>
-	 * 在目标节点之后插入新的节点链表. 如果目标节点位于复合节点内，也会正确处理.
+	 * 在目标节点之后插入新的节点链表. 如果目标节点位于复合节点内, 也会正确处理.
 	 * @param topNode 根节点
 	 * @param injectHead 待注入节点链表的头节点
 	 * @param targetNodePredicate 目标节点匹配条件
@@ -96,7 +95,7 @@ public final class LogbackNodeUtils {
 		Node insertionPointPrev = injectionTarget;
 		Node walker = injectionTarget.getNext();
 
-		// 跳过目标后的字面量节点（如空格），寻找最佳插入点
+		// 跳过目标后的字面量节点 (如空格), 寻找最佳插入点
 		while (walker != null) {
 			// 0 = LITERAL
 			if (walker.getType() != 0) {
@@ -118,7 +117,7 @@ public final class LogbackNodeUtils {
 	/**
 	 * 创建 Converter 匹配断言.
 	 * <p>
-	 * 生成一个 Predicate，用于判断某个 Node 是否对应指定的 Converter 类.
+	 * 生成一个 Predicate, 用于判断某个 Node 是否对应指定的 Converter 类.
 	 * @param targetConverterClass 目标 Converter 类
 	 * @param layout 当前 PatternLayout
 	 * @return 节点断言
@@ -144,7 +143,7 @@ public final class LogbackNodeUtils {
 	/**
 	 * 重建日志格式字符串.
 	 * <p>
-	 * 将 Node 链表序列化回字符串格式，支持处理参数和格式修饰符.
+	 * 将 Node 链表序列化回字符串格式, 支持处理参数和格式修饰符.
 	 * @param node 链表头节点
 	 * @return 日志格式字符串
 	 */
@@ -195,7 +194,7 @@ public final class LogbackNodeUtils {
 	 * 查找注入目标节点.
 	 * @param currentNode 当前节点
 	 * @param targetNodePredicate 目标匹配条件
-	 * @return 目标节点，未找到返回 null
+	 * @return 目标节点, 未找到返回 null
 	 */
 	static Node findInjectionTargetNode(Node currentNode, Predicate<Node> targetNodePredicate) {
 		while (currentNode != null) {

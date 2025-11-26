@@ -40,10 +40,8 @@ import org.springframework.context.event.EventListener;
 /**
  * Logback 动态配置器.
  * <p>
- * 监听 {@link ApplicationReadyEvent} 事件，在应用启动后动态修改 Logback 的 Appender 配置.
- * <p>
- * <b>核心逻辑：</b> 遍历所有 Logger 和 Appender，识别 PatternLayout，并将 Trace ID 格式（如
- * {@code [%X{traceId}]}） 智能注入到现有的日志模式中（默认注入到线程名之后).
+ * 监听 {@link ApplicationReadyEvent} 事件, 在应用启动后动态修改 Logback 的 Appender 配置, 将 Trace ID
+ * 格式注入到日志模式中.
  *
  * @author Jax Jiang
  */
@@ -82,13 +80,12 @@ public class MdcLogbackConfigurer {
 	/**
 	 * 处理单个 Appender.
 	 * <p>
-	 * 检查 Appender 类型，解析当前日志模式，并决定如何注入 Trace ID.
+	 * 检查 Appender 类型, 解析当前日志模式, 并决定如何注入 Trace ID.
 	 * @param appender 目标 Appender
 	 * @param context Logger 上下文
 	 * @throws ScanException 如果日志模式解析失败
 	 */
 	private void processAppender(Appender<ILoggingEvent> appender, LoggerContext context) throws ScanException {
-		// 阶段1: 前置条件检查
 		if (!(appender instanceof OutputStreamAppender<?> osAppender)) {
 			return;
 		}
@@ -103,7 +100,6 @@ public class MdcLogbackConfigurer {
 			return;
 		}
 
-		// 阶段2: 幂等性检查（避免重复注入）
 		Parser<Object> parser = new Parser<>(currentPattern);
 		parser.setContext(context);
 		Node topNode = parser.parse();
@@ -114,18 +110,15 @@ public class MdcLogbackConfigurer {
 			return;
 		}
 
-		// 阶段3: 执行注入
 		Class<?> targetClass = this.properties.getTargetConverter();
 		String traceIdContent = this.properties.getTraceIdPattern();
 
-		// 安全检查：目标不能是 MDCConverter 自身
 		if (MDCConverter.class.equals(targetClass)) {
 			log.debug("MDC injection skipped for appender [{}]: Target converter cannot be MDCConverter itself.",
 					appender.getName());
 			return;
 		}
 
-		// 回退策略：无目标转换器，添加到头部
 		if (targetClass == null) {
 			log.info(
 					"MDC Configurer for appender [{}]: No target converter configured. Prepending traceId to the beginning as a fallback.",
@@ -135,7 +128,6 @@ public class MdcLogbackConfigurer {
 			return;
 		}
 
-		// 尝试注入到目标位置
 		Predicate<Node> injectionTargetPredicate = LogbackNodeUtils.getNodePredicateForConverter(targetClass, layout);
 		Parser<Object> injectParser = new Parser<>(traceIdContent);
 		injectParser.setContext(context);
@@ -156,7 +148,7 @@ public class MdcLogbackConfigurer {
 	/**
 	 * 更新 Encoder 的日志模式.
 	 * <p>
-	 * 停止 Encoder，设置新模式，然后重新启动.
+	 * 停止 Encoder, 设置新模式, 然后重新启动.
 	 * @param appender 关联的 Appender
 	 * @param encoder 需要更新的 Encoder
 	 * @param newPattern 新的日志模式字符串

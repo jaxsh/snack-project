@@ -33,15 +33,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * 测试最终的日志输出结果.
  * <p>
- * 验证 Logback 真正渲染出来的日志字符串中是否包含了 MDC 中的 traceId. 这是对 "MDC 上下文 -> Logback 配置 -> 最终日志输出"
- * 完整链路的端到端验证.
+ * 验证 Logback 日志中 Trace ID 的输出.
  *
  * @author Jax Jiang
  */
-@SpringBootTest(classes = MdcLogOutputTests.LogOutputConfig.class, properties = { "logging.mdc.enabled=true",
-		// 为了便于断言，我们可以自定义一个独特的 pattern，或者使用默认的
-		// 默认是 [%X{traceId:-}]，所以 traceId 会被 [] 包裹
-		"logging.mdc.trace-id-key=traceId" })
+@SpringBootTest(classes = MdcLogOutputTests.LogOutputConfig.class,
+		properties = { "logging.mdc.enabled=true", "logging.mdc.trace-id-key=traceId" })
 @ExtendWith(OutputCaptureExtension.class)
 class MdcLogOutputTests {
 

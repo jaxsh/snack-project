@@ -20,8 +20,6 @@ import java.util.UUID;
 
 /**
  * 基于 UUID 的 Trace ID 生成器默认实现.
- * <p>
- * 生成策略：UUID 去除横杠，并截取前 16 位.
  *
  * @author Jax Jiang
  */

@@ -27,18 +27,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * MDC (Mapped Diagnostic Context) 功能配置属性类.
  * <p>
- * 定义了 Trace ID 的生成规则、日志注入行为以及 Web 请求的拦截规则等配置项. 对应配置文件前缀：{@code logging.mdc}.
- * <p>
- * <b>配置示例：</b> <pre>
- * logging:
- *   mdc:
- *     enabled: true
- *     trace-id-key: traceId
- *     include-patterns:
- *       - /api/**
- *     exclude-patterns:
- *       - /api/health
- * </pre>
+ * 定义了 Trace ID 的生成规则、日志注入行为及 Web 请求拦截规则等配置项. 对应配置文件前缀: {@code logging.mdc}.
  *
  * @author Jax Jiang
  */
@@ -55,29 +44,29 @@ public class MdcProperties {
 	private boolean enabled = true;
 
 	/**
-	 * MDC 中 Trace ID 的键名（Key）.
+	 * MDC 中 Trace ID 的键名 (Key).
 	 * <p>
 	 * 该键名用于在日志配置文件中通过 {@code %X{...}} 引用.
 	 * <p>
-	 * 默认值：{@code traceId}.
+	 * 默认值: {@code traceId}.
 	 */
 	private String traceIdKey = "traceId";
 
 	/**
 	 * Trace ID 注入日志的格式模板.
 	 * <p>
-	 * 模板中的 {@code {traceIdKey}} 将被替换为实际的 {@link #traceIdKey} 值. 支持 Logback 默认值语法（例如
-	 * {@code :-}），用于在 Trace ID 不存在时输出空字符串.
+	 * 模板中的 {@code {traceIdKey}} 将被替换为实际的 {@link #traceIdKey} 值. 支持 Logback 默认值语法 (例如
+	 * {@code :-}), 用于在 Trace ID 不存在时输出空字符串.
 	 * <p>
-	 * 默认值：{@code "[%X{{traceIdKey}:-}] "}.
+	 * 默认值: {@code "[%X{{traceIdKey}:-}] "}.
 	 */
 	private String traceIdPattern = "[%X{{traceIdKey}:-}] ";
 
 	/**
-	 * 指定 Trace ID 注入在哪个 Logback 转换器（Converter）之后.
+	 * 指定 Trace ID 注入在哪个 Logback 转换器 (Converter) 之后.
 	 * <p>
-	 * 系统会尝试在 Logback Pattern 中找到此转换器，并将 Trace ID 插入其后. 默认为 {@link ThreadConverter}（即
-	 * {@code %t} 或 {@code %thread}）.
+	 * 系统会尝试在 Logback Pattern 中找到此转换器, 并将 Trace ID 插入其后. 默认为 {@link ThreadConverter} (即
+	 * {@code %t} 或 {@code %thread}).
 	 */
 	private Class<? extends DynamicConverter<ILoggingEvent>> targetConverter = ThreadConverter.class;
 
@@ -98,14 +87,14 @@ public class MdcProperties {
 	/**
 	 * 需要拦截并处理 Trace ID 的 URL 路径模式列表.
 	 * <p>
-	 * 默认为 {@code /**}（拦截所有请求）.
+	 * 默认为 {@code /**} (拦截所有请求).
 	 */
 	private String[] includePatterns = { "/**" };
 
 	/**
 	 * 需要排除 Trace ID 处理的 URL 路径模式列表.
 	 * <p>
-	 * 默认为：{@code /health}, {@code /actuator/**}, {@code /favicon.ico}.
+	 * 默认为: {@code /health}, {@code /actuator/**}, {@code /favicon.ico}.
 	 */
 	private String[] excludePatterns = { "/health", "/actuator/**", "/favicon.ico" };
 

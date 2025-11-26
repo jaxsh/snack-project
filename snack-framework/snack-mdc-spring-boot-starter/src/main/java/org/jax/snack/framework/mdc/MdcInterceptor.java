@@ -31,10 +31,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * MDC HTTP 请求拦截器.
  * <p>
- * 实现 {@link HandlerInterceptor} 接口，用于在 HTTP 请求处理全生命周期中管理 MDC 上下文. 主要功能：
+ * 实现 {@link HandlerInterceptor} 接口, 用于在 HTTP 请求处理全生命周期中管理 MDC 上下文. 主要功能:
  * <ul>
- * <li><b>Pre-Handle：</b> 生成或提取 Trace ID，放入 MDC，并可选写入响应头.</li>
- * <li><b>After-Completion：</b> 清理 MDC，防止线程池污染.</li>
+ * <li><b>Pre-Handle:</b> 生成或提取 Trace ID, 放入 MDC, 并可选写入响应头.</li>
+ * <li><b>After-Completion:</b> 清理 MDC, 防止线程池污染.</li>
  * </ul>
  *
  * @author Jax Jiang
@@ -78,11 +78,11 @@ public class MdcInterceptor implements HandlerInterceptor {
 	/**
 	 * 请求完成后的清理处理.
 	 * <p>
-	 * 无论请求成功还是异常，都必须执行 MDC 清理操作.
+	 * 无论请求成功还是异常, 都必须执行 MDC 清理操作.
 	 * @param request 当前 HTTP 请求
 	 * @param response 当前 HTTP 响应
 	 * @param handler 执行的处理器
-	 * @param exception 抛出的异常（如果有）
+	 * @param exception 抛出的异常 (如果有)
 	 */
 	@Override
 	public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -96,7 +96,7 @@ public class MdcInterceptor implements HandlerInterceptor {
 	/**
 	 * 获取现有 Trace ID 或生成新 ID.
 	 * <p>
-	 * 优先从请求头中获取（用于分布式追踪衔接），如果不存在则使用生成器创建.
+	 * 优先从请求头中获取 (用于分布式追踪衔接), 如果不存在则使用生成器创建.
 	 * @param request HTTP 请求
 	 * @return 有效的 Trace ID 字符串
 	 */

@@ -40,9 +40,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 测试 @Scheduled 定时任务中 traceId 的生成功能.
+ * 定时任务 MDC 支持测试.
  * <p>
- * 验证定时任务执行时，能够自动生成新的 traceId 并在任务完成后清理.
+ * 验证定时任务执行时, 能够自动生成新的 traceId 并在任务完成后清理.
  *
  * @author Jax Jiang
  */

@@ -19,7 +19,7 @@ package org.jax.snack.framework.mdc.generator;
 /**
  * Trace ID 生成器接口.
  * <p>
- * 定义了生成全链路追踪 ID 的规范. 用户可以通过实现此接口来定制 ID 的生成策略（如 UUID、Snowflake 等）.
+ * 定义了生成全链路追踪 ID 的规范.
  *
  * @author Jax Jiang
  */

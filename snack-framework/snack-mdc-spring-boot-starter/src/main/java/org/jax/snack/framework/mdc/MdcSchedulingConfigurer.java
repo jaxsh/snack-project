@@ -31,10 +31,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 /**
  * 定时任务调度器 MDC 配置器.
  * <p>
- * 实现 {@link BeanPostProcessor}，用于拦截并增强 Spring 的 {@link ThreadPoolTaskScheduler}.
- * <p>
- * <b>功能：</b> 通过动态代理（AOP）机制，拦截 {@code @Scheduled} 任务的提交过程，为每个定时任务执行前生成独立的 Trace ID，
- * 并在任务结束后清理，确保定时任务日志具备可追踪性.
+ * 实现 {@link BeanPostProcessor}, 用于拦截并增强 Spring 的 {@link ThreadPoolTaskScheduler}, 为定时任务提供
+ * MDC 上下文传播.
  *
  * @author Jax Jiang
  */
@@ -75,7 +73,7 @@ public class MdcSchedulingConfigurer implements BeanPostProcessor, ApplicationCo
 	/**
 	 * 包装 TaskScheduler 以支持 MDC.
 	 * <p>
-	 * 使用 Spring AOP {@link ProxyFactory} 创建代理，拦截任务提交方法.
+	 * 使用 Spring AOP {@link ProxyFactory} 创建代理, 拦截任务提交方法.
 	 * @param scheduler 原始的任务调度器
 	 * @return 代理后的调度器对象
 	 */

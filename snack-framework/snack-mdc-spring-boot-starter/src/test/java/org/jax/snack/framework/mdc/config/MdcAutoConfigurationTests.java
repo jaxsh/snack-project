@@ -48,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 测试 {@link MdcAutoConfiguration} 的自动配置逻辑.
  * <p>
  * 包括: 1. 默认 Bean 的加载. 2. 条件属性 {@code logging.mdc.enabled} 的控制. 3. 自定义 Bean 的替换. 4.
- * Logback 模式的动态修改（作为配置的副作用）.
+ * Logback 模式的动态修改 (作为配置的副作用).
  *
  * @author Jax Jiang
  */
@@ -104,8 +104,6 @@ class MdcAutoConfigurationTests {
 
 	/**
 	 * 验证 Logback 模式是否被正确修改.
-	 * <p>
-	 * 这是一个集成测试，因为它需要启动 Spring Context 来触发 LogbackConfigurer.
 	 */
 	@Nested
 	@SpringBootTest(classes = { MdcAutoConfiguration.class, TaskExecutionAutoConfiguration.class },

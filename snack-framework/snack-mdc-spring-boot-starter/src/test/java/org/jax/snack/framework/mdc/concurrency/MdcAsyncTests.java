@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * 测试 @Async 异步方法中 traceId 的传播功能.
  * <p>
- * 验证在异步任务执行时，父线程的 traceId 能够正确传播到异步线程中.
+ * 验证在异步任务执行时, 父线程的 traceId 能够正确传播到异步线程中.
  *
  * @author Jax Jiang
  */

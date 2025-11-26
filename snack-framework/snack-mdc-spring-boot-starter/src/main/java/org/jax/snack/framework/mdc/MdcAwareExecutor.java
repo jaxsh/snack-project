@@ -25,15 +25,7 @@ import org.slf4j.MDC;
 /**
  * 支持 MDC 传递的 Executor 装饰器.
  * <p>
- * 采用装饰器模式包装标准的 {@link Executor}，实现 Trace ID 的跨线程传递. 通常用于 {@code CompletableFuture}
- * 或手动提交任务的场景.
- * <p>
- * <b>工作原理（捕获与恢复模式）：</b>
- * <ol>
- * <li><b>Capture：</b> 在任务提交时（父线程），捕获当前的 MDC 上下文快照.</li>
- * <li><b>Restore：</b> 在任务执行时（子线程），将捕获的上下文恢复到当前线程.</li>
- * <li><b>Clear：</b> 任务结束后，强制清理子线程的 MDC，防止线程污染.</li>
- * </ol>
+ * 采用装饰器模式包装标准的 {@link Executor}, 实现 Trace ID 的跨线程传递.
  *
  * @author Jax Jiang
  */
