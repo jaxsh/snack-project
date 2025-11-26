@@ -30,11 +30,7 @@ import org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper;
 /**
  * LDAP自动配置类, 用于配置LDAP相关的组件.
  * <p>
- * 主要功能: 1. 配置LdapTemplate 2. 配置LdapContextSource 3. 支持自定义LDAP配置
- * <p>
- * 工作流程: 1. 检查LDAP依赖是否存在 2. 创建LdapContextSource实例 3. 配置LDAP连接参数 4. 创建LdapTemplate实例
- * <p>
- * 配置特性: 1. 支持自定义LDAP服务器配置 2. 支持自定义认证方式 3. 支持自定义连接池配置
+ * 主要功能: 配置 LdapTemplate, LdapContextSource, 以及相关的属性和转换器.
  *
  * @author Jax Jiang
  */

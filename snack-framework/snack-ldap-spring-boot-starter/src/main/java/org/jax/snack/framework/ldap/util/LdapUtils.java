@@ -49,9 +49,7 @@ public final class LdapUtils {
 	 * 将 Active Directory 的 objectGUID (字节数组) 转换为标准的 {@link UUID}.
 	 *
 	 * <p>
-	 * <b>重要:</b> Active Directory 存储 GUID 的字节序与 Java UUID 的标准字节序不同. AD 中的前三个部分 (Data1,
-	 * Data2, Data3) 使用小端序 (little-endian), 而 Java UUID 默认将它们视为大端序 (big-endian).
-	 * 此方法执行必要的字节重排以进行正确转换.
+	 * 此方法处理 AD objectGUID 与 Java UUID 之间的字节序差异.
 	 * @param source 16 字节的 objectGUID 字节数组.
 	 * @return 转换后的 {@link UUID} 对象.
 	 * @throws IllegalArgumentException 如果输入不是 16 字节的数组.
@@ -82,10 +80,6 @@ public final class LdapUtils {
 
 	/**
 	 * 将 AD FileTime (LDAP 时间戳) 转换为 {@link ZonedDateTime}.
-	 *
-	 * <p>
-	 * AD FileTime 是一个 64 位整数, 代表自 1601-01-01 00:00:00 UTC 以来的 100 纳秒间隔数. 特殊值 0 和
-	 * Long.MAX_VALUE 通常表示 "未设置" 或 "永不", 在此作 null 处理.
 	 * @param ldapTimestamp ldap 时间戳.
 	 * @return 转换后的 {@link ZonedDateTime} 对象 (UTC 时区), 如果时间戳无效则返回 null.
 	 */
@@ -104,9 +98,6 @@ public final class LdapUtils {
 
 	/**
 	 * 将 {@link ZonedDateTime} 转换为 AD FileTime (LDAP 时间戳).
-	 *
-	 * <p>
-	 * 如果输入的 ZonedDateTime 为 null, 将返回 0, 这在 AD 中通常代表 "未设置".
 	 * @param zonedDateTime 要转换的 ZonedDateTime 对象.
 	 * @return 对应的 LDAP 时间戳.
 	 */
