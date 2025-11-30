@@ -154,6 +154,26 @@ public class GlobalExceptionAdvice {
 				apiResponseFieldErrors);
 	}
 
+	/**
+	 * 处理@Validated在类上时发生的校验错误.
+	 * @param e 参数校验异常
+	 * @return 返回报文
+	 */
+	@ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public ApiResponse<Object> handleConstraintViolationException(jakarta.validation.ConstraintViolationException e) {
+		List<ApiResponseFieldError> apiResponseFieldErrors = e.getConstraintViolations().stream().map((violation) -> {
+			String fieldName = null;
+			for (jakarta.validation.Path.Node node : violation.getPropertyPath()) {
+				fieldName = node.getName();
+			}
+			return new ApiResponseFieldError(fieldName, violation.getMessage());
+		}).collect(Collectors.toList());
+
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
+				apiResponseFieldErrors);
+	}
+
 	private String getLocalizedMessage(String code, Object... args) {
 		return this.messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
