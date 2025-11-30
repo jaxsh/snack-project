@@ -5,13 +5,13 @@ plugins {
 
 dependencies {
 
-	api('ch.qos.logback:logback-classic')
-	api('org.springframework.boot:spring-boot-autoconfigure-processor')
+	annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-	annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
+	api 'ch.qos.logback:logback-classic'
 
-	compileOnlyApi('org.springframework.boot:spring-boot-starter-webmvc')
+	compileOnly 'org.springframework.boot:spring-boot-starter-webmvc'
 
-	testImplementation('org.springframework.boot:spring-boot-starter-webmvc-test')
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 
 }
