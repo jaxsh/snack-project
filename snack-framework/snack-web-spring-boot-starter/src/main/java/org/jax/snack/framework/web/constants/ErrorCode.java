@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.web.constant;
+package org.jax.snack.framework.web.constants;
 
 /**
  * 系统中使用的错误代码常量.
