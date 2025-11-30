@@ -22,8 +22,10 @@ import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
 import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.validation.autoconfigure.ValidationConfigurationCustomizer;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +42,7 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
  * @author Jax Jiang
  */
 @Configuration
+@AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @EnableConfigurationProperties(ValidationProperties.class)
 public class WebAutoConfiguration implements WebMvcConfigurer {
 
