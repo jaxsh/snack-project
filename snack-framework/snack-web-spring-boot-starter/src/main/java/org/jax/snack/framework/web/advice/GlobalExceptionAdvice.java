@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jax.snack.framework.web.constant.ErrorCode;
+import org.jax.snack.framework.web.constants.ErrorCode;
 import org.jax.snack.framework.web.exception.BusinessException;
 import org.jax.snack.framework.web.exception.InterfaceBusinessException;
 import org.jax.snack.framework.web.exception.InterfaceException;
