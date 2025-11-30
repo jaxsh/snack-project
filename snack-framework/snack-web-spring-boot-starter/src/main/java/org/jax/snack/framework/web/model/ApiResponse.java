@@ -21,8 +21,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import org.springframework.http.HttpStatus;
-
 /**
  * 标准API响应模型. 用于统一控制器返回的响应格式.
  *
@@ -36,7 +34,7 @@ import org.springframework.http.HttpStatus;
 public class ApiResponse<T> {
 
 	/**
-	 * 状态码. 成功返回OK, 其他返回错误代码.
+	 * 业务状态码. 成功时为null, 否则为具体的业务错误代码 (如 "1000").
 	 */
 	private String code;
 
@@ -51,13 +49,13 @@ public class ApiResponse<T> {
 	private T data;
 
 	/**
-	 * 创建一个表示成功的API响应. 状态码默认为 {@link HttpStatus#OK} (200), 消息默认为 "Success".
+	 * 创建一个表示成功的API响应. 状态码为null, 消息默认为 "Success".
 	 * @param data 成功的响应数据
 	 * @param <T> 响应数据的类型
 	 * @return 包含成功数据的 {@link ApiResponse} 实例
 	 */
 	public static <T> ApiResponse<T> success(T data) {
-		return new ApiResponse<>(String.valueOf(HttpStatus.OK.value()), "Success", data);
+		return new ApiResponse<>(null, "Success", data);
 	}
 
 	/**
@@ -81,6 +79,14 @@ public class ApiResponse<T> {
 	 */
 	public static <T> ApiResponse<T> error(String code, String msg, T data) {
 		return new ApiResponse<>(code, msg, data);
+	}
+
+	/**
+	 * 判断当前响应是否成功.
+	 * @return 如果code字段为null则返回true, 否则返回false
+	 */
+	public boolean isSuccess() {
+		return this.code == null;
 	}
 
 }
