@@ -8,9 +8,10 @@ javaPlatform {
 
 dependencies {
     api platform(libs.spring.boot.dependencies)
+    api platform(libs.com.baomidou.mybatis.plus.bom)
 
     constraints {
         api libs.org.mockito.mockito.core
 		api libs.org.zalando.logbook.spring.boot.starter
-    }
+	}
 }

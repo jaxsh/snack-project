@@ -2,13 +2,16 @@
 org-springframework-boot = '4.0.0'
 io-spring-javaformat = '0.0.45'
 net-sourceforge-pmd = '7.18.0'
+com-baomidou-mybatis-plus = '3.5.15'
 
 [libraries]
 spring-boot-dependencies = { module = 'org.springframework.boot:spring-boot-dependencies', version.ref = 'org-springframework-boot' }
+com-baomidou-mybatis-plus-bom = { module = 'com.baomidou:mybatis-plus-bom', version.ref = 'com-baomidou-mybatis-plus' }
 # https://mvnrepository.com/artifact/org.mockito/mockito-core
 org-mockito-mockito-core = 'org.mockito:mockito-core:5.18.0'
 # https://mvnrepository.com/artifact/org.zalando/logbook-spring-boot-starter
-org-zalando-logbook-spring-boot-starter = 'org.zalando:logbook-spring-boot-starter:3.12.1'
+org-zalando-logbook-spring-boot-starter = 'org.zalando:logbook-spring-boot-starter:3.12.3'
+
 
 # buildSrc dependencies
 org-springframework-boot-gradle-plugin = { module = 'org.springframework.boot:spring-boot-gradle-plugin', version.ref = 'org-springframework-boot' }

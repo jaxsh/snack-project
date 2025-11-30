@@ -1,0 +1,14 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	api project(':snack-framework:snack-core')
+	api 'com.baomidou:mybatis-plus-spring-boot4-starter'
+	api 'com.baomidou:mybatis-plus-jsqlparser'
+
+	compileOnly 'org.springframework.security:spring-security-core'
+	compileOnly 'org.mapstruct:mapstruct'
+}
+
