@@ -23,9 +23,12 @@ import org.jax.snack.framework.http.handler.ErrorWrappingInterceptor;
 import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 /**
  * RestClient自动配置类. 用于配置RestClient相关的属性和Bean.
@@ -55,21 +58,28 @@ public class RestClientAutoConfiguration {
 		return new DefaultStatusHandler();
 	}
 
-	/**
-	 * 配置 RestClient, 添加拦截器和错误处理器.
-	 * @param interceptor Logbook 日志拦截器
-	 * @param errorWrappingInterceptor 错误包装拦截器
-	 * @param defaultStatusHandler 默认状态处理器
-	 * @return RestClient 定制器
-	 */
 	@Bean
-	public RestClientCustomizer clientCustomizer(LogbookClientHttpRequestInterceptor interceptor,
-			ErrorWrappingInterceptor errorWrappingInterceptor, CustomResponseErrorHandler defaultStatusHandler) {
+	@Order(0)
+	public RestClientCustomizer coreRestClientCustomizer(ErrorWrappingInterceptor errorWrappingInterceptor,
+			CustomResponseErrorHandler defaultStatusHandler) {
 
-		return (restClientBuilder) -> restClientBuilder.requestInterceptors((interceptors) -> {
-			interceptors.add(interceptor);
-			interceptors.add(errorWrappingInterceptor);
-		}).defaultStatusHandler(defaultStatusHandler, defaultStatusHandler);
+		return (restClientBuilder) -> restClientBuilder.requestInterceptor(errorWrappingInterceptor)
+			.defaultStatusHandler(defaultStatusHandler, defaultStatusHandler);
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(LogbookClientHttpRequestInterceptor.class)
+	protected static class LogbookConfiguration {
+
+		@Bean
+		@Order(1)
+		public RestClientCustomizer logbookRestClientCustomizer(
+				LogbookClientHttpRequestInterceptor logbookInterceptor) {
+
+			return (restClientBuilder) -> restClientBuilder
+				.requestInterceptors((interceptors) -> interceptors.add(0, logbookInterceptor));
+		}
+
 	}
 
 }
