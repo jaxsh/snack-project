@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.mybatisplus.query;
+package org.jax.snack.framework.common.query;
 
 import lombok.Getter;
 

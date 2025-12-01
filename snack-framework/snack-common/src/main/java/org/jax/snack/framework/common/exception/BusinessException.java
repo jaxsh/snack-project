@@ -14,32 +14,38 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.web.constants;
+package org.jax.snack.framework.common.exception;
+
+import java.io.Serial;
+
+import lombok.Getter;
 
 /**
- * 系统中使用的错误代码常量.
+ * 业务异常.
+ * <p>
+ * 适用于所有场景: Web、定时任务、消息队列等.
  *
  * @author Jax Jiang
  */
-public class ErrorCode {
+@Getter
+public class BusinessException extends RuntimeException {
 
-	protected ErrorCode() {
+	@Serial
+	private static final long serialVersionUID = 1L;
 
+	private final String errorCode;
+
+	private final transient Object[] messageArgs;
+
+	/**
+	 * 创建业务异常.
+	 * @param errorCode 错误码
+	 * @param messageArgs 消息参数（用于国际化占位符）
+	 */
+	public BusinessException(String errorCode, Object... messageArgs) {
+		super(errorCode);
+		this.errorCode = errorCode;
+		this.messageArgs = messageArgs;
 	}
-
-	/**
-	 * 系统错误. 表示系统内部发生的未预期错误.
-	 */
-	public static final String SYSTEM_ERROR = "1000";
-
-	/**
-	 * 接口错误. 表示接口调用过程中发生的错误.
-	 */
-	public static final String INTERFACE_ERROR = "1001";
-
-	/**
-	 * 参数无效. 表示请求参数不符合要求.
-	 */
-	public static final String PARAM_INVALID = "1002";
 
 }

@@ -14,26 +14,37 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.web.exception;
+package org.jax.snack.framework.common.tree;
 
-import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
+
+import lombok.Getter;
 
 /**
- * 当调用外部系统发生业务错误时抛出的异常.
+ * 通用树节点, 用于表示树形结构中的单个节点.
  *
+ * @param <T> 节点数据类型
  * @author Jax Jiang
  */
-public class InterfaceBusinessException extends RuntimeException {
+@Getter
+public class TreeNode<T> {
 
-	@Serial
-	private static final long serialVersionUID = 1L;
+	private final T data;
 
-	/**
-	 * 创建一个接口异常实例.
-	 * @param msg 异常消息
-	 */
-	public InterfaceBusinessException(String msg) {
-		super(msg);
+	private final List<TreeNode<T>> children;
+
+	public TreeNode(T data) {
+		this.data = data;
+		this.children = new ArrayList<>();
+	}
+
+	public void addChild(TreeNode<T> child) {
+		this.children.add(child);
+	}
+
+	public boolean hasChildren() {
+		return !this.children.isEmpty();
 	}
 
 }

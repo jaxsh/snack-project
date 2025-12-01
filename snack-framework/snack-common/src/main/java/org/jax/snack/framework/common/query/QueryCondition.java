@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.mybatisplus.query;
+package org.jax.snack.framework.common.query;
 
 import java.util.List;
 import java.util.Map;
@@ -62,17 +62,17 @@ public class QueryCondition {
 	private List<OrderByCondition> orderBy;
 
 	/**
-	 * 限制返回记录数.
+	 * 每页大小.
 	 * <p>
-	 * 对应 SQL 的 LIMIT.
+	 * 对应分页查询的页大小, 也对应 SQL 的 LIMIT.
 	 */
-	private Integer limit;
+	private Integer size;
 
 	/**
-	 * 跳过记录数.
+	 * 当前页码.
 	 * <p>
-	 * 对应 SQL 的 OFFSET.
+	 * 页码从 1 开始, 用于计算 OFFSET.
 	 */
-	private Integer offset;
+	private Integer current;
 
 }

@@ -14,36 +14,9 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.web.exception;
-
-import java.io.Serial;
-
-import lombok.Getter;
-
 /**
- * 当系统中发生业务错误时抛出的异常.
+ * 常量定义包, 存放系统中使用的各类常量.
  *
  * @author Jax Jiang
  */
-@Getter
-public class BusinessException extends RuntimeException {
-
-	@Serial
-	private static final long serialVersionUID = 1L;
-
-	private final String errorCode;
-
-	private final transient Object[] messageArgs;
-
-	/**
-	 * 创建一个业务异常实例.
-	 * @param errorCode 错误码
-	 * @param messageArgs 消息参数
-	 */
-	public BusinessException(String errorCode, Object... messageArgs) {
-		super(errorCode);
-		this.errorCode = errorCode;
-		this.messageArgs = messageArgs;
-	}
-
-}
+package org.jax.snack.framework.common.constants;

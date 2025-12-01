@@ -14,30 +14,9 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.mybatisplus.query;
-
-import lombok.Getter;
-import lombok.Setter;
-
 /**
- * 排序条件.
+ * 工具类包, 提供各类通用的辅助工具方法.
  *
  * @author Jax Jiang
  */
-@Getter
-@Setter
-public class OrderByCondition {
-
-	/**
-	 * 排序字段名.
-	 */
-	private String field;
-
-	/**
-	 * 排序方向.
-	 * <p>
-	 * 枚举值: "asc" (升序) 或 "desc" (降序).
-	 */
-	private String direction;
-
-}
+package org.jax.snack.framework.common.utils;
