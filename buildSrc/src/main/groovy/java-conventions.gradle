@@ -29,6 +29,8 @@ tasks.named('test') {
 
 dependencies {
     implementation platform(project(":snack-project-dependencies"))
+    annotationProcessor platform(project(":snack-project-dependencies"))
+    testAnnotationProcessor platform(project(":snack-project-dependencies"))
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
