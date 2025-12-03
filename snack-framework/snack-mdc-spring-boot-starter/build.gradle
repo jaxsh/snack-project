@@ -4,14 +4,9 @@ plugins {
 }
 
 dependencies {
-
-	annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
 	api 'ch.qos.logback:logback-classic'
 
 	compileOnly 'org.springframework.boot:spring-boot-starter-webmvc'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-
 }
