@@ -3,6 +3,7 @@ org-springframework-boot = '4.0.0'
 io-spring-javaformat = '0.0.45'
 net-sourceforge-pmd = '7.18.0'
 com-baomidou-mybatis-plus = '3.5.15'
+org-mapstruct-mapstruct = "1.6.3"
 
 [libraries]
 spring-boot-dependencies = { module = 'org.springframework.boot:spring-boot-dependencies', version.ref = 'org-springframework-boot' }
@@ -11,6 +12,8 @@ com-baomidou-mybatis-plus-bom = { module = 'com.baomidou:mybatis-plus-bom', vers
 org-mockito-mockito-core = 'org.mockito:mockito-core:5.18.0'
 # https://mvnrepository.com/artifact/org.zalando/logbook-spring-boot-starter
 org-zalando-logbook-spring-boot-starter = 'org.zalando:logbook-spring-boot-starter:3.12.3'
+org-mapstruct-mapstruct = { module = 'org.mapstruct:mapstruct', version.ref = 'org-mapstruct-mapstruct' }
+org-mapstruct-mapstruct-processor = { module = 'org.mapstruct:mapstruct-processor', version.ref = 'org-mapstruct-mapstruct' }
 
 
 # buildSrc dependencies

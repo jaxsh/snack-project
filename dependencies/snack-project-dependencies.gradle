@@ -13,5 +13,7 @@ dependencies {
     constraints {
         api libs.org.mockito.mockito.core
 		api libs.org.zalando.logbook.spring.boot.starter
+		api libs.org.mapstruct.mapstruct
+		api libs.org.mapstruct.mapstruct.processor
 	}
 }
