@@ -18,8 +18,8 @@ package org.jax.snack.framework.http.handler;
 
 import java.io.IOException;
 
-import org.jax.snack.framework.web.constants.ErrorCode;
-import org.jax.snack.framework.web.exception.InterfaceException;
+import org.jax.snack.framework.common.exception.constants.ErrorCode;
+import org.jax.snack.framework.http.exception.InterfaceException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 

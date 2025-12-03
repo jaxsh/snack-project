@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jax.snack.framework.web.exception;
+package org.jax.snack.framework.http.exception;
 
 import java.io.Serial;
 

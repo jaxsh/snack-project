@@ -4,10 +4,8 @@ plugins {
 }
 
 dependencies {
-
-	annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
+	api project(':snack-framework:snack-common')
+	api platform(project(':snack-project-dependencies'))
 	api 'org.springframework.boot:spring-boot-starter-webmvc'
 	api 'org.springframework.boot:spring-boot-starter-restclient'
 	api 'org.springframework.boot:spring-boot-starter-validation'

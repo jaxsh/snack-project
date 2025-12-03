@@ -21,11 +21,11 @@ import java.util.Locale;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.jax.snack.framework.common.exception.BusinessException;
+import org.jax.snack.framework.common.exception.constants.ErrorCode;
+import org.jax.snack.framework.http.exception.InterfaceBusinessException;
+import org.jax.snack.framework.http.exception.InterfaceException;
 import org.jax.snack.framework.web.config.WebAutoConfiguration;
-import org.jax.snack.framework.web.constants.ErrorCode;
-import org.jax.snack.framework.web.exception.BusinessException;
-import org.jax.snack.framework.web.exception.InterfaceBusinessException;
-import org.jax.snack.framework.web.exception.InterfaceException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

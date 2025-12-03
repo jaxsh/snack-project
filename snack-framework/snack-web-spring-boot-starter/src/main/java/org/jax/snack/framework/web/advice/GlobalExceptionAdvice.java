@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jax.snack.framework.web.constants.ErrorCode;
-import org.jax.snack.framework.web.exception.BusinessException;
-import org.jax.snack.framework.web.exception.InterfaceBusinessException;
-import org.jax.snack.framework.web.exception.InterfaceException;
+import org.jax.snack.framework.common.exception.BusinessException;
+import org.jax.snack.framework.common.exception.constants.ErrorCode;
+import org.jax.snack.framework.http.exception.InterfaceBusinessException;
+import org.jax.snack.framework.http.exception.InterfaceException;
 import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.framework.web.model.ApiResponseFieldError;
 
@@ -73,7 +73,7 @@ public class GlobalExceptionAdvice {
 	@ExceptionHandler(BusinessException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiResponse<Object> handleBusinessException(BusinessException e) {
-		return ApiResponse.error(e.getErrorCode(), getLocalizedMessage(e.getErrorCode()));
+		return ApiResponse.error(e.getErrorCode(), getLocalizedMessage(e.getErrorCode(), e.getMessageArgs()));
 	}
 
 	/**
@@ -174,7 +174,22 @@ public class GlobalExceptionAdvice {
 				apiResponseFieldErrors);
 	}
 
-	private String getLocalizedMessage(String code, Object... args) {
+	/**
+	 * 获取本地化消息.
+	 * @param code 消息代码
+	 * @return 本地化后的消息
+	 */
+	private String getLocalizedMessage(String code) {
+		return getLocalizedMessage(code, null);
+	}
+
+	/**
+	 * 获取本地化消息（支持参数）.
+	 * @param code 消息代码
+	 * @param args 消息参数
+	 * @return 本地化后的消息
+	 */
+	private String getLocalizedMessage(String code, Object[] args) {
 		return this.messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 
