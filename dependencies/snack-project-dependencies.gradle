@@ -15,5 +15,6 @@ dependencies {
 		api libs.org.zalando.logbook.spring.boot.starter
 		api libs.org.mapstruct.mapstruct
 		api libs.org.mapstruct.mapstruct.processor
+		api libs.org.apache.fesod.fesod
 	}
 }
