@@ -20,6 +20,7 @@ import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.jax.snack.framework.web.advice.GlobalExceptionAdvice;
 import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
 import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
+import org.jax.snack.framework.web.i18n.TimeZoneInterceptor;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -85,12 +86,22 @@ public class WebAutoConfiguration implements WebMvcConfigurer {
 	}
 
 	/**
-	 * 添加拦截器. 注册语言切换拦截器到拦截器链中.
+	 * 时区拦截器. 从请求头提取用户时区并设置到 LocaleContextHolder.
+	 * @return 时区拦截器实例
+	 */
+	@Bean
+	public TimeZoneInterceptor timeZoneInterceptor() {
+		return new TimeZoneInterceptor();
+	}
+
+	/**
+	 * 添加拦截器. 注册语言切换拦截器和时区拦截器到拦截器链中.
 	 * @param registry 拦截器注册表
 	 */
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());
+		registry.addInterceptor(timeZoneInterceptor());
 	}
 
 	/**
