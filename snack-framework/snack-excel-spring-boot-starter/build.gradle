@@ -1,0 +1,16 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	api 'cn.idev.excel:fastexcel:1.3.0'
+
+	compileOnly 'org.springframework.boot:spring-boot-starter-webmvc'
+	compileOnly 'jakarta.validation:jakarta.validation-api'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	testImplementation 'jakarta.validation:jakarta.validation-api'
+	testImplementation 'org.hibernate.validator:hibernate-validator'
+}
