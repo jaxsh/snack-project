@@ -21,14 +21,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * API响应的字段错误信息. 用于封装参数校验失败时的字段名和错误信息.
+ * 字段错误信息 (通用参数校验).
+ * <p>
+ * 用于封装参数校验失败的字段名和错误信息.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
 @AllArgsConstructor
-public class ApiResponseFieldError {
+public class FieldError {
 
 	/**
 	 * 字段名.

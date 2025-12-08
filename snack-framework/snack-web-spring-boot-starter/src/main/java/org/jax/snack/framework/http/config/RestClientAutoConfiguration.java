@@ -22,6 +22,7 @@ import org.jax.snack.framework.http.handler.DefaultStatusHandler;
 import org.jax.snack.framework.http.handler.ErrorWrappingInterceptor;
 import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -74,10 +75,10 @@ public class RestClientAutoConfiguration {
 		@Bean
 		@Order(1)
 		public RestClientCustomizer logbookRestClientCustomizer(
-				LogbookClientHttpRequestInterceptor logbookInterceptor) {
+				ObjectProvider<LogbookClientHttpRequestInterceptor> logbookInterceptorProvider) {
 
-			return (restClientBuilder) -> restClientBuilder
-				.requestInterceptors((interceptors) -> interceptors.add(0, logbookInterceptor));
+			return (restClientBuilder) -> logbookInterceptorProvider.ifAvailable((interceptor) -> restClientBuilder
+				.requestInterceptors((interceptors) -> interceptors.add(0, interceptor)));
 		}
 
 	}

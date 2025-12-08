@@ -70,6 +70,8 @@ class GlobalExceptionAdviceTests {
 
 	private static final String FIELD_NAME = "name";
 
+	private static final String NAME_BLANK_MESSAGE = "Name cannot be blank";
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -148,7 +150,9 @@ class GlobalExceptionAdviceTests {
 			GlobalExceptionAdviceTests.this.mockMvc.perform(get("/test/required-param"))
 				.andExpect(status().isBadRequest())
 				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID),
-						jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.PARAM_INVALID)));
+						jsonPath(JSON_PATH_MSG)
+							.value("Required request parameter 'name' for method parameter type String is not present"),
+						jsonPath(JSON_PATH_DATA).value("Required parameter 'name' is not present."));
 		}
 
 		@Test
@@ -156,27 +160,27 @@ class GlobalExceptionAdviceTests {
 			GlobalExceptionAdviceTests.this.mockMvc
 				.perform(post("/test/validate-body").contentType(MediaType.APPLICATION_JSON).content("{}"))
 				.andExpect(status().isBadRequest())
-				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID),
-						jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.PARAM_INVALID)),
-						jsonPath(JSON_PATH_DATA).isArray(), jsonPath(JSON_PATH_DATA + "[0].field").value(FIELD_NAME));
+				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID), jsonPath(JSON_PATH_MSG).exists(),
+						jsonPath(JSON_PATH_DATA).isArray(), jsonPath(JSON_PATH_DATA + "[0].field").value(FIELD_NAME),
+						jsonPath(JSON_PATH_DATA + "[0].message").value("Name is required"));
 		}
 
 		@Test
 		void shouldHandleNativeRequestParamValidation() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc.perform(get("/test/validate-param").param(FIELD_NAME, ""))
 				.andExpect(status().isBadRequest())
-				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID),
-						jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.PARAM_INVALID)),
-						jsonPath(JSON_PATH_DATA).isArray(), jsonPath(JSON_PATH_DATA + "[0].field").value(FIELD_NAME));
+				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID), jsonPath(JSON_PATH_MSG).exists(),
+						jsonPath(JSON_PATH_DATA).isArray(), jsonPath(JSON_PATH_DATA + "[0].field").value(FIELD_NAME),
+						jsonPath(JSON_PATH_DATA + "[0].message").value(NAME_BLANK_MESSAGE));
 		}
 
 		@Test
 		void shouldHandleAopRequestParamValidation() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc.perform(get("/test/aop/validate-param").param(FIELD_NAME, ""))
 				.andExpect(status().isBadRequest())
-				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID),
-						jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.PARAM_INVALID)),
-						jsonPath(JSON_PATH_DATA).isArray(), jsonPath(JSON_PATH_DATA + "[0].field").value(FIELD_NAME));
+				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.PARAM_INVALID), jsonPath(JSON_PATH_MSG).exists(),
+						jsonPath(JSON_PATH_DATA).isArray(), jsonPath(JSON_PATH_DATA + "[0].field").value(FIELD_NAME),
+						jsonPath(JSON_PATH_DATA + "[0].message").value(NAME_BLANK_MESSAGE));
 		}
 
 	}
@@ -259,7 +263,7 @@ class GlobalExceptionAdviceTests {
 		}
 
 		@GetMapping("/test/validate-param")
-		void validateRequestParam(@RequestParam @NotBlank(message = "Name cannot be blank") String name) {
+		void validateRequestParam(@RequestParam @NotBlank(message = NAME_BLANK_MESSAGE) String name) {
 		}
 
 		@GetMapping("/test/generic-exception")
@@ -278,7 +282,7 @@ class GlobalExceptionAdviceTests {
 	static class AopValidatedController {
 
 		@GetMapping("/validate-param")
-		void validateRequestParam(@RequestParam @NotBlank(message = "Name cannot be blank") String name) {
+		void validateRequestParam(@RequestParam @NotBlank(message = NAME_BLANK_MESSAGE) String name) {
 		}
 
 	}

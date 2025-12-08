@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.common.exception.BusinessException;
@@ -27,7 +29,7 @@ import org.jax.snack.framework.common.exception.constants.ErrorCode;
 import org.jax.snack.framework.http.exception.InterfaceBusinessException;
 import org.jax.snack.framework.http.exception.InterfaceException;
 import org.jax.snack.framework.web.model.ApiResponse;
-import org.jax.snack.framework.web.model.ApiResponseFieldError;
+import org.jax.snack.framework.web.model.FieldError;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -110,68 +112,61 @@ public class GlobalExceptionAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ApiResponse<Object> handleMissingServletRequestParameterException(
 			MissingServletRequestParameterException e) {
-		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
-				e.getBody().getDetail());
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, e.getLocalizedMessage(), e.getBody().getDetail());
 	}
 
 	/**
 	 * 处理@RequestParam(required = false)发生的校验错误.
-	 * @param e 参数校验异常
+	 * @param ex 参数校验异常
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(HandlerMethodValidationException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<Object> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
-		List<ApiResponseFieldError> apiResponseFieldErrors = e.getParameterValidationResults()
-			.stream()
-			.flatMap((result) -> {
-				String fieldName = result.getMethodParameter().getParameterName();
-				return result.getResolvableErrors()
-					.stream()
-					.map((error) -> new ApiResponseFieldError(fieldName, error.getDefaultMessage()));
-			})
-			.collect(Collectors.toList());
+	public ApiResponse<List<FieldError>> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+		List<FieldError> fieldErrors = ex.getParameterValidationResults().stream().flatMap((result) -> {
+			String fieldName = result.getMethodParameter().getParameterName();
+			return result.getResolvableErrors()
+				.stream()
+				.map((error) -> new FieldError(fieldName, error.getDefaultMessage()));
+		}).collect(Collectors.toList());
 
-		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
-				apiResponseFieldErrors);
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ex.getLocalizedMessage()), fieldErrors);
 	}
 
 	/**
-	 * 处理@RequestBody/@ModelAttribute发生的校验错误.
-	 * @param e 参数校验异常
+	 * 处理@RequestBody数据校验异常.
+	 * @param ex 参数校验异常
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-
-		List<ApiResponseFieldError> apiResponseFieldErrors = e.getFieldErrors()
+	public ApiResponse<List<FieldError>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+		List<FieldError> fieldErrors = ex.getBindingResult()
+			.getFieldErrors()
 			.stream()
-			.map((fieldError) -> new ApiResponseFieldError(fieldError.getField(), fieldError.getDefaultMessage()))
-			.collect(Collectors.toList());
+			.map((error) -> new FieldError(error.getField(), error.getDefaultMessage()))
+			.toList();
 
-		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
-				apiResponseFieldErrors);
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, ex.getLocalizedMessage(), fieldErrors);
 	}
 
 	/**
-	 * 处理@Validated在类上时发生的校验错误.
-	 * @param e 参数校验异常
-	 * @return 返回报文
+	 * 处理 @Validated 校验异常.
+	 * @param ex 校验异常
+	 * @return API 响应
 	 */
-	@ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+	@ExceptionHandler(ConstraintViolationException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<Object> handleConstraintViolationException(jakarta.validation.ConstraintViolationException e) {
-		List<ApiResponseFieldError> apiResponseFieldErrors = e.getConstraintViolations().stream().map((violation) -> {
-			String fieldName = null;
-			for (jakarta.validation.Path.Node node : violation.getPropertyPath()) {
+	public ApiResponse<List<FieldError>> handleConstraintViolation(ConstraintViolationException ex) {
+		List<FieldError> fieldErrors = ex.getConstraintViolations().stream().map((violation) -> {
+			String fieldName = "unknown";
+			for (Path.Node node : violation.getPropertyPath()) {
 				fieldName = node.getName();
 			}
-			return new ApiResponseFieldError(fieldName, violation.getMessage());
+			return new FieldError(fieldName, violation.getMessage());
 		}).collect(Collectors.toList());
 
-		return ApiResponse.error(ErrorCode.PARAM_INVALID, getLocalizedMessage(ErrorCode.PARAM_INVALID),
-				apiResponseFieldErrors);
+		return ApiResponse.error(ErrorCode.PARAM_INVALID, ex.getLocalizedMessage(), fieldErrors);
 	}
 
 	/**
