@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active: upms,${ENV:dev}
+  application:
+    name: upms-server
+  docker:
+    compose:
+      lifecycle-management: start-and-stop
+      file: snack-module/snack-upms/snack-upms-server/compose.yml
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  file:
+    name: logs/${spring.application.name}.log

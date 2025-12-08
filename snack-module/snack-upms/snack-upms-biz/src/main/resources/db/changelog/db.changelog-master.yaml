@@ -1,0 +1,215 @@
+# ============================================
+# UPMS 模块 - 数据库 Changelog
+# 使用 YAML 格式支持多数据库
+# ============================================
+
+databaseChangeLog:
+
+  # ============================================
+  # 1. 字典类型表
+  # ============================================
+  - changeSet:
+      id: create-sys_dict_type
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_dict_type
+            remarks: 字典类型表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: dict_name
+                  type: varchar(100)
+                  remarks: 字典名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dict_type
+                  type: varchar(100)
+                  remarks: 字典类型 (业务上唯一)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: tinyint
+                  defaultValueNumeric: '1'
+                  remarks: 状态(0:禁用, 1:启用)
+              - column:
+                  name: sort_order
+                  type: int
+                  defaultValueNumeric: '0'
+                  remarks: 排序
+              - column:
+                  name: remark
+                  type: varchar(500)
+                  remarks: 备注
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 是否删除(0:否, 1:是)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_dict_type
+            columnNames: dict_type
+            constraintName: uk_dict_type
+        - createIndex:
+            tableName: sys_dict_type
+            indexName: idx_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: sys_dict_type
+            indexName: idx_status_deleted
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: deleted
+
+  # ============================================
+  # 2. 数据字典表
+  # ============================================
+  - changeSet:
+      id: create-sys_dict_data
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_dict_data
+            remarks: 数据字典表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: dict_type
+                  type: varchar(100)
+                  remarks: 字典类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dict_label
+                  type: varchar(100)
+                  remarks: 字典标签 (用于前端显示)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dict_value
+                  type: varchar(100)
+                  remarks: 字典值 (用于后端存储)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: css_class
+                  type: varchar(100)
+                  remarks: CSS类名
+              - column:
+                  name: list_class
+                  type: varchar(100)
+                  remarks: 列表样式类名
+              - column:
+                  name: is_default
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 是否默认(0:否, 1:是)
+              - column:
+                  name: status
+                  type: tinyint
+                  defaultValueNumeric: '1'
+                  remarks: 状态(0:禁用, 1:启用)
+              - column:
+                  name: sort_order
+                  type: int
+                  defaultValueNumeric: '0'
+                  remarks: 排序
+              - column:
+                  name: remark
+                  type: varchar(500)
+                  remarks: 备注
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 是否删除(0:否, 1:是)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_dict_data
+            columnNames: dict_type, dict_value
+            constraintName: uk_dict_type_value
+        - createIndex:
+            tableName: sys_dict_data
+            indexName: idx_dict_data_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: sys_dict_data
+            indexName: idx_dict_type_status_sort
+            columns:
+              - column:
+                  name: dict_type
+              - column:
+                  name: status
+              - column:
+                  name: deleted
+              - column:
+                  name: sort_order
+        - createIndex:
+            tableName: sys_dict_data
+            indexName: idx_dict_type_default
+            columns:
+              - column:
+                  name: dict_type
+              - column:
+                  name: is_default
+              - column:
+                  name: deleted

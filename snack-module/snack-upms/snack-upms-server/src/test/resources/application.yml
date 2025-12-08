@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: upms
+  datasource:
+    url: jdbc:mysql://localhost:3306/mydatabase?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: myuser
+    password: mypassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  docker:
+    compose:
+      lifecycle-management: start-and-stop
+      file: snack-module/snack-upms/snack-upms-server/compose.yml
+  liquibase:
+    enabled: false
