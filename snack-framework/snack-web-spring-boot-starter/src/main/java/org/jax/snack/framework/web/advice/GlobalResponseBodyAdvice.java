@@ -56,12 +56,9 @@ public class GlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 	}
 
 	/**
-	 * 在响应体写入之前进行处理. 对于 JSON 类型的响应:
-	 * <ul>
-	 * <li>如果是字符串类型, 需要特殊处理以避免重复序列化.</li>
-	 * <li>其他类型直接包装为 {@link ApiResponse}.</li>
-	 * </ul>
-	 * 对于非 JSON 类型的响应, 保持原始格式不变.
+	 * 在响应体写入之前进行处理.
+	 * <p>
+	 * JSON 响应会包装为 {@link ApiResponse}, 字符串需特殊处理避免重复序列化, 非 JSON 保持原样.
 	 * @param body 响应体
 	 * @param returnType 返回类型
 	 * @param selectedContentType 选中的内容类型
