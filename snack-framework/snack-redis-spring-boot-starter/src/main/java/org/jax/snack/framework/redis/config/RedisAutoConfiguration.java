@@ -38,13 +38,8 @@ public class RedisAutoConfiguration {
 
 	/**
 	 * 创建并配置一个 {@link RedisTemplate} Bean.
-	 *
 	 * <p>
-	 * 核心设计决策如下:
-	 * <ul>
-	 * <li>键 (Key) 序列化: 使用 {@link RedisSerializer#string()}.</li>
-	 * <li>值 (Value) 序列化: 使用 {@link RedisSerializer#json()}, 自动处理类型信息.</li>
-	 * </ul>
+	 * Key 使用 String 序列化, Value 使用 JSON 序列化.
 	 * @param redisConnectionFactory Redis 连接工厂.
 	 * @return 一个配置好的 RedisTemplate 实例.
 	 */
