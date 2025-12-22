@@ -1,0 +1,13 @@
+plugins {
+	id 'java-library'
+	id 'java-conventions'
+}
+
+dependencies {
+	api project(':snack-framework:snack-core')
+	
+	compileOnly 'org.mapstruct:mapstruct'
+	
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testImplementation 'org.assertj:assertj-core'
+}
