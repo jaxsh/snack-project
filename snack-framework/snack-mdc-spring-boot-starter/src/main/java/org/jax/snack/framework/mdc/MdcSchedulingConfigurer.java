@@ -17,6 +17,7 @@
 package org.jax.snack.framework.mdc;
 
 import lombok.extern.slf4j.Slf4j;
+import org.aopalliance.intercept.MethodInterceptor;
 import org.jax.snack.framework.mdc.generator.TraceIdGenerator;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
@@ -79,7 +80,7 @@ public class MdcSchedulingConfigurer implements BeanPostProcessor, ApplicationCo
 	 */
 	private Object wrapTaskScheduler(ThreadPoolTaskScheduler scheduler) {
 		ProxyFactory proxyFactory = new ProxyFactory(scheduler);
-		proxyFactory.addAdvice((org.aopalliance.intercept.MethodInterceptor) (invocation) -> {
+		proxyFactory.addAdvice((MethodInterceptor) (invocation) -> {
 			String methodName = invocation.getMethod().getName();
 			Object[] args = invocation.getArguments();
 			if (isTaskSubmissionMethod(methodName) && args.length > 0 && args[0] instanceof Runnable originalTask) {
