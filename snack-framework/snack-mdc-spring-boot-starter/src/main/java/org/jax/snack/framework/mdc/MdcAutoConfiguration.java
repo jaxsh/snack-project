@@ -39,13 +39,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * MDC (Mapped Diagnostic Context) 自动配置类.
  * <p>
- * 该配置类负责初始化 Snack Framework 中与全链路追踪 (Trace ID) 相关的所有组件. 功能包括:
- * <ul>
- * <li>自动配置 {@link MdcLogbackConfigurer} 以支持 Logback 日志格式的动态注入.</li>
- * <li>自动配置 {@link MdcTaskDecorator} 以支持 {@code @Async} 异步任务的上下文传播.</li>
- * <li>提供默认的 {@link TraceIdGenerator} 实现 (UUID).</li>
- * <li>在 Web 环境下, 注册 {@link MdcInterceptor} 以处理 HTTP 请求的 Trace ID.</li>
- * </ul>
+ * 负责初始化全链路追踪 (Trace ID) 相关组件, 支持 Logback 日志注入, 异步任务上下文传播及 Web 拦截器.
  *
  * @author Jax Jiang
  */

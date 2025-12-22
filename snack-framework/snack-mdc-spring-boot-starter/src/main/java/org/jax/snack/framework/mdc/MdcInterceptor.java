@@ -31,11 +31,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * MDC HTTP 请求拦截器.
  * <p>
- * 实现 {@link HandlerInterceptor} 接口, 用于在 HTTP 请求处理全生命周期中管理 MDC 上下文. 主要功能:
- * <ul>
- * <li><b>Pre-Handle:</b> 生成或提取 Trace ID, 放入 MDC, 并可选写入响应头.</li>
- * <li><b>After-Completion:</b> 清理 MDC, 防止线程池污染.</li>
- * </ul>
+ * 在请求开始时生成/提取 Trace ID 放入 MDC, 请求结束时清理 MDC 防止线程池污染.
  *
  * @author Jax Jiang
  */
