@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "spring.mvc.validation")
+@ConfigurationProperties(prefix = "snack.mvc.validation")
 public class ValidationProperties {
 
 	/**

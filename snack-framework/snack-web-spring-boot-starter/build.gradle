@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-	api project(':snack-framework:snack-common')
+	api project(':snack-framework:snack-core')
 	api 'org.springframework.boot:spring-boot-starter-webmvc'
 	api 'org.springframework.boot:spring-boot-starter-restclient'
 	api 'org.springframework.boot:spring-boot-starter-validation'

@@ -16,7 +16,7 @@
 
 package org.jax.snack.framework.http.integration;
 
-import org.jax.snack.framework.common.exception.constants.ErrorCode;
+import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.http.config.RestClientAutoConfiguration;
 import org.jax.snack.framework.http.exception.InterfaceException;
 import org.junit.jupiter.api.Nested;
