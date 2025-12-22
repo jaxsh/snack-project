@@ -1,0 +1,574 @@
+# ============================================
+# Schema 驱动低代码平台 - 数据库 Changelog
+# 使用 YAML 格式支持多数据库
+# ============================================
+
+databaseChangeLog:
+
+  # ============================================
+  # 1. Schema 存储表
+  # ============================================
+  - changeSet:
+      id: create-lowcode_schema
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_schema
+            remarks: Schema存储表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: schema_name
+                  type: varchar(128)
+                  remarks: Schema名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_path
+                  type: varchar(128)
+                  remarks: RESTful API路径 (kebab-case)
+              - column:
+                  name: schema_json
+                  type: clob
+                  remarks: JSON Schema定义
+                  constraints:
+                    nullable: false
+              - column:
+                  name: label
+                  type: varchar(128)
+                  remarks: 显示名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: clob
+                  remarks: 描述
+              - column:
+                  name: category
+                  type: varchar(64)
+                  remarks: 分类
+              - column:
+                  name: status
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 状态 (0=草稿, 1=已发布)
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_schema
+            columnNames: schema_name, status, deleted
+            constraintName: uk_schema_name_status
+        - createIndex:
+            tableName: lowcode_schema
+            indexName: idx_resource_path
+            columns:
+              - column:
+                  name: resource_path
+
+  # ============================================
+  # 2. 资源映射表
+  # ============================================
+  - changeSet:
+      id: create-lowcode_resource
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_resource
+            remarks: 资源映射表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: resource_path
+                  type: varchar(255)
+                  remarks: API路径
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_type
+                  type: varchar(32)
+                  defaultValue: entity
+                  remarks: 资源类型
+              - column:
+                  name: schema_id
+                  type: bigint
+                  remarks: Schema ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: enable_list
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: enable_create
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: enable_update
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: enable_delete
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: enable_export
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: enable_import
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_resource
+            columnNames: resource_path, deleted
+            constraintName: uk_resource_path
+        - addForeignKeyConstraint:
+            baseTableName: lowcode_resource
+            baseColumnNames: schema_id
+            referencedTableName: lowcode_schema
+            referencedColumnNames: id
+            constraintName: fk_resource_schema
+
+  # ============================================
+  # 3. 数据类型表
+  # ============================================
+  - changeSet:
+      id: create-lowcode_data_type
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_data_type
+            remarks: 数据类型表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: logic_type
+                  type: varchar(32)
+                  remarks: 逻辑类型(前端)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: db_type
+                  type: varchar(32)
+                  remarks: 数据库类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: json_schema_type
+                  type: varchar(16)
+                  remarks: JSON Schema类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: label
+                  type: varchar(64)
+                  remarks: 显示名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: need_length
+                  type: tinyint
+                  defaultValueNumeric: '0'
+              - column:
+                  name: need_scale
+                  type: tinyint
+                  defaultValueNumeric: '0'
+              - column:
+                  name: default_length
+                  type: int
+              - column:
+                  name: default_scale
+                  type: int
+              - column:
+                  name: sort_order
+                  type: int
+                  defaultValueNumeric: '0'
+              - column:
+                  name: enabled
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_data_type
+            columnNames: logic_type
+            constraintName: uk_logic_type
+
+  - changeSet:
+      id: insert-data-types
+      author: lowcode
+      changes:
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: string }
+              - column: { name: db_type, value: varchar }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 字符串 }
+              - column: { name: need_length, valueNumeric: '1' }
+              - column: { name: default_length, valueNumeric: '255' }
+              - column: { name: sort_order, valueNumeric: '1' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: text }
+              - column: { name: db_type, value: varchar }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 文本区域 }
+              - column: { name: need_length, valueNumeric: '1' }
+              - column: { name: default_length, valueNumeric: '2000' }
+              - column: { name: sort_order, valueNumeric: '2' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: long_text }
+              - column: { name: db_type, value: clob }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 长文本/富文本 }
+              - column: { name: sort_order, valueNumeric: '3' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: int }
+              - column: { name: db_type, value: int }
+              - column: { name: json_schema_type, value: integer }
+              - column: { name: label, value: 整数 }
+              - column: { name: sort_order, valueNumeric: '4' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: long }
+              - column: { name: db_type, value: bigint }
+              - column: { name: json_schema_type, value: integer }
+              - column: { name: label, value: 长整数 }
+              - column: { name: sort_order, valueNumeric: '5' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: decimal }
+              - column: { name: db_type, value: decimal }
+              - column: { name: json_schema_type, value: number }
+              - column: { name: label, value: 小数/金额 }
+              - column: { name: need_length, valueNumeric: '1' }
+              - column: { name: need_scale, valueNumeric: '1' }
+              - column: { name: default_length, valueNumeric: '10' }
+              - column: { name: default_scale, valueNumeric: '2' }
+              - column: { name: sort_order, valueNumeric: '6' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: boolean }
+              - column: { name: db_type, value: boolean }
+              - column: { name: json_schema_type, value: boolean }
+              - column: { name: label, value: 布尔/开关 }
+              - column: { name: sort_order, valueNumeric: '7' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: date }
+              - column: { name: db_type, value: date }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 日期 }
+              - column: { name: sort_order, valueNumeric: '8' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: datetime }
+              - column: { name: db_type, value: datetime }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 日期时间 }
+              - column: { name: sort_order, valueNumeric: '9' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: timestamp }
+              - column: { name: db_type, value: TIMESTAMP }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 时间戳 }
+              - column: { name: sort_order, valueNumeric: '10' }
+
+  # ============================================
+  # 4. 元数据模板表
+  # ============================================
+  - changeSet:
+      id: create-lowcode_meta_schema
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_meta_schema
+            remarks: 元数据模板表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: meta_type
+                  type: varchar(32)
+                  remarks: 模板类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: varchar(16)
+                  defaultValue: '1.0'
+              - column:
+                  name: schema_json
+                  type: clob
+                  remarks: 模板Schema
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_meta_schema
+            columnNames: meta_type
+            constraintName: uk_meta_type
+
+  - changeSet:
+      id: insert-entity-template
+      author: lowcode
+      changes:
+        - insert:
+            tableName: lowcode_meta_schema
+            columns:
+              - column: { name: meta_type, value: entity }
+              - column: { name: version, value: '1.0' }
+              - column: { name: description, value: 实体定义模板 }
+              - column:
+                  name: schema_json
+                  valueClobFile: data/entity-template.json
+
+  - changeSet:
+      id: insert-field-template
+      author: lowcode
+      changes:
+        - insert:
+            tableName: lowcode_meta_schema
+            columns:
+              - column: { name: meta_type, value: field }
+              - column: { name: version, value: '1.0' }
+              - column: { name: description, value: 字段定义模板 }
+              - column:
+                  name: schema_json
+                  valueClobFile: data/field-template.json
+
+  # ============================================
+  # 5. Schema 历史表
+  # ============================================
+  - changeSet:
+      id: create-lowcode_schema_history
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_schema_history
+            remarks: Schema版本历史表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: schema_name
+                  type: varchar(100)
+                  remarks: Schema名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: schema_json
+                  type: clob
+                  remarks: 历史Schema JSON
+                  constraints:
+                    nullable: false
+              - column:
+                  name: change_summary
+                  type: varchar(500)
+                  remarks: 变更摘要
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - createIndex:
+            tableName: lowcode_schema_history
+            indexName: idx_schema_name_create_time
+            columns:
+              - column:
+                  name: schema_name
+              - column:
+                  name: create_time
+                  descending: true
+
+  # ============================================
+  # 7. 页面配置表
+  # ============================================
+  - changeSet:
+      id: create-lowcode_page
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_page
+            remarks: 页面配置表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: schema_id
+                  type: bigint
+                  remarks: 关联模型ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: page_type
+                  type: varchar(32)
+                  remarks: 页面类型(create, update, list, detail)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: page_name
+                  type: varchar(128)
+                  remarks: 页面名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: page_schema
+                  type: clob
+                  remarks: UI Schema JSON
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_page
+            columnNames: schema_id, page_type, deleted
+            constraintName: uk_page_schema_type
+        - addForeignKeyConstraint:
+            baseTableName: lowcode_page
+            baseColumnNames: schema_id
+            referencedTableName: lowcode_schema
+            referencedColumnNames: id
+            constraintName: fk_page_schema

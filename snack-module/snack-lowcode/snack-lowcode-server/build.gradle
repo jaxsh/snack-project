@@ -1,0 +1,14 @@
+plugins {
+	id 'spring-boot-application-conventions'
+}
+
+dependencies {
+	implementation project(':snack-module:snack-lowcode:snack-lowcode-biz')
+	implementation 'org.springframework.boot:spring-boot-starter-liquibase'
+
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+}
+
+

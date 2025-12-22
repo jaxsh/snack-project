@@ -1,0 +1,21 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	implementation project(':snack-module:snack-lowcode:snack-lowcode-api')
+	implementation project(':snack-framework:snack-web-spring-boot-starter')
+	implementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')
+	implementation project(':snack-framework:snack-excel-spring-boot-starter')
+	implementation project(':snack-framework:snack-utils')
+
+	implementation 'org.liquibase:liquibase-core'
+	implementation 'com.networknt:json-schema-validator'
+	implementation 'org.mapstruct:mapstruct'
+
+	annotationProcessor 'org.mapstruct:mapstruct-processor'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+}
+

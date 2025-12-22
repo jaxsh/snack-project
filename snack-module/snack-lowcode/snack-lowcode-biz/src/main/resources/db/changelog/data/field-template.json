@@ -1,0 +1,100 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "字段定义模板",
+    "properties": {
+        "fieldName": {
+            "type": "string",
+            "title": "字段名",
+            "description": "驼峰命名",
+            "x-component": "Input",
+            "x-component-props": {
+                "placeholder": "如: productName"
+            }
+        },
+        "column": {
+            "type": "string",
+            "title": "列名",
+            "description": "下划线命名,留空自动转换",
+            "x-component": "Input",
+            "x-component-props": {
+                "placeholder": "如: product_name"
+            }
+        },
+        "title": {
+            "type": "string",
+            "title": "显示标题",
+            "x-component": "Input"
+        },
+        "type": {
+            "type": "string",
+            "title": "数据类型",
+            "x-component": "Select",
+            "x-data-source": "/api/lowcode/meta/data-types"
+        },
+        "length": {
+            "type": "integer",
+            "title": "长度",
+            "x-component": "InputNumber",
+            "x-reactions": {
+                "dependencies": [
+                    "type"
+                ],
+                "fulfill": {
+                    "state": {
+                        "visible": "{{['varchar','decimal'].includes($deps[0])}}"
+                    }
+                }
+            }
+        },
+        "scale": {
+            "type": "integer",
+            "title": "精度",
+            "x-component": "InputNumber",
+            "x-reactions": {
+                "dependencies": [
+                    "type"
+                ],
+                "fulfill": {
+                    "state": {
+                        "visible": "{{$deps[0] === 'decimal'}}"
+                    }
+                }
+            }
+        },
+        "nullable": {
+            "type": "boolean",
+            "title": "可空",
+            "default": true,
+            "x-component": "Switch"
+        },
+        "defaultValue": {
+            "type": "string",
+            "title": "默认值",
+            "x-component": "Input"
+        },
+        "comment": {
+            "type": "string",
+            "title": "字段注释",
+            "x-component": "Input"
+        },
+        "index": {
+            "type": "boolean",
+            "title": "建索引",
+            "default": false,
+            "x-component": "Switch"
+        },
+        "unique": {
+            "type": "boolean",
+            "title": "唯一约束",
+            "default": false,
+            "x-component": "Switch"
+        }
+    },
+    "required": [
+        "fieldName",
+        "title",
+        "type",
+        "comment"
+    ]
+}

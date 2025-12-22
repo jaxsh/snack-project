@@ -1,0 +1,63 @@
+/*
+ * Copyright 2023-2025 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jax.snack.lowcode.biz.repository.impl;
+
+import java.util.List;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
+import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
+import org.jax.snack.lowcode.biz.mapper.LowcodeDataTypeMapper;
+import org.jax.snack.lowcode.biz.repository.LowcodeDataTypeRepository;
+
+import org.springframework.stereotype.Repository;
+
+/**
+ * 数据类型仓储实现.
+ *
+ * @author Jax Jiang
+ */
+@Repository
+@RequiredArgsConstructor
+public class LowcodeDataTypeRepositoryImpl implements LowcodeDataTypeRepository {
+
+	private final LowcodeDataTypeMapper mapper;
+
+	@Override
+	public boolean existsByDsl(QueryCondition condition) {
+		QueryWrapper<LowcodeDataType> wrapper = QueryWrapperBuilder.build(condition, LowcodeDataType.class);
+		return this.mapper.exists(wrapper);
+	}
+
+	@Override
+	public Page<LowcodeDataType> queryPageByDsl(QueryCondition condition) {
+		QueryWrapper<LowcodeDataType> wrapper = QueryWrapperBuilder.build(condition, LowcodeDataType.class);
+		long current = (condition.getCurrent() != null) ? condition.getCurrent() : 1L;
+		Page<LowcodeDataType> page = new Page<>(current, condition.getSize());
+		return this.mapper.selectPage(page, wrapper);
+	}
+
+	@Override
+	public List<LowcodeDataType> queryListByDsl(QueryCondition condition) {
+		QueryWrapper<LowcodeDataType> wrapper = QueryWrapperBuilder.build(condition, LowcodeDataType.class);
+		return this.mapper.selectList(wrapper);
+	}
+
+}

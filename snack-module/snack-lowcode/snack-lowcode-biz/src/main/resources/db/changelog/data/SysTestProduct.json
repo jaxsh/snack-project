@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "x-lowcode": {
+    "entityName": "SysTestProduct",
+    "tableName": "sys_test_product",
+    "label": "测试商品"
+  },
+  "properties": {
+    "id": {
+      "type": "integer",
+      "title": "ID",
+      "x-database": { "column": "id", "type": "bigint", "primaryKey": true },
+      "x-ui": { "hidden": true }
+    },
+    "productCode": {
+      "type": "string",
+      "title": "产品编码",
+      "minLength": 1,
+      "maxLength": 50,
+      "x-database": { "column": "product_code", "type": "varchar", "length": 50 },
+      "x-ui": { "widget": "Input", "placeholder": "XXX-0000" },
+      "x-list": { "visible": true, "width": 150 }
+    },
+    "productName": {
+      "type": "string",
+      "title": "产品名称",
+      "minLength": 2,
+      "maxLength": 100,
+      "x-database": { "column": "product_name", "type": "varchar", "length": 100 },
+      "x-ui": { "widget": "Input" },
+      "x-list": { "visible": true }
+    },
+    "price": {
+      "type": "number",
+      "title": "价格",
+      "minimum": 0.01,
+      "maximum": 999999.99,
+      "x-database": { "column": "price", "type": "decimal", "length": 10, "scale": 2 },
+      "x-ui": { "widget": "InputNumber", "precision": 2 },
+      "x-list": { "visible": true }
+    },
+    "category": {
+      "type": "string",
+      "title": "分类",
+      "x-database": { "column": "category", "type": "varchar", "length": 50 },
+      "x-ui": { "widget": "Select", "dataSource": { "type": "dict", "dictType": "test_product_category" } },
+      "x-list": { "visible": true }
+    },
+    "status": {
+      "type": "integer",
+      "title": "状态",
+      "enum": [0, 1],
+      "x-database": { "column": "status", "type": "tinyint" },
+      "x-ui": { "widget": "RadioGroup", "options": [{ "label": "停用", "value": 0 }, { "label": "启用", "value": 1 }] },
+      "x-list": { "visible": true }
+    }
+  },
+  "required": ["productCode", "productName", "price"]
+}

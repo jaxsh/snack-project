@@ -1,0 +1,24 @@
+spring:
+  profiles:
+    active: upms,${ENV:dev}
+  application:
+    name: lowcode-server
+  docker:
+    compose:
+      lifecycle-management: start-and-stop
+      file: snack-module/snack-upms/snack-upms-server/compose.yml
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  file:
+    name: logs/${spring.application.name}.log
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+

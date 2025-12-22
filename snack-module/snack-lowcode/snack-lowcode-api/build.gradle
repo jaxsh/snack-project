@@ -1,0 +1,9 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	api project(':snack-framework:snack-core')
+	api 'org.springframework.boot:spring-boot-starter-validation'
+}
