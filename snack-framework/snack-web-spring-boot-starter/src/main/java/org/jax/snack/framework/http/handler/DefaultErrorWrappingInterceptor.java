@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.http.exception.InterfaceException;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
 import org.springframework.http.HttpRequest;
@@ -43,8 +42,7 @@ public class DefaultErrorWrappingInterceptor implements ErrorWrappingInterceptor
 	 * @return http响应
 	 */
 	@Override
-	public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-			@NonNull ClientHttpRequestExecution execution) {
+	public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) {
 		try {
 			return execution.execute(request, body);
 		}
