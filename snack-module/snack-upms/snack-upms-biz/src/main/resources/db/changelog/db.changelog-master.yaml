@@ -213,3 +213,128 @@ databaseChangeLog:
                   name: is_default
               - column:
                   name: deleted
+
+  # ============================================
+  # 3. ID 规则表
+  # ============================================
+  - changeSet:
+      id: create-sys_id_rule
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_id_rule
+            remarks: ID 规则表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: rule_code
+                  type: varchar(64)
+                  remarks: 规则编码 (唯一标识)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rule_name
+                  type: varchar(100)
+                  remarks: 规则名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: segments
+                  type: json
+                  remarks: 分段规则配置(JSON Array)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+                  remarks: 规则描述
+              - column:
+                  name: reset_cycle
+                  type: varchar(20)
+                  defaultValue: 'NEVER'
+                  remarks: 序列号重置周期(NEVER/DAILY/MONTHLY/YEARLY)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 是否删除(0:否, 1:是)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_id_rule
+            columnNames: rule_code
+            constraintName: uk_rule_code
+        - createIndex:
+            tableName: sys_id_rule
+            indexName: idx_id_rule_deleted
+            columns:
+              - column:
+                  name: deleted
+
+  # ============================================
+  # 4. ID 序列号表
+  # ============================================
+  - changeSet:
+      id: create-sys_id_sequence
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_id_sequence
+            remarks: ID 序列号表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: rule_id
+                  type: bigint
+                  remarks: 规则ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cycle_key
+                  type: varchar(50)
+                  remarks: 周期标识(如20231223/202312/GLOBAL)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_value
+                  type: bigint
+                  defaultValueNumeric: '0'
+                  remarks: 当前序列值
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: sys_id_sequence
+            columnNames: rule_id, cycle_key
+            constraintName: uk_rule_cycle
