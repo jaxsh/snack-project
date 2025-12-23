@@ -39,3 +39,6 @@ out/
 ### Log files ###
 *.log
 *.log.*
+
+### macOS ###
+.DS_Store
