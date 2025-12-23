@@ -59,17 +59,26 @@ public class UserController {
 ### 3. Excel 导入示例
 
 ```java
-@PostMapping("/users/import")
-public void importUsers(@RequestParam("file") MultipartFile file) throws Exception {
-    ExcelReadBuilder.create(excelReadService, file.getInputStream(), UserDTO.class)
-        .batchSize(1000)
-        .failFast(false)
-        .execute((dataList) -> {
-            List<User> users = dataList.stream()
-                .map(converter::toEntity)
-                .toList();
-            userRepository.saveAll(users);
-        });
+@RestController
+@RequiredArgsConstructor
+class ImportController {
+
+    private final ExcelReadService excelReadService;
+    private final UserConverter converter;
+    private final UserRepository userRepository;
+
+    @PostMapping("/users/import")
+    public void importUsers(@RequestParam("file") MultipartFile file) throws Exception {
+        ExcelReadBuilder.create(excelReadService, file.getInputStream(), UserDTO.class)
+            .batchSize(1000)
+            .failFast(false)
+            .execute((dataList) -> {
+                List<User> users = dataList.stream()
+                    .map(converter::toEntity)
+                    .toList();
+                userRepository.saveAll(users);
+            });
+    }
 }
 ```
 
@@ -100,53 +109,73 @@ snack:
 ### 1. 自定义 Excel 样式
 
 ```java
-// 参数: 行高, 列宽, 是否锁定表头
-ExcelWriteBuilder.create(excelWriteService, buffer, users, UserVO.class)
-    .style(ExcelStyleFactory.create((short) 50, (short) 10, true))
-    .execute();
+class StyleExample {
+    void example(ExcelWriteService excelWriteService, OutputStream buffer, List<UserVO> users) {
+        // 参数: 行高, 列宽, 是否锁定表头
+        ExcelWriteBuilder.create(excelWriteService, buffer, users, UserVO.class)
+            .style(ExcelStyleFactory.create((short) 50, (short) 10, true))
+            .execute();
+    }
+}
 ```
 
 ### 2. 列合并
 
 ```java
-// 合并第 2、3 列 (索引从 0 开始)
-ExcelWriteBuilder.create(excelWriteService, buffer, data, DictDataVO.class)
-    .mergeColumns(1, 2)
-    .execute();
+class MergeExample {
+    void example(ExcelWriteService excelWriteService, OutputStream buffer, List<DictDataVO> data) {
+        // 合并第 2、3 列 (索引从 0 开始)
+        ExcelWriteBuilder.create(excelWriteService, buffer, data, DictDataVO.class)
+            .mergeColumns(1, 2)
+            .execute();
+    }
+}
 ```
 
 ### 3. 动态表头
 
 ```java
-// 自定义列名映射
-ExcelWriteBuilder.create(excelWriteService, buffer, data, UserVO.class)
-    .headers(Map.of(
-        "name", "姓名",
-        "age", "年龄"
-    ))
-    .execute();
+class DynamicHeaderExample {
+    void example(ExcelWriteService excelWriteService, OutputStream buffer, List<UserVO> data) {
+        // 自定义列名映射
+        ExcelWriteBuilder.create(excelWriteService, buffer, data, UserVO.class)
+            .headers(Map.of(
+                "name", "姓名",
+                "age", "年龄"
+            ))
+            .execute();
+    }
+}
 ```
 
 ### 4. 业务校验
 
 ```java
-// 除 JSR-303 校验外，还可添加自定义业务校验
-ExcelReadBuilder.create(excelReadService, inputStream, UserDTO.class)
-    .businessValidator(user -> {
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw BatchValidationException.forCollecting()
-                .addError(new ExcelFieldError("username", "Username already exists", 0));
-        }
-    })
-    .execute(userService::batchSave);
+class BusinessValidationExample {
+    void example(ExcelReadService excelReadService, InputStream inputStream, UserRepository userRepository, UserService userService) {
+        // 除 JSR-303 校验外，还可添加自定义业务校验
+        ExcelReadBuilder.create(excelReadService, inputStream, UserDTO.class)
+            .businessValidator(user -> {
+                if (userRepository.existsByUsername(user.getUsername())) {
+                    throw BatchValidationException.forCollecting()
+                        .addError(new ExcelFieldError("username", "Username already exists", 0));
+                }
+            })
+            .execute(userService::batchSave);
+    }
+}
 ```
 
 ### 5. CSV 导出
 
 ```java
-CsvWriteBuilder.create(excelWriteService, buffer, users, UserVO.class)
-    .delimiter(CsvDelimiter.COMMA)
-    .execute();
+class CsvExample {
+    void example(ExcelWriteService excelWriteService, OutputStream buffer, List<UserVO> users) {
+        CsvWriteBuilder.create(excelWriteService, buffer, users, UserVO.class)
+            .delimiter(CsvDelimiter.COMMA)
+            .execute();
+    }
+}
 ```
 
 ---
@@ -202,16 +231,20 @@ public class UserDTO {
 `BatchValidationException` 包含所有校验错误：
 
 ```java
-@ExceptionHandler(BatchValidationException.class)
-public ResponseEntity<ErrorResponse> handleBatchValidation(BatchValidationException ex) {
-    List<FieldError> errors = ex.getFieldErrors().stream()
-        .map(e -> new FieldError(
-            e.getFieldName(),
-            e.getMessage(),
-            e.getRowIndex()
-        ))
-        .toList();
-    return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+@RestControllerAdvice
+class GlobalExceptionHandler {
+
+    @ExceptionHandler(BatchValidationException.class)
+    public ResponseEntity<ErrorResponse> handleBatchValidation(BatchValidationException ex) {
+        List<FieldError> errors = ex.getFieldErrors().stream()
+            .map(e -> new FieldError(
+                e.getFieldName(),
+                e.getMessage(),
+                e.getRowIndex()
+            ))
+            .toList();
+        return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+    }
 }
 ```
 
