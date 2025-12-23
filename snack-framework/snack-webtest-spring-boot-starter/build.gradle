@@ -1,0 +1,12 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	compileOnly project(':snack-framework:snack-web-spring-boot-starter')
+	compileOnly project(':snack-framework:snack-core')
+
+	api 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	api 'org.assertj:assertj-core'
+}
