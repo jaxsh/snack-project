@@ -338,3 +338,182 @@ databaseChangeLog:
             tableName: sys_id_sequence
             columnNames: rule_id, cycle_key
             constraintName: uk_rule_cycle
+
+  # ============================================
+  # 5. 组织机构表
+  # ============================================
+  - changeSet:
+      id: create-sys_org
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_org
+            remarks: 组织机构表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: org_code
+                  type: varchar(64)
+                  remarks: 业务编码 (唯一, 格式 ORG-简称-序号)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: org_name
+                  type: varchar(100)
+                  remarks: 机构名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: short_name
+                  type: varchar(20)
+                  remarks: 简称/缩写
+              - column:
+                  name: parent_code
+                  type: varchar(64)
+                  remarks: 父节点编码 (根节点为空)
+              - column:
+                  name: level
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 层级深度 (根节点为0)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ancestors
+                  type: varchar(500)
+                  remarks: 祖先路径 (存 orgCode, 如 ORG-HQ-001,ORG-SH-002)
+              - column:
+                  name: province
+                  type: varchar(50)
+                  remarks: 省
+              - column:
+                  name: city
+                  type: varchar(50)
+                  remarks: 市
+              - column:
+                  name: district
+                  type: varchar(50)
+                  remarks: 区
+              - column:
+                  name: address
+                  type: varchar(200)
+                  remarks: 详细地址
+              - column:
+                  name: contact_name
+                  type: varchar(50)
+                  remarks: 联系人
+              - column:
+                  name: contact_phone
+                  type: varchar(20)
+                  remarks: 联系电话
+              - column:
+                  name: sort_order
+                  type: int
+                  defaultValueNumeric: '0'
+                  remarks: 排序
+              - column:
+                  name: status
+                  type: tinyint
+                  defaultValueNumeric: '1'
+                  remarks: 状态(0:禁用, 1:启用)
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_org
+            columnNames: org_code
+            constraintName: uk_org_code
+        - createIndex:
+            tableName: sys_org
+            indexName: idx_org_parent_code
+            columns:
+              - column:
+                  name: parent_code
+        - sql:
+            sql: CREATE INDEX idx_org_ancestors ON sys_org(ancestors(255))
+
+  # ============================================
+  # 6. 组织层级名称配置表
+  # ============================================
+  - changeSet:
+      id: create-sys_org_level_name
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_org_level_name
+            remarks: 组织层级名称配置表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: root_id
+                  type: bigint
+                  remarks: 关联根节点ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: level
+                  type: tinyint
+                  remarks: 层级编号 (0, 1, 2...)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: level_name
+                  type: varchar(50)
+                  remarks: 层级名称 (如 集团, 分公司, 部门)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_org_level_name
+            columnNames: root_id, level
+            constraintName: uk_root_level
+        - createIndex:
+            tableName: sys_org_level_name
+            indexName: idx_level_name_root_id
+            columns:
+              - column:
+                  name: root_id

@@ -16,21 +16,19 @@
 
 package org.jax.snack.upms.api.vo;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 测试商品 VO.
+ * 组织机构 VO.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
-public class SysTestProductVO {
+public class SysOrgVO {
 
 	/**
 	 * 主键ID.
@@ -38,29 +36,74 @@ public class SysTestProductVO {
 	private Long id;
 
 	/**
-	 * 产品编码.
+	 * 业务编码.
 	 */
-	private String productCode;
+	private String orgCode;
 
 	/**
-	 * 产品名称.
+	 * 机构名称.
 	 */
-	private String productName;
+	private String orgName;
 
 	/**
-	 * 价格.
+	 * 简称/缩写.
 	 */
-	private BigDecimal price;
+	private String shortName;
 
 	/**
-	 * 库存数量.
+	 * 父节点编码.
 	 */
-	private Integer stock;
+	private String parentCode;
 
 	/**
-	 * 累计销量.
+	 * 层级深度.
 	 */
-	private Long totalSales;
+	private Integer level;
+
+	/**
+	 * 层级名称 (从 sys_org_level_name 获取).
+	 */
+	private String levelName;
+
+	/**
+	 * 祖先路径.
+	 */
+	private String ancestors;
+
+	/**
+	 * 省.
+	 */
+	private String province;
+
+	/**
+	 * 市.
+	 */
+	private String city;
+
+	/**
+	 * 区.
+	 */
+	private String district;
+
+	/**
+	 * 详细地址.
+	 */
+	private String address;
+
+	/**
+	 * 联系人.
+	 */
+	private String contactName;
+
+	/**
+	 * 联系电话.
+	 */
+	private String contactPhone;
+
+	/**
+	 * 排序.
+	 */
+	private Integer sortOrder;
 
 	/**
 	 * 状态.
@@ -68,68 +111,13 @@ public class SysTestProductVO {
 	private Integer status;
 
 	/**
-	 * 状态标签.
-	 */
-	private String statusLabel;
-
-	/**
-	 * 优先级.
-	 */
-	private String priority;
-
-	/**
-	 * 优先级标签.
-	 */
-	private String priorityLabel;
-
-	/**
-	 * 商品分类.
-	 */
-	private String category;
-
-	/**
-	 * 商品分类标签.
-	 */
-	private String categoryLabel;
-
-	/**
-	 * 仓库.
-	 */
-	private Integer warehouse;
-
-	/**
-	 * 仓库标签.
-	 */
-	private String warehouseLabel;
-
-	/**
-	 * 标签.
-	 */
-	private String tag;
-
-	/**
-	 * 标签名称.
-	 */
-	private String tagLabel;
-
-	/**
-	 * 上架日期.
-	 */
-	private LocalDate launchDate;
-
-	/**
 	 * 创建时间.
 	 */
-	private LocalDateTime createdTime;
+	private ZonedDateTime createTime;
 
 	/**
-	 * 扩展信息.
+	 * 更新时间.
 	 */
-	private String extraInfo;
-
-	/**
-	 * 产品描述.
-	 */
-	private String description;
+	private ZonedDateTime updateTime;
 
 }
