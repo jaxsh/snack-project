@@ -20,6 +20,7 @@ import java.util.Map;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
@@ -37,6 +38,7 @@ public class SysIdRuleSegmentDTO {
 	 * 片段类型.
 	 */
 	@NotBlank(groups = Create.class)
+	@Size(min = 1, max = 32)
 	private String segmentType;
 
 	/**

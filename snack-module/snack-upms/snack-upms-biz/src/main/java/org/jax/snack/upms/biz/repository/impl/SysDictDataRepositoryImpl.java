@@ -87,21 +87,4 @@ public class SysDictDataRepositoryImpl implements SysDictDataRepository {
 		this.mapper.delete(new LambdaQueryWrapper<SysDictData>().eq(SysDictData::getDictType, dictType));
 	}
 
-	@Override
-	public void saveOrUpdateBatch(List<SysDictData> entities) {
-		entities.forEach((entity) -> {
-			SysDictData existing = this.mapper
-				.selectOne(new LambdaQueryWrapper<SysDictData>().eq(SysDictData::getDictType, entity.getDictType())
-					.eq(SysDictData::getDictValue, entity.getDictValue())
-					.last("LIMIT 1"));
-			if (existing != null) {
-				entity.setId(existing.getId());
-				this.mapper.updateById(entity);
-			}
-			else {
-				this.mapper.insert(entity);
-			}
-		});
-	}
-
 }

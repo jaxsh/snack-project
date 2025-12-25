@@ -19,6 +19,7 @@ package org.jax.snack.upms.biz.service.impl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
@@ -41,6 +42,7 @@ import org.jax.snack.upms.biz.repository.SysIdSequenceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * ID 规则服务实现.
@@ -125,7 +127,7 @@ public class SysIdRuleServiceImpl implements SysIdRuleService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public String generate(String ruleCode, Map<String, String> args) {
-		SysIdRule rule = this.ruleRepository.findByRuleCode(ruleCode)
+		SysIdRule rule = findByRuleCode(ruleCode)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, ENTITY_NAME));
 
 		List<SysIdRuleSegmentDTO> segments = rule.getSegments();
@@ -134,7 +136,9 @@ public class SysIdRuleServiceImpl implements SysIdRuleService {
 		}
 
 		LocalDate currentDate = LocalDate.now();
-		String cycleKey = rule.getResetCycle().computeCycleKey(currentDate);
+		String baseCycleKey = rule.getResetCycle().computeCycleKey(currentDate);
+		String shortName = (args != null) ? args.get("shortName") : null;
+		String cycleKey = StringUtils.hasText(shortName) ? baseCycleKey + "-" + shortName : baseCycleKey;
 		GeneratorContext context = new GeneratorContext(rule, currentDate, cycleKey, args);
 
 		StringBuilder result = new StringBuilder();
@@ -171,6 +175,13 @@ public class SysIdRuleServiceImpl implements SysIdRuleService {
 			.filter((g) -> g.getType() == type)
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.PARAM_INVALID, "Unsupported segment type: " + type));
+	}
+
+	private Optional<SysIdRule> findByRuleCode(String ruleCode) {
+		QueryCondition condition = new QueryCondition();
+		condition.setWhere(Map.of("ruleCode", Map.of(QueryOperator.EQ.getValue(), ruleCode)));
+		List<SysIdRule> result = this.ruleRepository.queryListByDsl(condition);
+		return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}
 
 }

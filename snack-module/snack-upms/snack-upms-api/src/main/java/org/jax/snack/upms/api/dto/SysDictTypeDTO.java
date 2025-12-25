@@ -38,14 +38,14 @@ public class SysDictTypeDTO {
 	 * 字典名称.
 	 */
 	@NotBlank(groups = Create.class)
-	@Size(max = 100)
+	@Size(min = 1, max = 100)
 	private String dictName;
 
 	/**
 	 * 字典类型.
 	 */
 	@NotBlank(groups = Create.class)
-	@Size(max = 100)
+	@Size(min = 1, max = 100)
 	private String dictType;
 
 	/**

@@ -51,13 +51,6 @@ public interface SysIdRuleRepository {
 	Optional<SysIdRule> findById(Long id);
 
 	/**
-	 * 根据规则编码查询.
-	 * @param ruleCode 规则编码
-	 * @return Optional 包装的实体
-	 */
-	Optional<SysIdRule> findByRuleCode(String ruleCode);
-
-	/**
 	 * 更新规则.
 	 * @param entity 规则实体
 	 */

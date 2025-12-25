@@ -19,7 +19,6 @@ package org.jax.snack.upms.biz.repository.impl;
 import java.util.List;
 import java.util.Optional;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -56,13 +55,6 @@ public class SysIdRuleRepositoryImpl implements SysIdRuleRepository {
 	@Override
 	public Optional<SysIdRule> findById(Long id) {
 		return Optional.ofNullable(this.mapper.selectById(id));
-	}
-
-	@Override
-	public Optional<SysIdRule> findByRuleCode(String ruleCode) {
-		LambdaQueryWrapper<SysIdRule> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(SysIdRule::getRuleCode, ruleCode);
-		return Optional.ofNullable(this.mapper.selectOne(wrapper));
 	}
 
 	@Override

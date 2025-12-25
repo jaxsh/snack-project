@@ -50,44 +50,25 @@ class SysIdGeneratorTests {
 	@Test
 	@DisplayName("测试完整 ID 生成: 前缀 + 日期 + 序列号")
 	void shouldGenerateFullId() {
-		// 1. 创建规则
 		String code = "FULL_ID_TEST";
 		SysIdRuleDTO dto = new SysIdRuleDTO();
 		dto.setRuleCode(code);
 		dto.setRuleName("完整测试");
 		dto.setResetCycle(ResetCycle.DAILY.name());
 
-		// Seg 1: CONST "SNACK-"
-		SysIdRuleSegmentDTO seg1 = new SysIdRuleSegmentDTO();
-		seg1.setSegmentType(SegmentType.FIXED.name());
-		seg1.setConfig(Map.of("value", "SNACK-"));
-
-		// Seg 2: DATE "yyyyMMdd"
-		SysIdRuleSegmentDTO seg2 = new SysIdRuleSegmentDTO();
-		seg2.setSegmentType(SegmentType.DATE.name());
-		seg2.setConfig(Map.of("pattern", "yyyyMMdd"));
-
-		// Seg 3: CONST "-"
-		SysIdRuleSegmentDTO seg3 = new SysIdRuleSegmentDTO();
-		seg3.setSegmentType(SegmentType.FIXED.name());
-		seg3.setConfig(Map.of("value", "-"));
-
-		// Seg 4: SEQ length=4
-		SysIdRuleSegmentDTO seg4 = new SysIdRuleSegmentDTO();
-		seg4.setSegmentType(SegmentType.SEQUENCE.name());
-		seg4.setConfig(Map.of("length", 4));
+		SysIdRuleSegmentDTO seg1 = createFixedSegment("SNACK-");
+		SysIdRuleSegmentDTO seg2 = createDateSegment("yyyyMMdd");
+		SysIdRuleSegmentDTO seg3 = createFixedSegment("-");
+		SysIdRuleSegmentDTO seg4 = createSequenceSegment(4);
 
 		dto.setSegments(List.of(seg1, seg2, seg3, seg4));
 		this.sysIdRuleService.create(dto);
 
-		// 2. 生成并验证
 		String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-		// 第一次生成
 		String id1 = this.sysIdRuleService.generate(code);
 		assertThat(id1).isEqualTo("SNACK-" + dateStr + "-0001");
 
-		// 第二次生成
 		String id2 = this.sysIdRuleService.generate(code);
 		assertThat(id2).isEqualTo("SNACK-" + dateStr + "-0002");
 	}
@@ -101,29 +82,16 @@ class SysIdGeneratorTests {
 		dto.setRuleName("参数测试");
 		dto.setResetCycle(ResetCycle.NEVER.name());
 
-		// Seg 1: CONST "ORD-"
-		SysIdRuleSegmentDTO seg1 = new SysIdRuleSegmentDTO();
-		seg1.setSegmentType(SegmentType.FIXED.name());
-		seg1.setConfig(Map.of("value", "ORD-"));
-
-		// Seg 2: ARG "shopId"
-		SysIdRuleSegmentDTO seg2 = new SysIdRuleSegmentDTO();
-		seg2.setSegmentType(SegmentType.ARG.name());
-		seg2.setConfig(Map.of("key", "shopId"));
-
-		// Seg 3: SEQ
-		SysIdRuleSegmentDTO seg3 = new SysIdRuleSegmentDTO();
-		seg3.setSegmentType(SegmentType.SEQUENCE.name());
-		seg3.setConfig(Map.of("length", 3));
+		SysIdRuleSegmentDTO seg1 = createFixedSegment("ORD-");
+		SysIdRuleSegmentDTO seg2 = createArgSegment("shopId");
+		SysIdRuleSegmentDTO seg3 = createSequenceSegment(3);
 
 		dto.setSegments(List.of(seg1, seg2, seg3));
 		this.sysIdRuleService.create(dto);
 
-		// 调用 1: 传入 shopId
 		String id1 = this.sysIdRuleService.generate(code, Map.of("shopId", "9527"));
 		assertThat(id1).isEqualTo("ORD-9527001");
 
-		// 调用 2: 传入另一个 shopId
 		String id2 = this.sysIdRuleService.generate(code, Map.of("shopId", "8888"));
 		assertThat(id2).isEqualTo("ORD-8888002");
 	}
@@ -137,17 +105,48 @@ class SysIdGeneratorTests {
 		dto.setRuleName("随机测试");
 		dto.setResetCycle(ResetCycle.NEVER.name());
 
-		// Seg: RANDOM length=6
-		SysIdRuleSegmentDTO seg1 = new SysIdRuleSegmentDTO();
-		seg1.setSegmentType(SegmentType.RANDOM.name());
-		seg1.setConfig(Map.of("length", 6, "type", "numeric")); // 假设支持 type 参数，或默认
-																// alphanumeric
+		SysIdRuleSegmentDTO seg1 = createRandomSegment(6, "numeric");
 
 		dto.setSegments(List.of(seg1));
 		this.sysIdRuleService.create(dto);
 
 		String id = this.sysIdRuleService.generate(code);
 		assertThat(id).hasSize(6);
+	}
+
+	private SysIdRuleSegmentDTO createFixedSegment(String value) {
+		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
+		seg.setSegmentType(SegmentType.FIXED.name());
+		seg.setConfig(Map.of("value", value));
+		return seg;
+	}
+
+	private SysIdRuleSegmentDTO createSequenceSegment(int length) {
+		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
+		seg.setSegmentType(SegmentType.SEQUENCE.name());
+		seg.setConfig(Map.of("length", length));
+		return seg;
+	}
+
+	private SysIdRuleSegmentDTO createArgSegment(String key) {
+		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
+		seg.setSegmentType(SegmentType.ARG.name());
+		seg.setConfig(Map.of("key", key));
+		return seg;
+	}
+
+	private SysIdRuleSegmentDTO createDateSegment(String pattern) {
+		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
+		seg.setSegmentType(SegmentType.DATE.name());
+		seg.setConfig(Map.of("pattern", pattern));
+		return seg;
+	}
+
+	private SysIdRuleSegmentDTO createRandomSegment(int length, String type) {
+		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
+		seg.setSegmentType(SegmentType.RANDOM.name());
+		seg.setConfig(Map.of("length", length, "type", type));
+		return seg;
 	}
 
 }

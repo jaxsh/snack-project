@@ -16,7 +16,10 @@
 
 package org.jax.snack.upms.api.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
@@ -34,28 +37,33 @@ public class SysDictDataDTO {
 	 * 字典类型.
 	 */
 	@NotBlank(groups = Create.class)
+	@Size(min = 1, max = 100)
 	private String dictType;
 
 	/**
 	 * 字典标签.
 	 */
 	@NotBlank(groups = Create.class)
+	@Size(min = 1, max = 100)
 	private String dictLabel;
 
 	/**
 	 * 字典值.
 	 */
 	@NotBlank(groups = Create.class)
+	@Size(min = 1, max = 100)
 	private String dictValue;
 
 	/**
 	 * CSS类名.
 	 */
+	@Size(max = 100)
 	private String cssClass;
 
 	/**
 	 * 列表样式类名.
 	 */
+	@Size(max = 100)
 	private String listClass;
 
 	/**
@@ -71,11 +79,14 @@ public class SysDictDataDTO {
 	/**
 	 * 排序.
 	 */
+	@Min(0)
+	@Max(999)
 	private Integer sortOrder;
 
 	/**
 	 * 备注.
 	 */
+	@Size(max = 500)
 	private String remark;
 
 }

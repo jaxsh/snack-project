@@ -115,10 +115,4 @@ public class SysDictDataServiceImpl implements SysDictDataService {
 		return dataList.stream().map(this.converter::toVO).toList();
 	}
 
-	@Override
-	public void saveBatch(List<SysDictDataDTO> dtoList) {
-		List<SysDictData> entities = dtoList.stream().map(this.converter::toEntity).toList();
-		this.repository.saveOrUpdateBatch(entities);
-	}
-
 }

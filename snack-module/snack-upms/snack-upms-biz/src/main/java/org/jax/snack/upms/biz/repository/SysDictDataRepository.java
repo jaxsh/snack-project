@@ -82,10 +82,4 @@ public interface SysDictDataRepository {
 	 */
 	void deleteByDictType(String dictType);
 
-	/**
-	 * 批量保存或更新字典数据.
-	 * @param entities 字典数据实体列表
-	 */
-	void saveOrUpdateBatch(List<SysDictData> entities);
-
 }

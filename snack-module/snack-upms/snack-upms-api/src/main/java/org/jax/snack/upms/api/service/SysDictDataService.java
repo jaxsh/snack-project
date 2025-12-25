@@ -63,10 +63,4 @@ public interface SysDictDataService {
 	 */
 	List<SysDictDataVO> getByDictType(String dictType);
 
-	/**
-	 * 批量保存字典数据 (用于导入).
-	 * @param dtoList 字典数据 DTO 列表
-	 */
-	void saveBatch(List<SysDictDataDTO> dtoList);
-
 }

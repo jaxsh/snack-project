@@ -39,14 +39,14 @@ public class SysIdRuleDTO {
 	 * 规则编码.
 	 */
 	@NotBlank(groups = Create.class)
-	@Size(max = 64)
+	@Size(min = 1, max = 64)
 	private String ruleCode;
 
 	/**
 	 * 规则名称.
 	 */
 	@NotBlank(groups = Create.class)
-	@Size(max = 100)
+	@Size(min = 1, max = 100)
 	private String ruleName;
 
 	/**
@@ -59,6 +59,7 @@ public class SysIdRuleDTO {
 	 * 序列号重置周期.
 	 */
 	@NotBlank(groups = Create.class)
+	@Size(min = 1, max = 20)
 	private String resetCycle;
 
 	/**
