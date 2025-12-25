@@ -8,7 +8,7 @@ dependencies {
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+	testAndDevelopmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 
 	testImplementation project(':snack-framework:snack-webtest-spring-boot-starter')
 }

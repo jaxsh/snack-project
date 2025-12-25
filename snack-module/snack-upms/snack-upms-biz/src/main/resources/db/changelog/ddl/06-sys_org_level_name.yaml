@@ -1,0 +1,63 @@
+# sys_org_level_name 表结构
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_org_level_name
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_org_level_name
+            remarks: 组织层级名称配置表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: root_id
+                  type: bigint
+                  remarks: 关联根节点ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: level
+                  type: tinyint
+                  remarks: 层级编号 (0, 1, 2...)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: level_name
+                  type: varchar(50)
+                  remarks: 层级名称 (如 集团, 分公司, 部门)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_org_level_name
+            columnNames: root_id, level
+            constraintName: uk_root_level
+        - createIndex:
+            tableName: sys_org_level_name
+            indexName: idx_level_name_root_id
+            columns:
+              - column:
+                  name: root_id
