@@ -70,18 +70,15 @@ public class DynamicCrudService {
 	 */
 	@Transactional
 	public void create(String schemaName, Map<String, Object> data) {
-		// 1. 数据校验
 		this.validator.validate(schemaName, data);
 
 		JsonNode schema = this.schemaService.getSchema(schemaName);
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
 		List<FieldDefinition> fields = this.schemaService.extractFields(schema);
 
-		// 2. 转换为数据库列名映射并补齐审计字段
 		Map<String, Object> storageData = this.dataTransformer.toStorage(data, fields);
 		this.systemFieldManager.fillSystemParams(storageData, false);
 
-		// 3. 执行插入
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
 			this.dynamicCrudMapper.dynamicInsert(storageData);
@@ -93,7 +90,7 @@ public class DynamicCrudService {
 				data.put(SystemFieldManager.FIELD_ID, id);
 			}
 
-			log.info("创建 {} 记录成功, id={}", schemaName, id);
+			log.info("Record created successfully for {}, id={}", schemaName, id);
 		}
 		finally {
 			TableContextHolder.clear();
@@ -115,11 +112,9 @@ public class DynamicCrudService {
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
 
-			// 构建 UpdateWrapper 实现 Patch 更新
 			UpdateWrapper<Void> wrapper = new UpdateWrapper<>();
 			wrapper.eq(SystemFieldManager.COLUMN_ID, id);
 
-			// 转换并设置更新字段
 			Map<String, Object> storageData = this.dataTransformer.toStorage(data, fields);
 			this.systemFieldManager.fillSystemParams(storageData, true);
 
@@ -149,7 +144,6 @@ public class DynamicCrudService {
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
 
-			// 物理删除
 			QueryWrapper<Void> wrapper = new QueryWrapper<>();
 			wrapper.eq(SystemFieldManager.COLUMN_ID, id);
 
@@ -171,13 +165,11 @@ public class DynamicCrudService {
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
 		List<FieldDefinition> fields = this.schemaService.extractVisibleFields(schema);
 
-		// 1. 构建字段映射
 		Map<String, String> fieldMapping = new HashMap<>();
 		for (FieldDefinition field : fields) {
 			fieldMapping.put(field.getFieldName(), field.getDbColumn());
 		}
 
-		// 注入系统字段映射，确保 ID 和 审计字段 也能参与查询/排序
 		for (SystemFieldManager.SystemField sysField : this.systemFieldManager.getSystemFields()) {
 			fieldMapping.putIfAbsent(sysField.fieldName(), sysField.columnName());
 		}

@@ -125,7 +125,7 @@ public class LowcodeSchemaService {
 		if (entity != null) {
 			this.schemaRepository.deleteById(id);
 			this.schemaService.clearCache(entity.getSchemaName());
-			log.info("删除 Schema: {}", entity.getSchemaName());
+			log.info("Deleting Schema: {}", entity.getSchemaName());
 		}
 	}
 

@@ -68,19 +68,15 @@ public class DynamicValidator {
 	 * @throws ConstraintViolationException 校验失败时抛出
 	 */
 	public void validate(String schemaName, Map<String, Object> data) {
-		// 1. 获取存储的 JSON Schema
 		JsonNode schemaNode = this.schemaService.getSchema(schemaName);
 
-		// 2. 转换数据为 JsonNode
 		JsonNode dataNode = this.jsonMapper.valueToTree(data);
 
-		// 3. 创建校验器并执行校验
 		Schema schema = this.schemaRegistry.getSchema(schemaNode);
 		Locale locale = LocaleContextHolder.getLocale();
 		List<Error> errors = schema.validate(dataNode,
 				(ctx) -> ctx.executionConfig((config) -> config.locale(locale).failFast(false)));
 
-		// 4. 如果有错误，转换为 ConstraintViolationException
 		if (!errors.isEmpty()) {
 			Set<ConstraintViolation<?>> violations = new HashSet<>();
 			for (Error error : errors) {
@@ -88,7 +84,7 @@ public class DynamicValidator {
 				String message = error.getMessage();
 				violations.add(SimpleConstraintViolation.of(message, path, null));
 			}
-			log.warn("数据校验失败 [{}]: {}", schemaName, violations);
+			log.warn("Data validation failed [{}]: {}", schemaName, violations);
 			throw new ConstraintViolationException(violations);
 		}
 	}

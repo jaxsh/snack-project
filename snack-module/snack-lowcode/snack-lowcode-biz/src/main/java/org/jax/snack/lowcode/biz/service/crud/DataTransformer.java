@@ -69,11 +69,9 @@ public class DataTransformer {
 
 		fields.stream().filter((field) -> storageData.containsKey(field.getFieldName())).forEach((field) -> {
 			Object value = storageData.get(field.getFieldName());
-			// 根据 JSON Schema type 转换类型
 			Object convertedValue = convertToJavaType(value, field.getType());
 			displayData.put(field.getFieldName(), convertedValue);
 
-			// 添加 Label 翻译字段
 			if (field.getXOptions() != null) {
 				String label = this.optionsResolver.getLabel(field.getXOptions(), convertedValue);
 				displayData.put(field.getFieldName() + "Label", label);

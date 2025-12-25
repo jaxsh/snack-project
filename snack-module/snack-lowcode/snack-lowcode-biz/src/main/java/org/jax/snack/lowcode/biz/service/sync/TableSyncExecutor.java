@@ -86,11 +86,10 @@ public class TableSyncExecutor {
 	 */
 	public void syncTable(String schemaName, JsonNode schemaJson, List<SchemaChange> changes) {
 		if (CollectionUtils.isEmpty(changes)) {
-			log.info("表结构无变更: {}", schemaName);
+			log.info("Table structure unchanged: {}", schemaName);
 			return;
 		}
 
-		// 判断是否是新建表
 		boolean isCreateTable = changes.size() == 1 && changes.get(0).getType() == SchemaChangeType.ADD_TABLE;
 
 		if (isCreateTable) {
@@ -123,10 +122,10 @@ public class TableSyncExecutor {
 
 			executeChanges(conn, schemaName, List.of(createTable));
 
-			log.info("表创建成功: {}", metadata.getTableName());
+			log.info("Table created successfully: {}", metadata.getTableName());
 		}
 		catch (SQLException | LiquibaseException ex) {
-			log.error("表创建失败: {}", ex.getMessage(), ex);
+			log.error("Table creation failed: {}", ex.getMessage(), ex);
 			throw new RuntimeException("表创建失败: " + ex.getMessage(), ex);
 		}
 	}
@@ -148,17 +147,17 @@ public class TableSyncExecutor {
 				Change lbChange = convertToLiquibaseChange(tableName, change);
 				if (lbChange != null) {
 					liquibaseChanges.add(lbChange);
-					log.info("变更: {} - {}", change.getType(), change.getColumnName());
+					log.info("Change detected: {} - {}", change.getType(), change.getColumnName());
 				}
 			}
 
 			if (!liquibaseChanges.isEmpty()) {
 				executeChanges(conn, schemaName, liquibaseChanges);
-				log.info("表结构变更成功: {}, 变更数: {}", tableName, liquibaseChanges.size());
+				log.info("Table structure updated successfully: {}, Changes: {}", tableName, liquibaseChanges.size());
 			}
 		}
 		catch (SQLException | LiquibaseException ex) {
-			log.error("表结构变更失败: {}", ex.getMessage(), ex);
+			log.error("Table structure update failed: {}", ex.getMessage(), ex);
 			throw new RuntimeException("表结构变更失败: " + ex.getMessage(), ex);
 		}
 	}
@@ -238,7 +237,6 @@ public class TableSyncExecutor {
 				createIndex.setTableName(tableName);
 				createIndex.setIndexName(change.getIndexName());
 				createIndex.setUnique(Boolean.TRUE.equals(change.getUnique()));
-				// 支持联合索引: 添加所有列
 				for (String colName : change.getIndexColumns()) {
 					AddColumnConfig col = new AddColumnConfig();
 					col.setName(colName);

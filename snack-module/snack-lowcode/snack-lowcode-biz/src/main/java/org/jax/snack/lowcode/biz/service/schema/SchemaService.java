@@ -154,7 +154,7 @@ public class SchemaService {
 	 */
 	public void clearCache(String schemaName) {
 		this.schemaCache.remove(schemaName);
-		log.info("清除 Schema 缓存: {}", schemaName);
+		log.info("Evicting schema cache: {}", schemaName);
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class SchemaService {
 	 */
 	public void clearAllCache() {
 		this.schemaCache.clear();
-		log.info("清除所有 Schema 缓存");
+		log.info("Evicting all schema caches");
 	}
 
 	private Set<String> extractRequiredFields(JsonNode schema) {

@@ -6,7 +6,9 @@ spring:
   docker:
     compose:
       lifecycle-management: start-and-stop
-      file: snack-module/snack-upms/snack-upms-server/compose.yml
+      file: compose.yml
+      skip:
+        in-tests: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 

@@ -72,7 +72,6 @@ public class SimpleConstraintViolation<T> implements ConstraintViolation<T> {
 			.build();
 	}
 
-	// 简易 Path 实现
 	private static class SimplePath implements Path {
 
 		private final String property;
@@ -94,7 +93,6 @@ public class SimpleConstraintViolation<T> implements ConstraintViolation<T> {
 
 	}
 
-	// 简易 Node 实现
 	private static class SimpleNode implements Path.Node {
 
 		private final String name;

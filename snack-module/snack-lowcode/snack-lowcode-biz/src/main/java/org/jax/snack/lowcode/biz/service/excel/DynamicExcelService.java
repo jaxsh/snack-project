@@ -105,7 +105,7 @@ public class DynamicExcelService {
 		// 输出文件
 		ResponseHelper.downloadExcel(response, buffer, metadata.getLabel() + "_导入模板");
 
-		log.info("导出模板: {}", schemaName);
+		log.info("Exporting template for: {}", schemaName);
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class DynamicExcelService {
 		// 输出文件
 		ResponseHelper.downloadExcel(response, buffer, metadata.getLabel() + "_导出数据");
 
-		log.info("导出数据: {}, 共 {} 条", schemaName, dataList.size());
+		log.info("Exporting data for: {}, Total count: {}", schemaName, dataList.size());
 	}
 
 	/**
@@ -212,7 +212,7 @@ public class DynamicExcelService {
 		Map<String, Object> result = new HashMap<>();
 		result.put("successCount", successCount.get());
 
-		log.info("导入数据: {}, 成功 {} 条", schemaName, successCount.get());
+		log.info("Importing data for: {}, Success count: {}", schemaName, successCount.get());
 		return result;
 	}
 
