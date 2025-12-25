@@ -29,6 +29,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -173,10 +175,10 @@ class MdcWebIntegrationTests {
 
 	}
 
-	@org.springframework.web.bind.annotation.RestController
+	@RestController
 	static class MockEndpointController {
 
-		@org.springframework.web.bind.annotation.GetMapping(ENDPOINT)
+		@GetMapping(ENDPOINT)
 		String testEndpoint() {
 			return "ok";
 		}

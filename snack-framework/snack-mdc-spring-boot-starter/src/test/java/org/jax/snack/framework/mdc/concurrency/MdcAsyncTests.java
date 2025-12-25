@@ -31,7 +31,9 @@ import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguratio
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -101,7 +103,7 @@ class MdcAsyncTests {
 
 	@Configuration
 	@EnableAsync
-	static class AsyncConfig implements org.springframework.scheduling.annotation.AsyncConfigurer {
+	static class AsyncConfig implements AsyncConfigurer {
 
 		@Autowired
 		private MdcTaskDecorator mdcTaskDecorator;
@@ -119,7 +121,7 @@ class MdcAsyncTests {
 		}
 
 		@Override
-		public org.springframework.core.task.TaskExecutor getAsyncExecutor() {
+		public TaskExecutor getAsyncExecutor() {
 			return applicationTaskExecutor();
 		}
 
