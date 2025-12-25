@@ -25,6 +25,7 @@ import java.util.List;
 import cn.idev.excel.EasyExcel;
 import org.jax.snack.framework.excel.config.CsvProperties;
 import org.jax.snack.framework.excel.config.ExcelProperties;
+import org.jax.snack.framework.excel.config.ExcelReadConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,30 +39,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ExcelReadTests {
 
-	private static final String ALICE = "Alice";
-
-	private static final String BOB = "Bob";
-
-	private static final String SHEET1 = "Sheet1";
-
-	private ExcelReadService readService;
-
-	private ExcelWriteService writeService;
-
 	private ExcelBuilderFactory factory;
 
 	@BeforeEach
 	void setUp() {
 		ExcelProperties excelProperties = new ExcelProperties();
 		CsvProperties csvProperties = new CsvProperties();
-		this.readService = new ExcelReadService(excelProperties, null);
-		this.writeService = new ExcelWriteService(excelProperties, csvProperties);
-		this.factory = new ExcelBuilderFactory(this.readService, this.writeService);
+		ExcelReadService readService = new ExcelReadService(excelProperties, null);
+		ExcelWriteService writeService = new ExcelWriteService(excelProperties, csvProperties);
+		this.factory = new ExcelBuilderFactory(readService, writeService);
 	}
 
-	private byte[] createExcelBytes(List<User> users) {
+	private byte[] createExcelBytes(List<User> users, String sheetName) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		EasyExcel.write(outputStream, User.class).sheet(SHEET1).doWrite(users);
+		EasyExcel.write(outputStream, User.class).sheet(sheetName).doWrite(users);
 		return outputStream.toByteArray();
 	}
 
@@ -70,19 +61,19 @@ class ExcelReadTests {
 
 		@Test
 		void shouldReadExcelData() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("BasicUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "Sheet1"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class, (ctx) -> ctx.doRead(readUsers::addAll));
 
 				assertThat(readUsers).hasSize(1);
-				assertThat(readUsers.get(0).getName()).isEqualTo(ALICE);
+				assertThat(readUsers.get(0).getName()).isEqualTo("BasicUser");
 			}
 		}
 
 		@Test
 		void shouldReadEmptyExcel() throws Exception {
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(List.of()))) {
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(List.of(), "SheetEmpty"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class, (ctx) -> ctx.doRead(readUsers::addAll));
 
@@ -97,8 +88,8 @@ class ExcelReadTests {
 
 		@Test
 		void shouldUseDefaultBatchSize() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25), new User(BOB, 30));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("BatchUser1", 25), new User("BatchUser2", 30));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "SheetBatch"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class, (ctx) -> ctx.doRead(readUsers::addAll));
 
@@ -108,8 +99,8 @@ class ExcelReadTests {
 
 		@Test
 		void shouldUseCustomBatchSize() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25), new User(BOB, 30));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("CustomBatch1", 25), new User("CustomBatch2", 30));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "SheetCustomBatch"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class,
 						(ctx) -> ctx.batchSize(1).doRead(readUsers::addAll));
@@ -125,8 +116,8 @@ class ExcelReadTests {
 
 		@Test
 		void shouldUseDefaultFailFastMode() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("FailUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "SheetFail"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class, (ctx) -> ctx.doRead(readUsers::addAll));
 
@@ -136,8 +127,8 @@ class ExcelReadTests {
 
 		@Test
 		void shouldUseCustomFailFastMode() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("NoFailUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "SheetNoFail"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class,
 						(ctx) -> ctx.failFast(false).doRead(readUsers::addAll));
@@ -153,8 +144,8 @@ class ExcelReadTests {
 
 		@Test
 		void shouldApplyMultipleConfigurations() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("MultiUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "SheetMulti"))) {
 				List<User> readUsers = new ArrayList<>();
 				ExcelReadTests.this.factory.read(inputStream, User.class,
 						(ctx) -> ctx.batchSize(10).failFast(true).doRead(readUsers::addAll));
@@ -170,12 +161,12 @@ class ExcelReadTests {
 
 		@Test
 		void shouldReadSpecificSheetByName() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("NamedSheetUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "TargetSheet"))) {
 				List<User> readUsers = new ArrayList<>();
 
-				org.jax.snack.framework.excel.config.ExcelReadConfig config = new org.jax.snack.framework.excel.config.ExcelReadConfig();
-				config.setSheetName(SHEET1);
+				ExcelReadConfig config = new ExcelReadConfig();
+				config.setSheetName("TargetSheet");
 
 				ExcelReadTests.this.factory.read(inputStream, User.class,
 						(ctx) -> ctx.applyConfig(config).doRead(readUsers::addAll));
@@ -186,11 +177,11 @@ class ExcelReadTests {
 
 		@Test
 		void shouldReadSpecificSheetByIndex() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("IndexSheetUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "Sheet0"))) {
 				List<User> readUsers = new ArrayList<>();
 
-				org.jax.snack.framework.excel.config.ExcelReadConfig config = new org.jax.snack.framework.excel.config.ExcelReadConfig();
+				ExcelReadConfig config = new ExcelReadConfig();
 				config.setSheetNo(0);
 
 				ExcelReadTests.this.factory.read(inputStream, User.class,
@@ -202,11 +193,11 @@ class ExcelReadTests {
 
 		@Test
 		void shouldReadWithCustomHeadRowNumber() throws Exception {
-			List<User> users = List.of(new User(ALICE, 25));
-			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users))) {
+			List<User> users = List.of(new User("HeadUser", 25));
+			try (InputStream inputStream = new ByteArrayInputStream(createExcelBytes(users, "SheetHead"))) {
 				List<User> readUsers = new ArrayList<>();
 
-				org.jax.snack.framework.excel.config.ExcelReadConfig config = new org.jax.snack.framework.excel.config.ExcelReadConfig();
+				ExcelReadConfig config = new ExcelReadConfig();
 				config.setHeadRowNumber(1);
 
 				ExcelReadTests.this.factory.read(inputStream, User.class,

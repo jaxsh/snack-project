@@ -39,23 +39,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class CsvWriteTests {
 
-	private static final String ALICE = "Alice";
-
-	private static final String BOB = "Bob";
-
-	private ExcelWriteService writeService;
-
-	private ExcelReadService readService;
-
 	private ExcelBuilderFactory factory;
 
 	@BeforeEach
 	void setUp() {
 		ExcelProperties excelProperties = new ExcelProperties();
 		CsvProperties csvProperties = new CsvProperties();
-		this.readService = new ExcelReadService(excelProperties, null);
-		this.writeService = new ExcelWriteService(excelProperties, csvProperties);
-		this.factory = new ExcelBuilderFactory(this.readService, this.writeService);
+		ExcelReadService readService = new ExcelReadService(excelProperties, null);
+		ExcelWriteService writeService = new ExcelWriteService(excelProperties, csvProperties);
+		this.factory = new ExcelBuilderFactory(readService, writeService);
 	}
 
 	@Nested
@@ -63,15 +55,15 @@ class CsvWriteTests {
 
 		@Test
 		void shouldWriteWithDefaultConfiguration() {
-			List<User> users = List.of(new User(ALICE, 25), new User(BOB, 30));
+			List<User> users = List.of(new User("User1", 25), new User("User2", 30));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 			CsvWriteTests.this.factory.writeCsv(outputStream, users, User.class, CsvWriteContext::doWrite);
 
 			String content = outputStream.toString(StandardCharsets.UTF_8);
 			assertThat(content).isNotEmpty();
-			assertThat(content).contains(ALICE);
-			assertThat(content).contains(BOB);
+			assertThat(content).contains("User1");
+			assertThat(content).contains("User2");
 		}
 
 	}
@@ -81,14 +73,14 @@ class CsvWriteTests {
 
 		@Test
 		void shouldWriteWithCommaDelimiter() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("CommaUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 			CsvWriteTests.this.factory.writeCsv(outputStream, users, User.class,
 					(ctx) -> ctx.delimiter(CsvDelimiter.COMMA).doWrite());
 
 			String content = outputStream.toString(StandardCharsets.UTF_8);
-			assertThat(content).contains("Alice,25");
+			assertThat(content).contains("CommaUser,25");
 		}
 
 	}
@@ -98,7 +90,7 @@ class CsvWriteTests {
 
 		@Test
 		void shouldApplyMultipleConfigurations() {
-			List<User> users = List.of(new User(ALICE, 25), new User(BOB, null));
+			List<User> users = List.of(new User("PipeUser", 25), new User("NullUser", null));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 			CsvWriteTests.this.factory.writeCsv(outputStream, users, User.class,
@@ -110,7 +102,7 @@ class CsvWriteTests {
 
 			String content = outputStream.toString(StandardCharsets.UTF_8);
 			assertThat(content).isNotEmpty();
-			assertThat(content).contains("Alice\t25");
+			assertThat(content).contains("PipeUser\t25");
 			assertThat(content).contains("NULL");
 		}
 
@@ -121,7 +113,7 @@ class CsvWriteTests {
 
 		@Test
 		void shouldApplyCustomizer() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("CustomUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 			// Just verify that customizer is called without throwing exception

@@ -25,6 +25,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.jax.snack.framework.excel.config.CsvProperties;
 import org.jax.snack.framework.excel.config.ExcelProperties;
+import org.jax.snack.framework.excel.config.ExcelReadConfig;
 import org.jax.snack.framework.excel.enums.CsvDelimiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -39,23 +40,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class CsvReadTests {
 
-	private static final String ALICE = "Alice";
-
-	private static final String BOB = "Bob";
-
-	private ExcelReadService readService;
-
-	private ExcelWriteService writeService;
-
 	private ExcelBuilderFactory factory;
 
 	@BeforeEach
 	void setUp() {
 		Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 		ExcelProperties excelProperties = new ExcelProperties();
-		this.readService = new ExcelReadService(excelProperties, validator);
-		this.writeService = new ExcelWriteService(excelProperties, new CsvProperties());
-		this.factory = new ExcelBuilderFactory(this.readService, this.writeService);
+		ExcelReadService readService = new ExcelReadService(excelProperties, validator);
+		ExcelWriteService writeService = new ExcelWriteService(excelProperties, new CsvProperties());
+		this.factory = new ExcelBuilderFactory(readService, writeService);
 	}
 
 	private ByteArrayInputStream createCsvStream(List<User> users) {
@@ -77,15 +70,15 @@ class CsvReadTests {
 
 		@Test
 		void shouldReadCsvData() {
-			List<User> users = List.of(new User(ALICE, 25), new User(BOB, 30));
+			List<User> users = List.of(new User("CsvUser1", 25), new User("CsvUser2", 30));
 			ByteArrayInputStream inputStream = createCsvStream(users);
 			List<User> result = new ArrayList<>();
 
 			CsvReadTests.this.factory.readCsv(inputStream, User.class, (ctx) -> ctx.doRead(result::addAll));
 
 			assertThat(result).hasSize(2);
-			assertThat(result.get(0).getName()).isEqualTo("Alice");
-			assertThat(result.get(1).getName()).isEqualTo("Bob");
+			assertThat(result.get(0).getName()).isEqualTo("CsvUser1");
+			assertThat(result.get(1).getName()).isEqualTo("CsvUser2");
 		}
 
 		@Test
@@ -134,7 +127,7 @@ class CsvReadTests {
 
 		@Test
 		void shouldUseDefaultFailFastMode() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("FailFastUser", 25));
 			ByteArrayInputStream inputStream = createCsvStream(users);
 			List<User> result = new ArrayList<>();
 
@@ -145,7 +138,7 @@ class CsvReadTests {
 
 		@Test
 		void shouldUseCustomFailFastMode() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("CustomFailUser", 25));
 			ByteArrayInputStream inputStream = createCsvStream(users);
 			List<User> result = new ArrayList<>();
 
@@ -179,11 +172,11 @@ class CsvReadTests {
 
 		@Test
 		void shouldReadWithCustomHeadRowNumberFromConfig() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("HeadRowUser", 25));
 			ByteArrayInputStream inputStream = createCsvStream(users);
 			List<User> result = new ArrayList<>();
 
-			org.jax.snack.framework.excel.config.ExcelReadConfig config = new org.jax.snack.framework.excel.config.ExcelReadConfig();
+			ExcelReadConfig config = new ExcelReadConfig();
 			config.setHeadRowNumber(1);
 
 			CsvReadTests.this.factory.readCsv(inputStream, User.class,

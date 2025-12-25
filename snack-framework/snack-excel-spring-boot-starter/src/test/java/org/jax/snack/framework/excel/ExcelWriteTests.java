@@ -39,17 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ExcelWriteTests {
 
-	private static final String ALICE = "Alice";
-
-	private static final String BOB = "Bob";
-
-	private static final String SHEET1 = "Sheet1";
-
 	private static final String NAME_FIELD = "name";
-
-	private ExcelWriteService writeService;
-
-	private ExcelReadService readService;
 
 	private ExcelBuilderFactory factory;
 
@@ -57,9 +47,9 @@ class ExcelWriteTests {
 	void setUp() {
 		ExcelProperties excelProperties = new ExcelProperties();
 		CsvProperties csvProperties = new CsvProperties();
-		this.readService = new ExcelReadService(excelProperties, null);
-		this.writeService = new ExcelWriteService(excelProperties, csvProperties);
-		this.factory = new ExcelBuilderFactory(this.readService, this.writeService);
+		ExcelReadService readService = new ExcelReadService(excelProperties, null);
+		ExcelWriteService writeService = new ExcelWriteService(excelProperties, csvProperties);
+		this.factory = new ExcelBuilderFactory(readService, writeService);
 	}
 
 	@Nested
@@ -67,17 +57,17 @@ class ExcelWriteTests {
 
 		@Test
 		void shouldWriteWithDefaultParameters() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("DefUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-			ExcelWriteTests.this.factory.write(outputStream, (ctx) -> ctx.sheet(SHEET1, users, User.class));
+			ExcelWriteTests.this.factory.write(outputStream, (ctx) -> ctx.sheet("SheetDef", users, User.class));
 
 			assertThat(outputStream.toByteArray()).isNotEmpty();
 		}
 
 		@Test
 		void shouldWriteWithCustomSheetName() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("CustUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			String customSheetName = "User Data";
 
@@ -98,10 +88,10 @@ class ExcelWriteTests {
 
 			ExcelSheetExportConfig sheet1 = new ExcelSheetExportConfig();
 			sheet1.setSheetName("S1");
-			sheet1.setHeaders(Map.of(NAME_FIELD, List.of("姓名")));
+			sheet1.setHeaders(Map.of(NAME_FIELD, List.of("NameA")));
 			config.addSheet(sheet1);
 
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("ConfigUser", 25));
 			Map<String, List<User>> dataMap = Map.of("S1", users);
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -117,14 +107,14 @@ class ExcelWriteTests {
 
 		@Test
 		void shouldExportByMixedMode() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("MixUser", 25));
 
 			ExcelSheetExportConfig sheetConfig = new ExcelSheetExportConfig();
 			sheetConfig.setSheetName("S_Mixed");
 			sheetConfig.setAutoColumnWidth(true);
 
 			Map<String, List<String>> headers = new LinkedHashMap<>();
-			headers.put(NAME_FIELD, List.of("姓名"));
+			headers.put(NAME_FIELD, List.of("NameB"));
 			sheetConfig.setHeaders(headers);
 
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -142,12 +132,12 @@ class ExcelWriteTests {
 
 		@Test
 		void shouldWriteWithDynamicHeaders() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("DynUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			Map<String, List<String>> headers = Map.of(NAME_FIELD, List.of("姓名"), "age", List.of("年龄"));
+			Map<String, List<String>> headers = Map.of(NAME_FIELD, List.of("NameC"), "age", List.of("Age"));
 
 			ExcelWriteTests.this.factory.write(outputStream,
-					(ctx) -> ctx.sheet(SHEET1, User.class, (sheetCtx) -> sheetCtx.data(users).headers(headers)));
+					(ctx) -> ctx.sheet("SheetDyn", User.class, (sheetCtx) -> sheetCtx.data(users).headers(headers)));
 
 			assertThat(outputStream.toByteArray()).isNotEmpty();
 		}
@@ -159,13 +149,13 @@ class ExcelWriteTests {
 
 		@Test
 		void shouldApplyMultipleConfigurations() {
-			List<User> users = List.of(new User(ALICE, 25));
+			List<User> users = List.of(new User("ChainUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 			ExcelWriteTests.this.factory.write(outputStream,
 					(ctx) -> ctx.style(ExcelStyleFactory.create((short) 50, (short) 10, true))
 						.sheet("用户数据", User.class, (sheetCtx) -> sheetCtx.data(users)
-							.headers(Map.of(NAME_FIELD, List.of("姓名"), "age", List.of("年龄")))));
+							.headers(Map.of(NAME_FIELD, List.of("NameD"), "age", List.of("Age")))));
 
 			assertThat(outputStream.toByteArray()).isNotEmpty();
 		}
