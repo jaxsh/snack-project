@@ -1,0 +1,40 @@
+# sys_id_sequence 表结构
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_id_sequence
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_id_sequence
+            remarks: ID 序列号表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: rule_id
+                  type: bigint
+                  remarks: 规则ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cycle_key
+                  type: varchar(50)
+                  remarks: 周期标识(如20231223/202312/GLOBAL)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_value
+                  type: bigint
+                  defaultValueNumeric: '0'
+                  remarks: 当前序列值
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: sys_id_sequence
+            columnNames: rule_id, cycle_key
+            constraintName: uk_rule_cycle

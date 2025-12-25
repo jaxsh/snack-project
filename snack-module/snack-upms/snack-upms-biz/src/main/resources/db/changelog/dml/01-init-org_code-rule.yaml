@@ -1,0 +1,24 @@
+# 初始化 org_code 规则数据
+databaseChangeLog:
+  - changeSet:
+      id: insert-org_code-rule
+      author: upms
+      changes:
+        - insert:
+            tableName: sys_id_rule
+            columns:
+              - column:
+                  name: rule_code
+                  value: org_code
+              - column:
+                  name: rule_name
+                  value: 组织机构编码规则
+              - column:
+                  name: segments
+                  value: '[{"segmentType":"FIXED","config":{"value":"ORG"}},{"segmentType":"SEQUENCE","config":{"length":5}}]'
+              - column:
+                  name: reset_cycle
+                  value: NEVER
+              - column:
+                  name: description
+                  value: 用于生成组织机构的唯一编码
