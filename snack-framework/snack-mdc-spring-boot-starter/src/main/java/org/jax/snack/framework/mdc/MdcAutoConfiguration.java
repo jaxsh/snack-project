@@ -23,6 +23,8 @@ import org.jax.snack.framework.mdc.generator.TraceIdGenerator;
 import org.jax.snack.framework.mdc.generator.UuidTraceIdGenerator;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -47,7 +49,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "logging.mdc", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MdcProperties.class)
-@org.springframework.boot.autoconfigure.AutoConfigureAfter(TaskExecutionAutoConfiguration.class)
+@AutoConfigureAfter(TaskExecutionAutoConfiguration.class)
 public class MdcAutoConfiguration {
 
 	private final MdcProperties properties;
@@ -138,8 +140,7 @@ public class MdcAutoConfiguration {
 	 */
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(TaskExecutor.class)
-	@org.springframework.boot.autoconfigure.condition.ConditionalOnBean(
-			name = TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
+	@ConditionalOnBean(name = TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
 	public static class MdcCompletableFutureExecutorConfiguration {
 
 		/**
