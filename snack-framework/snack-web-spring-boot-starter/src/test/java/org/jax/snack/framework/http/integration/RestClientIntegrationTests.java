@@ -16,6 +16,9 @@
 
 package org.jax.snack.framework.http.integration;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.http.config.RestClientAutoConfiguration;
 import org.jax.snack.framework.http.exception.InterfaceException;
@@ -233,14 +236,14 @@ class RestClientIntegrationTests {
 
 			// 模拟连接错误，使用 SERVER_ERROR 响应并期望抛出异常
 			mockServer.expect(requestTo(BASE_URL + API_ENDPOINT)).andRespond((request) -> {
-				throw new java.io.IOException("Connection refused");
+				throw new IOException("Connection refused");
 			});
 
 			assertThatExceptionOfType(InterfaceException.class)
 				.isThrownBy(() -> restClient.get().uri(API_ENDPOINT).retrieve().body(String.class))
 				.satisfies((ex) -> {
 					assertThat(ex.getMessage()).isEqualTo(ErrorCode.INTERFACE_ERROR);
-					assertThat(ex.getCause()).isInstanceOf(java.io.IOException.class);
+					assertThat(ex.getCause()).isInstanceOf(IOException.class);
 				});
 
 			mockServer.verify();
@@ -260,14 +263,14 @@ class RestClientIntegrationTests {
 
 			// 模拟 SocketTimeoutException (读取或连接超时)
 			mockServer.expect(requestTo(BASE_URL + API_ENDPOINT)).andRespond((request) -> {
-				throw new java.net.SocketTimeoutException("Read timed out");
+				throw new SocketTimeoutException("Read timed out");
 			});
 
 			assertThatExceptionOfType(InterfaceException.class)
 				.isThrownBy(() -> restClient.get().uri(API_ENDPOINT).retrieve().body(String.class))
 				.satisfies((ex) -> {
 					assertThat(ex.getMessage()).isEqualTo(ErrorCode.INTERFACE_ERROR);
-					assertThat(ex.getCause()).isInstanceOf(java.net.SocketTimeoutException.class);
+					assertThat(ex.getCause()).isInstanceOf(SocketTimeoutException.class);
 					assertThat(ex.getCause()).hasMessageContaining("timed out");
 				});
 
@@ -283,14 +286,14 @@ class RestClientIntegrationTests {
 
 			// 模拟通用 IOException
 			mockServer.expect(requestTo(BASE_URL + API_ENDPOINT)).andRespond((request) -> {
-				throw new java.io.IOException("Network error occurred");
+				throw new IOException("Network error occurred");
 			});
 
 			assertThatExceptionOfType(InterfaceException.class)
 				.isThrownBy(() -> restClient.get().uri(API_ENDPOINT).retrieve().body(String.class))
 				.satisfies((ex) -> {
 					assertThat(ex.getMessage()).isEqualTo(ErrorCode.INTERFACE_ERROR);
-					assertThat(ex.getCause()).isInstanceOf(java.io.IOException.class);
+					assertThat(ex.getCause()).isInstanceOf(IOException.class);
 					assertThat(ex.getCause()).hasMessageContaining("Network error");
 				});
 
