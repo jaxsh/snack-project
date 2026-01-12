@@ -16,6 +16,7 @@
 
 package org.jax.snack.framework.mdc.config;
 
+import ch.qos.logback.classic.pattern.ThreadConverter;
 import org.jax.snack.framework.mdc.MdcProperties;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +48,7 @@ class MdcPropertiesUnitTests {
 		assertThat(properties.getTraceIdKey()).isEqualTo("traceId");
 		assertThat(properties.getTraceIdPattern()).isEqualTo("[%X{traceId:-}] ");
 		assertThat(properties.getTargetConverter().getName())
-			.isEqualTo("ch.qos.logback.classic.pattern.ThreadConverter");
+			.isEqualTo(ThreadConverter.class.getName());
 		assertThat(properties.isIncludeInResponse()).isTrue();
 		assertThat(properties.getResponseHeaderName()).isEqualTo("X-Trace-Id");
 		assertThat(properties.getIncludePatterns()).containsExactly("/**");
