@@ -17,7 +17,6 @@
 package org.jax.snack.lowcode.biz.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.jax.snack.lowcode.biz.entity.LowcodeResource;
@@ -27,7 +26,6 @@ import org.jax.snack.lowcode.biz.entity.LowcodeResource;
  *
  * @author Jax Jiang
  */
-@Mapper
 public interface LowcodeResourceMapper extends BaseMapper<LowcodeResource> {
 
 	/**

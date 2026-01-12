@@ -1,0 +1,52 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-lowcode_meta_schema
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_meta_schema
+            remarks: 元数据模板表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: meta_type
+                  type: varchar(32)
+                  remarks: 模板类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: varchar(16)
+                  defaultValue: '1.0'
+              - column:
+                  name: schema_json
+                  type: clob
+                  remarks: 模板Schema
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_meta_schema
+            columnNames: meta_type
+            constraintName: uk_meta_type

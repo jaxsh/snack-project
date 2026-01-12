@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.biz.mapper;
+package org.jax.snack.lowcode.biz.config;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.jax.snack.lowcode.biz.entity.LowcodeSchemaHistory;
+import org.mybatis.spring.annotation.MapperScan;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * Schema 版本历史 Mapper.
+ * LowCode 模块配置.
+ * <p>
+ * 配置组件扫描和 MyBatis Mapper 扫描.
+ * <p>
+ * 注: @MapperScan 是必须的, 因为当 LowCode 作为依赖被其他模块引入时, 主应用的自动扫描范围不包含 org.jax.snack.lowcode 包.
  *
  * @author Jax Jiang
  */
-public interface LowcodeSchemaHistoryMapper extends BaseMapper<LowcodeSchemaHistory> {
+@Configuration
+@ComponentScan("org.jax.snack.lowcode")
+@MapperScan("org.jax.snack.lowcode.biz.mapper")
+public class LowcodeModuleConfig {
 
 }

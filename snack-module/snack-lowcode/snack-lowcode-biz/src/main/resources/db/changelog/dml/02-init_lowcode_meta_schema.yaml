@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-entity-template
+      author: lowcode
+      changes:
+        - insert:
+            tableName: lowcode_meta_schema
+            columns:
+              - column: { name: meta_type, value: entity }
+              - column: { name: version, value: '1.0' }
+              - column: { name: description, value: 实体定义模板 }
+              - column:
+                  name: schema_json
+                  valueClobFile: db/changelog/data/entity-template.json
+
+  - changeSet:
+      id: insert-field-template
+      author: lowcode
+      changes:
+        - insert:
+            tableName: lowcode_meta_schema
+            columns:
+              - column: { name: meta_type, value: field }
+              - column: { name: version, value: '1.0' }
+              - column: { name: description, value: 字段定义模板 }
+              - column:
+                  name: schema_json
+                  valueClobFile: db/changelog/data/field-template.json

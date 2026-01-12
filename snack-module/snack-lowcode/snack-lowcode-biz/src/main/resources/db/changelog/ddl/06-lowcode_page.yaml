@@ -1,0 +1,70 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-lowcode_page
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_page
+            remarks: 页面配置表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: schema_id
+                  type: bigint
+                  remarks: 关联模型ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: page_type
+                  type: varchar(32)
+                  remarks: 页面类型(create, update, list, detail)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: page_name
+                  type: varchar(128)
+                  remarks: 页面名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: page_schema
+                  type: clob
+                  remarks: UI Schema JSON
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_page
+            columnNames: schema_id, page_type, deleted
+            constraintName: uk_page_schema_type
+        - addForeignKeyConstraint:
+            baseTableName: lowcode_page
+            baseColumnNames: schema_id
+            referencedTableName: lowcode_schema
+            referencedColumnNames: id
+            constraintName: fk_page_schema

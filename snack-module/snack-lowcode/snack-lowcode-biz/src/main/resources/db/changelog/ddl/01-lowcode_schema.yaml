@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-lowcode_schema
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_schema
+            remarks: Schema存储表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: schema_name
+                  type: varchar(128)
+                  remarks: Schema名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_path
+                  type: varchar(128)
+                  remarks: RESTful API路径 (kebab-case)
+              - column:
+                  name: schema_json
+                  type: clob
+                  remarks: JSON Schema定义
+                  constraints:
+                    nullable: false
+              - column:
+                  name: label
+                  type: varchar(128)
+                  remarks: 显示名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: clob
+                  remarks: 描述
+              - column:
+                  name: category
+                  type: varchar(64)
+                  remarks: 分类
+              - column:
+                  name: status
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 状态 (0=草稿, 1=已发布)
+              - column:
+                  name: deleted
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_schema
+            columnNames: schema_name, status, deleted
+            constraintName: uk_schema_name_status
+        - createIndex:
+            tableName: lowcode_schema
+            indexName: idx_resource_path
+            columns:
+              - column:
+                  name: resource_path

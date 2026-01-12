@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-lowcode_schema_history
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_schema_history
+            remarks: Schema版本历史表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: schema_name
+                  type: varchar(100)
+                  remarks: Schema名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: schema_json
+                  type: clob
+                  remarks: 历史Schema JSON
+                  constraints:
+                    nullable: false
+              - column:
+                  name: change_summary
+                  type: varchar(500)
+                  remarks: 变更摘要
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - createIndex:
+            tableName: lowcode_schema_history
+            indexName: idx_schema_name_create_time
+            columns:
+              - column:
+                  name: schema_name
+              - column:
+                  name: create_time
+                  descending: true

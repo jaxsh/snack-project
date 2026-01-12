@@ -1,0 +1,93 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-data-types
+      author: lowcode
+      changes:
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: string }
+              - column: { name: db_type, value: varchar }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 字符串 }
+              - column: { name: need_length, valueNumeric: '1' }
+              - column: { name: default_length, valueNumeric: '255' }
+              - column: { name: sort_order, valueNumeric: '1' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: text }
+              - column: { name: db_type, value: varchar }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 文本区域 }
+              - column: { name: need_length, valueNumeric: '1' }
+              - column: { name: default_length, valueNumeric: '2000' }
+              - column: { name: sort_order, valueNumeric: '2' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: long_text }
+              - column: { name: db_type, value: clob }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 长文本/富文本 }
+              - column: { name: sort_order, valueNumeric: '3' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: int }
+              - column: { name: db_type, value: int }
+              - column: { name: json_schema_type, value: integer }
+              - column: { name: label, value: 整数 }
+              - column: { name: sort_order, valueNumeric: '4' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: long }
+              - column: { name: db_type, value: bigint }
+              - column: { name: json_schema_type, value: integer }
+              - column: { name: label, value: 长整数 }
+              - column: { name: sort_order, valueNumeric: '5' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: decimal }
+              - column: { name: db_type, value: decimal }
+              - column: { name: json_schema_type, value: number }
+              - column: { name: label, value: 小数/金额 }
+              - column: { name: need_length, valueNumeric: '1' }
+              - column: { name: need_scale, valueNumeric: '1' }
+              - column: { name: default_length, valueNumeric: '10' }
+              - column: { name: default_scale, valueNumeric: '2' }
+              - column: { name: sort_order, valueNumeric: '6' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: boolean }
+              - column: { name: db_type, value: boolean }
+              - column: { name: json_schema_type, value: boolean }
+              - column: { name: label, value: 布尔/开关 }
+              - column: { name: sort_order, valueNumeric: '7' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: date }
+              - column: { name: db_type, value: date }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 日期 }
+              - column: { name: sort_order, valueNumeric: '8' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: datetime }
+              - column: { name: db_type, value: datetime }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 日期时间 }
+              - column: { name: sort_order, valueNumeric: '9' }
+        - insert:
+            tableName: lowcode_data_type
+            columns:
+              - column: { name: logic_type, value: timestamp }
+              - column: { name: db_type, value: TIMESTAMP }
+              - column: { name: json_schema_type, value: string }
+              - column: { name: label, value: 时间戳 }
+              - column: { name: sort_order, valueNumeric: '10' }

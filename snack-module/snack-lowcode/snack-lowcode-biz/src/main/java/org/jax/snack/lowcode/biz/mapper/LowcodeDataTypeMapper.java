@@ -17,7 +17,6 @@
 package org.jax.snack.lowcode.biz.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
 
 /**
@@ -25,7 +24,6 @@ import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
  *
  * @author Jax Jiang
  */
-@Mapper
 public interface LowcodeDataTypeMapper extends BaseMapper<LowcodeDataType> {
 
 }

@@ -1,0 +1,79 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-lowcode_data_type
+      author: lowcode
+      changes:
+        - createTable:
+            tableName: lowcode_data_type
+            remarks: 数据类型表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: logic_type
+                  type: varchar(32)
+                  remarks: 逻辑类型(前端)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: db_type
+                  type: varchar(32)
+                  remarks: 数据库类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: json_schema_type
+                  type: varchar(16)
+                  remarks: JSON Schema类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: label
+                  type: varchar(64)
+                  remarks: 显示名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: need_length
+                  type: tinyint
+                  defaultValueNumeric: '0'
+              - column:
+                  name: need_scale
+                  type: tinyint
+                  defaultValueNumeric: '0'
+              - column:
+                  name: default_length
+                  type: int
+              - column:
+                  name: default_scale
+                  type: int
+              - column:
+                  name: sort_order
+                  type: int
+                  defaultValueNumeric: '0'
+              - column:
+                  name: enabled
+                  type: tinyint
+                  defaultValueNumeric: '1'
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  type: varchar(64)
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  type: varchar(64)
+        - addUniqueConstraint:
+            tableName: lowcode_data_type
+            columnNames: logic_type
+            constraintName: uk_logic_type

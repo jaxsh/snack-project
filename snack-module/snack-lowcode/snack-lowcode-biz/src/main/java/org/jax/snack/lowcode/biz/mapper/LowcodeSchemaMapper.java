@@ -18,7 +18,6 @@ package org.jax.snack.lowcode.biz.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 import org.jax.snack.lowcode.api.enums.SchemaStatus;
 import org.jax.snack.lowcode.biz.entity.LowcodeSchema;
 
@@ -27,7 +26,6 @@ import org.jax.snack.lowcode.biz.entity.LowcodeSchema;
  *
  * @author Jax Jiang
  */
-@Mapper
 public interface LowcodeSchemaMapper extends BaseMapper<LowcodeSchema> {
 
 	/**
