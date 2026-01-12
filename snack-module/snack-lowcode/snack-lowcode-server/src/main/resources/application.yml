@@ -1,16 +1,16 @@
 spring:
   profiles:
-    active: upms,${ENV:dev}
+    active: lowcode,${ENV:dev}
   application:
     name: lowcode-server
   docker:
     compose:
       lifecycle-management: start-and-stop
-      file: compose.yml
+      file: ../../../compose.yml
       skip:
         in-tests: false
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/changelog/root.yaml
 
 server:
   port: ${SERVER_PORT:8080}
