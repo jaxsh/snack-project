@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -72,8 +73,9 @@ public abstract class MockMvcTestSupport {
 	 * @throws Exception 请求异常
 	 */
 	protected ResultActions postJson(String url, Object body) throws Exception {
-		return this.mockMvc.perform(
-				post(url).contentType(MediaType.APPLICATION_JSON).content(this.jsonMapper.writeValueAsString(body)));
+		return this.mockMvc.perform(post(url).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(this.jsonMapper.writeValueAsString(body)));
 	}
 
 	/**
@@ -83,7 +85,7 @@ public abstract class MockMvcTestSupport {
 	 * @throws Exception 请求异常
 	 */
 	protected ResultActions postJson(String url) throws Exception {
-		return this.mockMvc.perform(post(url).contentType(MediaType.APPLICATION_JSON));
+		return this.mockMvc.perform(post(url).with(csrf()).contentType(MediaType.APPLICATION_JSON));
 	}
 
 	/**
@@ -94,8 +96,9 @@ public abstract class MockMvcTestSupport {
 	 * @throws Exception 请求异常
 	 */
 	protected ResultActions putJson(String url, Object body) throws Exception {
-		return this.mockMvc.perform(
-				put(url).contentType(MediaType.APPLICATION_JSON).content(this.jsonMapper.writeValueAsString(body)));
+		return this.mockMvc.perform(put(url).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(this.jsonMapper.writeValueAsString(body)));
 	}
 
 	/**
@@ -107,7 +110,8 @@ public abstract class MockMvcTestSupport {
 	 * @throws Exception 请求异常
 	 */
 	protected ResultActions putJson(String urlTemplate, Object body, Object... uriVariables) throws Exception {
-		return this.mockMvc.perform(put(urlTemplate, uriVariables).contentType(MediaType.APPLICATION_JSON)
+		return this.mockMvc.perform(put(urlTemplate, uriVariables).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
 			.content(this.jsonMapper.writeValueAsString(body)));
 	}
 
@@ -118,7 +122,7 @@ public abstract class MockMvcTestSupport {
 	 * @throws Exception 请求异常
 	 */
 	protected ResultActions deleteJson(String url) throws Exception {
-		return this.mockMvc.perform(delete(url).contentType(MediaType.APPLICATION_JSON));
+		return this.mockMvc.perform(delete(url).with(csrf()).contentType(MediaType.APPLICATION_JSON));
 	}
 
 	/**
@@ -129,7 +133,8 @@ public abstract class MockMvcTestSupport {
 	 * @throws Exception 请求异常
 	 */
 	protected ResultActions deleteJson(String urlTemplate, Object... uriVariables) throws Exception {
-		return this.mockMvc.perform(delete(urlTemplate, uriVariables).contentType(MediaType.APPLICATION_JSON));
+		return this.mockMvc
+			.perform(delete(urlTemplate, uriVariables).with(csrf()).contentType(MediaType.APPLICATION_JSON));
 	}
 
 	/**
