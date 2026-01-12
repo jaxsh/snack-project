@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,10 +63,10 @@ class RedisAutoConfigurationTests {
 			RedisTemplate<?, ?> redisTemplate = context.getBean("redisTemplate", RedisTemplate.class);
 			assertThat(redisTemplate.getKeySerializer()).isInstanceOf(StringRedisSerializer.class);
 			assertThat(redisTemplate.getValueSerializer().getClass().getName())
-				.isEqualTo("org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer");
+				.isEqualTo(GenericJacksonJsonRedisSerializer.class.getName());
 			assertThat(redisTemplate.getHashKeySerializer()).isInstanceOf(StringRedisSerializer.class);
 			assertThat(redisTemplate.getHashValueSerializer().getClass().getName())
-				.isEqualTo("org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer");
+				.isEqualTo(GenericJacksonJsonRedisSerializer.class.getName());
 		});
 	}
 
