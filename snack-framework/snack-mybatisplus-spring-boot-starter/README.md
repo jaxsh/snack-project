@@ -1,16 +1,18 @@
 # Snack MyBatis-Plus Spring Boot Starter
 
-基于 MyBatis-Plus 的增强型查询模块，提供 **GraphQL 风格的通用查询 API**，让前端可以灵活构建复杂查询条件。
+基于 MyBatis-Plus 的增强型查询模块，提供 **GraphQL 风格的通用查询 API**，让前端可以灵活构建复杂查询条件。同时提供统一的 `Repository` 层契约，简化业务开发。
 
 ---
 
 ## 📦 核心功能
 
-- ✅ **通用查询构建器**：支持 GraphQL 风格的查询语法
-- ✅ **19 种查询操作符**：覆盖所有常见查询场景
-- ✅ **无限嵌套逻辑**：支持 `_and`、`_or`、`_not` 组合
-- ✅ **字段选择与排序**：类似 GraphQL 的 `select` 和 `orderBy`
-- ✅ **安全性**：自动字段验证，防止 SQL 注入
+- ✅ **通用查询构建器**：支持静态方法调用，快速构建 `QueryWrapper` 和 `UpdateWrapper`。
+- ✅ **19 种查询操作符**：涵盖 `_eq`, `_like`, `_in`, `_between` 等常见场景。
+- ✅ **无限嵌套逻辑**：支持 `_and`, `_or`, `_not` 的递归组合。
+- ✅ **字段选择与排序**：支持类似 GraphQL 的 `select` 指定字段及多字段 `orderBy`。
+- ✅ **Repository 集成**：提供 `BaseRepository` 契约，支持 DSL 分页、批量更新/删除。
+- ✅ **原子更新**：支持 `incrBy` 和 `decrBy` 原子操作。
+- ✅ **安全性**：通过类型安全的 Builder API 确保查询条件的结构化与完整性，有效防护 SQL 注入。
 
 ---
 
@@ -24,7 +26,7 @@ dependencies {
 }
 ```
 
-### 2. Controller 示例
+### 2. Controller 示例 (静态调用模式)
 
 ```java
 @RestController
@@ -32,11 +34,11 @@ dependencies {
 public class UserController {
 
     private final UserMapper userMapper;
-    private final QueryWrapperBuilder builder;
 
     @PostMapping("/query")
     public List<User> queryUsers(@RequestBody QueryCondition condition) {
-        QueryWrapper<User> wrapper = builder.build(condition, User.class);
+        // 使用静态方法构建 Wrapper
+        QueryWrapper<User> wrapper = WrapperBuilder.query(condition, User.class);
         return userMapper.selectList(wrapper);
     }
 }
@@ -44,481 +46,136 @@ public class UserController {
 
 ---
 
-## 📡 前端使用指南
+## 🏗️ Repository 层集成 (推荐)
 
-### 基础查询结构
+项目提供了 `BaseRepository` 接口及 `AbstractRepository` 抽象类，建议在 Service 层通过 Repository 进行操作。
 
-前端发送的 JSON 格式：
+### 1. 定义 Repository
+```java
+public interface UserRepository extends BaseRepository<User, Long> {
+}
 
+@Repository
+public class UserRepositoryImpl extends AbstractRepository<User, Long, UserMapper> implements UserRepository {
+}
+```
+
+### 2. 使用 DSL 方法
+```java
+// 在 Service 中直接调用 Repository 方法
+public void searchUsers(QueryCondition condition) {
+    // 分页查询 (自动处理 QueryCondition 中的 current 和 size)
+    Page<User> page = userRepository.queryPageByDsl(condition);
+
+    // 列表查询
+    List<User> list = userRepository.queryListByDsl(condition);
+
+    // 批量删除 (使用 WhereCondition)
+    userRepository.deleteByDsl(condition);
+}
+```
+
+---
+
+## 🔄 更新操作说明
+
+模块通过 `updateByDsl` 提供两种风格的更新，其对 `null` 值的处理逻辑不同，请根据业务场景选择：
+
+### 1. DTO 驱动 (推荐 - 安全增量更新)
+直接使用 POJO/DTO 对象作为更新源。
+- **方法签名**：`int updateByDsl(Object dto, WhereCondition condition)`
+- **特性**：**自动忽略 null 字段**。
+- **适用场景**：绝大多数业务场景。仅同步前端传递的非空属性，防止因前端未传字段而导致数据库原值被意外清空。
+
+```java
+public void updateNickname(Long id, String newName) {
+    UserUpdateDTO dto = new UserUpdateDTO();
+    dto.setNickname(newName);
+    // dto.setEmail(null); // 此 null 会被自动忽略，不会覆盖数据库原有值
+
+    WhereCondition where = WhereCondition.builder()
+        .eq(User.Fields.id, id)
+        .build();
+    userRepository.updateByDsl(dto, where);
+}
+```
+
+### 2. Map 驱动 (全量/精确控制)
+使用 `Map<String, Object>` 传递更新字段。
+- **方法签名**：`int updateByDsl(Map<String, Object> setData, WhereCondition condition)`
+- **特性**：**支持将字段显式设置为 null**。
+- **适用场景**：需要“清空”数据库中某些字段的值时。
+
+```java
+public void clearUserEmail(WhereCondition where) {
+    Map<String, Object> setData = new HashMap<>();
+    setData.put("email", null); // 数据库对应字段将被强制更新为 NULL
+    setData.put("status", "DISABLED");
+
+    userRepository.updateByDsl(setData, where);
+}
+```
+
+---
+
+## 📡 前端查询指南
+
+### 基础 JSON 结构
 ```json
 {
   "select": ["id", "username", "email"],
+  "current": 1,
+  "size": 10,
   "where": {
-
+    "status": { "_eq": "ACTIVE" }
   },
   "orderBy": [
     { "field": "createTime", "direction": "desc" }
-  ]
+  ],
+  "last": "FOR UPDATE"
 }
 ```
 
-> **说明**：`where` 对象中放置查询条件，详见下文操作符列表。
+### 高级查询/更新特性
+- **原子更新**：`"incrBy": { "score": 10 }` (生成 SQL: `SET score = score + 10`)
+  > [!TIP]
+  > 在更新场景下，只需在 `WhereCondition` 中传入 `incrBy` 映射，并调用 `userRepository.updateByDsl(dto/map, condition)` 即可触发。
+- **自定义追加**：`"last": "FOR UPDATE"` (将片段追加到 SQL 末尾)
+- **自动映射**：前端使用 `camelCase`，后端自动映射为数据库 `snake_case`。
 
 ---
 
-## 🔍 查询操作符完整列表
-
-### 比较操作符（6 个）
-
-| 操作符    | 含义   | 前端示例                                 | 生成 SQL                |
-|--------|------|--------------------------------------|-----------------------|
-| `_eq`  | 等于   | `{ "age": { "_eq": 25 } }`           | `age = 25`            |
-| `_ne`  | 不等于  | `{ "status": { "_ne": "deleted" } }` | `status <> 'deleted'` |
-| `_gt`  | 大于   | `{ "age": { "_gt": 18 } }`           | `age > 18`            |
-| `_gte` | 大于等于 | `{ "age": { "_gte": 18 } }`          | `age >= 18`           |
-| `_lt`  | 小于   | `{ "price": { "_lt": 100 } }`        | `price < 100`         |
-| `_lte` | 小于等于 | `{ "price": { "_lte": 100 } }`       | `price <= 100`        |
-
----
-
-### 模糊匹配（5 个）
-
-| 操作符           | 含义     | 前端示例                                  | 生成 SQL                   | 备注           |
-|---------------|--------|---------------------------------------|--------------------------|--------------|
-| `_like`       | 模糊匹配   | `{ "name": { "_like": "张" } }`        | `name LIKE '%张%'`        | **前端不需要传 %** |
-| `_like_left`  | 后缀匹配   | `{ "name": { "_like_left": "三" } }`   | `name LIKE '%三'`         | 以"三"结尾       |
-| `_like_right` | 前缀匹配   | `{ "name": { "_like_right": "张" } }`  | `name LIKE '张%'`         | 以"张"开头       |
-| `_ilike`      | 不区分大小写 | `{ "email": { "_ilike": "admin" } }`  | `email LIKE '%admin%'`   | MySQL 默认不区分  |
-| `_not_like`   | 否定模糊   | `{ "name": { "_not_like": "test" } }` | `name NOT LIKE '%test%'` | 排除包含 test    |
-
-⚠️ **重要**：前端**不需要**传递 `%` 通配符，后端会自动添加！
-
----
-
-### 集合操作（2 个）
-
-| 操作符    | 含义    | 前端示例                                             | 生成 SQL                            |
-|--------|-------|--------------------------------------------------|-----------------------------------|
-| `_in`  | 在范围内  | `{ "status": { "_in": ["active", "pending"] } }` | `status IN ('active', 'pending')` |
-| `_nin` | 不在范围内 | `{ "age": { "_nin": [18, 19] } }`                | `age NOT IN (18, 19)`             |
-
----
-
-### 空值判断（2 个）
-
-| 操作符            | 含义  | 前端示例                                    | 生成 SQL               |
-|----------------|-----|-----------------------------------------|----------------------|
-| `_is_null`     | 为空  | `{ "deletedAt": { "_is_null": true } }` | `deleted_at IS NULL` |
-| `_is_not_null` | 不为空 | `{ "email": { "_is_not_null": true } }` | `email IS NOT NULL`  |
-
----
-
-### 区间查询（1 个）
-
-| 操作符        | 含义 | 前端示例                                  | 生成 SQL                  |
-|------------|----|---------------------------------------|-------------------------|
-| `_between` | 区间 | `{ "age": { "_between": [18, 30] } }` | `age BETWEEN 18 AND 30` |
-
----
-
-### 逻辑操作符（3 个）
-
-| 操作符    | 含义 | 前端示例                     |
-|--------|----|--------------------------|
-| `_and` | 且  | `{ "_and": [条件1, 条件2] }` |
-| `_or`  | 或  | `{ "_or": [条件1, 条件2] }`  |
-| `_not` | 非  | `{ "_not": { 条件 } }`     |
-
----
-
-## 📝 前端查询示例
-
-### 示例 1：简单查询
-
-**需求**：查询年龄大于 18 岁的用户
-
-```json
-{
-  "where": {
-    "age": { "_gt": 18 }
-  }
-}
-```
-
-**生成 SQL**：
-```sql
-SELECT * FROM user WHERE age > 18
-```
-
----
-
-### 示例 2：多条件 AND
-
-**需求**：查询年龄 18-30 岁且状态为 active 的用户
-
-```json
-{
-  "where": {
-    "_and": [
-      { "age": { "_gte": 18 } },
-      { "age": { "_lte": 30 } },
-      { "status": { "_eq": "active" } }
-    ]
-  }
-}
-```
-
-**生成 SQL**：
-```sql
-SELECT * FROM user
-WHERE age >= 18 AND age <= 30 AND status = 'active'
-```
-
----
-
-### 示例 3：OR 查询
-
-**需求**：VIP 用户或消费超过 1000 的用户
-
-```json
-{
-  "where": {
-    "_or": [
-      { "isVip": { "_eq": true } },
-      { "totalAmount": { "_gt": 1000 } }
-    ]
-  }
-}
-```
-
-**生成 SQL**：
-```sql
-SELECT * FROM user
-WHERE is_vip = 1 OR total_amount > 1000
-```
-
----
-
-### 示例 4：模糊搜索
-
-**需求**：搜索用户名包含"张"或邮箱以"@gmail.com"结尾的用户
-
-```json
-{
-  "where": {
-    "_or": [
-      { "username": { "_like": "张" } },
-      { "email": { "_like_left": "@gmail.com" } }
-    ]
-  }
-}
-```
-
-⚠️ **注意**：前端传 `"张"` 即可，**不需要传 `"%张%"`**！
-
-**生成 SQL**：
-```sql
-SELECT * FROM user
-WHERE username LIKE '%张%' OR email LIKE '%@gmail.com'
-```
-
----
-
-### 示例 5：复杂嵌套查询
-
-**需求**：
-- 用户名包含"admin"
-- 且（年龄在 18-30 之间 OR 年龄大于等于 65）
-- 且用户名不是 "system"
-
-```json
-{
-  "select": ["id", "username", "age"],
-  "where": {
-    "_and": [
-      { "username": { "_like": "admin" } },
-      {
-        "_or": [
-          { "age": { "_between": [18, 30] } },
-          { "age": { "_gte": 65 } }
-        ]
-      },
-      { "username": { "_ne": "system" } }
-    ]
-  },
-  "orderBy": [
-    { "field": "age", "direction": "desc" }
-  ]
-}
-```
-
-**生成 SQL**：
-```sql
-SELECT id, username, age
-FROM user
-WHERE (
-  username LIKE '%admin%'
-  AND (age BETWEEN 18 AND 30 OR age >= 65)
-  AND username <> 'system'
-)
-ORDER BY age DESC
-```
-
----
-
-### 示例 6：NOT 查询
-
-**需求**：非 VIP 且未被删除的用户
-
-```json
-{
-  "where": {
-    "_and": [
-      { "_not": { "isVip": { "_eq": true } } },
-      { "deletedAt": { "_is_null": true } }
-    ]
-  }
-}
-```
-
-**生成 SQL**：
-```sql
-SELECT * FROM user
-WHERE NOT (is_vip = 1) AND deleted_at IS NULL
-```
-
----
-
-## 🎨 字段选择与排序
-
-### 字段选择（select）
-
-```json
-{
-  "select": ["id", "username", "email"]
-}
-```
-
-生成：`SELECT id, username, email FROM user`
-
-**省略 select**：默认查询所有字段（`SELECT *`）
-
----
-
-### 排序（orderBy）
-
-```json
-{
-  "orderBy": [
-    { "field": "createTime", "direction": "desc" },
-    { "field": "id", "direction": "asc" }
-  ]
-}
-```
-
-生成：`ORDER BY create_time DESC, id ASC`
-
-**direction 取值**：
-- `"asc"` 或 `"ASC"` → 升序
-- `"desc"` 或 `"DESC"` → 降序
-
----
-
-## ⚠️ 前端常见问题
-
-### 1. **LIKE 查询需要传 % 吗？**
-
-❌ **不需要！** 后端会自动添加：
-
-**✅ 正确写法**：
-```json
-{ "name": { "_like": "张三" } }
-```
-
-**❌ 错误写法**（会被当作普通字符）：
-```json
-{ "name": { "_like": "%张三%" } }
-```
-
----
-
-### 2. **如何实现"以...开头"？**
-
-使用 `_like_right`：
-
-```json
-{ "username": { "_like_right": "admin" } }
-```
-
-生成：`username LIKE 'admin%'`
-
----
-
-### 3. **如何查询多个值？**
-
-使用 `_in`：
-
-```json
-{ "status": { "_in": ["active", "pending", "processing"] } }
-```
-
----
-
-### 4. **如何排除某些值？**
-
-使用 `_nin`（NOT IN）：
-
-```json
-{ "role": { "_nin": ["guest", "banned"] } }
-```
-
----
-
-### 5. **字段名如何映射？**
-
-前端使用**驼峰命名**，后端自动转**下划线命名**：
-
-| 前端字段         | 数据库字段         |
-|--------------|---------------|
-| `createTime` | `create_time` |
-| `userId`     | `user_id`     |
-| `isVip`      | `is_vip`      |
-
-通过 MyBatis-Plus 的 `@TableField` 注解映射。
-
----
-
-## 🔒 安全性
-
-### 字段验证
-
-后端会**自动验证**字段是否存在：
-
-```json
-{
-  "where": {
-    "nonExistentField": { "_eq": "value" }
-  }
-}
-```
-
-> ❌ **结果**：`nonExistentField` 会被忽略
-
-**日志输出**：
-```
-Field nonExistentField does not exist in entity User, ignored
-```
-
-### SQL 注入防护
-
-所有参数使用 **MyBatis 预编译**，自动防止 SQL 注入：
-
-```json
-{ "username": { "_eq": "'; DROP TABLE user; --" } }
-```
-
-生成：
-```sql
-SELECT * FROM user WHERE username = ?
--- 参数: '; DROP TABLE user; --（作为普通字符串处理）
-```
-
----
-
-## 🛠️ 后端集成示例
-
-### 完整 Controller 示例
-
-```java
-@RestController
-@RequestMapping("/api/users")
-@RequiredArgsConstructor
-public class UserController {
-
-    private final UserMapper userMapper;
-    private final QueryWrapperBuilder queryBuilder;
-
-    /**
-     * 通用查询接口
-     */
-    @PostMapping("/query")
-    public ResponseEntity<List<User>> queryUsers(
-            @RequestBody QueryCondition condition) {
-
-        QueryWrapper<User> wrapper = queryBuilder.build(condition, User.class);
-        List<User> users = userMapper.selectList(wrapper);
-
-        return ResponseEntity.ok(users);
-    }
-
-    /**
-     * 分页查询接口
-     */
-    @PostMapping("/query/page")
-    public ResponseEntity<Page<User>> queryUsersPage(
-            @RequestBody QueryCondition condition,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        QueryWrapper<User> wrapper = queryBuilder.build(condition, User.class);
-        Page<User> pageResult = userMapper.selectPage(
-            new Page<>(page, size), wrapper
-        );
-
-        return ResponseEntity.ok(pageResult);
-    }
-}
-```
-
----
-
-## 📚 API 参考
-
-### QueryCondition 对象
-
-```typescript
-interface QueryCondition {
-  select?: string[];
-  where?: Record<string, any>;
-  orderBy?: OrderByCondition[];
-}
-
-interface OrderByCondition {
-  field: string;
-  direction: 'asc' | 'desc';
-}
-```
-
-**字段说明**：
-- `select`: 字段选择（可选）
-- `where`: 查询条件（可选）
-- `orderBy`: 排序条件（可选）
-- `field`: 字段名
-- `direction`: 排序方向（`'asc'` 或 `'desc'`）
-
-### 完整操作符列表
-
-| 分类     | 操作符                                                         |
-|--------|-------------------------------------------------------------|
-| **比较** | `_eq`, `_ne`, `_gt`, `_gte`, `_lt`, `_lte`                  |
-| **模糊** | `_like`, `_like_left`, `_like_right`, `_ilike`, `_not_like` |
-| **集合** | `_in`, `_nin`                                               |
-| **空值** | `_is_null`, `_is_not_null`                                  |
-| **区间** | `_between`                                                  |
-| **逻辑** | `_and`, `_or`, `_not`                                       |
+## 🔍 DSL 操作符完整列表 (19 个)
+
+这些操作符用于构建 `WHERE` 子句。由于 `WrapperBuilder` 的通用性，这些操作符不仅适用于 **查询 (Query)**，同样适用于 **更新 (Update)** 和 **删除 (Delete)** 场景中的条件过滤。
+
+| 分类     | 操作符                                                         | 说明                                | 生成 SQL 示例               |
+|:-------|:------------------------------------------------------------|:----------------------------------|:------------------------|
+| **比较** | `_eq`, `_ne`, `_gt`, `_gte`, `_lt`, `_lte`                  | 等于, 不等于, 大于, 大于等于, 小于, 小于等于       | `age > 18`              |
+| **模糊** | `_like`, `_ilike`, `_like_left`, `_like_right`, `_not_like` | 包含, 不区分大小写包含, 以...结尾, 以...开始, 不包含 | `name LIKE '%val%'`     |
+| **集合** | `_in`, `_nin`                                               | 在数组中, 不在数组中                       | `id IN (1, 2)`          |
+| **空值** | `_is_null`, `_is_not_null`                                  | 是否为 NULL                          | `deleted_at IS NULL`    |
+| **区间** | `_between`                                                  | 取值范围 `[start, end]`               | `age BETWEEN 10 AND 20` |
+| **逻辑** | `_and`, `_or`, `_not`                                       | 逻辑与, 逻辑或, 逻辑非                     | `(cond1 AND cond2)`     |
 
 ---
 
 ## 🎯 最佳实践
 
-1. ✅ **使用 `_and` 明确表达复杂条件**
-2. ✅ **LIKE 查询不传 `%`，让后端处理**
-3. ✅ **使用 `select` 减少数据传输**
-4. ✅ **多表查询使用 JOIN，不要用嵌套查询**
-5. ⚠️ **避免在大表上使用 `_like` 全表扫描**
+1. **优先使用 Repository**：封装 DSL 逻辑，保持 Service 简洁。
+2. **LIKE 查询不传 `%`**：后端会自动添加（`_like` 对应 `%val%`）。
+3. **按需选择更新驱动**：清除数据用 Map，普通修改用 DTO。
+4. **合理使用 `select`**：在大表查询时减少 I/O 压力。
+5. **实体类常量定义**：为了支持 type-safe 查询且能访问父类（`BaseEntity`）字段，实体类必须手动定义 `Fields` 内部类：
+   ```java
+   @FieldNameConstants
+   public class User extends BaseEntity {
+       // ... 字段定义 ...
+       public static final class Fields extends BaseEntity.Fields {}
+   }
+   ```
 
 ---
 
 ## 📄 License
-
 Apache License 2.0

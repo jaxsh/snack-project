@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 
 /**
  * 通用实体基类.
@@ -34,6 +35,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@FieldNameConstants
 public abstract class BaseEntity {
 
 	/**
@@ -75,5 +77,16 @@ public abstract class BaseEntity {
 	 */
 	@TableField(fill = FieldFill.INSERT_UPDATE)
 	private String updateBy;
+
+	/**
+	 * 字段名常量.
+	 * <p>
+	 * 手动定义为非 final 类, 允许子类继承.
+	 */
+	public static class Fields {
+
+		// Lombok 会自动填充: id, createTime, createBy, updateTime, updateBy
+
+	}
 
 }

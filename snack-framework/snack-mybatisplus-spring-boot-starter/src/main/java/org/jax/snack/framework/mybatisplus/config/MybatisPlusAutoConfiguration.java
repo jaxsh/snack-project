@@ -19,6 +19,7 @@ package org.jax.snack.framework.mybatisplus.config;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.extension.MybatisMapWrapperFactory;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.jax.snack.framework.mybatisplus.context.DefaultUserContextProvider;
@@ -68,6 +69,8 @@ public class MybatisPlusAutoConfiguration {
 		paginationInterceptor.setOverflow(false);
 
 		interceptor.addInnerInterceptor(paginationInterceptor);
+
+		interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
 
 		return interceptor;
 	}
