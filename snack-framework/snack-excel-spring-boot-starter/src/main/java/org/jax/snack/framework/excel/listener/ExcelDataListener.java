@@ -97,7 +97,6 @@ public class ExcelDataListener<T, R> extends AnalysisEventListener<R> {
 
 	@Override
 	public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
-		// 收集表头信息: 列索引 -> 表头名称
 		headMap.forEach((columnIndex, cellData) -> this.columnToHeader.put(columnIndex, cellData.getStringValue()));
 	}
 
@@ -105,10 +104,8 @@ public class ExcelDataListener<T, R> extends AnalysisEventListener<R> {
 	public void invoke(R data, AnalysisContext context) {
 		int rowIndex = context.readRowHolder().getRowIndex();
 
-		// 转换数据 (类型安全，无需 cast)
 		T result = this.processor.apply(data, this.columnToHeader);
 
-		// 校验
 		if (this.validator != null) {
 			Set<ConstraintViolation<T>> violations = this.validator.validate(result);
 			if (!violations.isEmpty()) {
@@ -123,7 +120,6 @@ public class ExcelDataListener<T, R> extends AnalysisEventListener<R> {
 			}
 		}
 
-		// 业务校验
 		if (this.businessValidator != null) {
 			this.businessValidator.accept(result);
 		}

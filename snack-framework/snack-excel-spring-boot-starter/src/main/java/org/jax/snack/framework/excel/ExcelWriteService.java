@@ -72,13 +72,11 @@ public class ExcelWriteService {
 	public void write(ExcelWriteContext context) {
 		ExcelWriterBuilder builder = context.getWriterBuilder();
 
-		// 应用默认样式 (如果未被禁用)
 		if (context.isUseDefaultStyle()) {
 			builder.registerWriteHandler(new LongestMatchColumnWidthStyleStrategy());
 			builder.registerWriteHandler(ExcelStyleFactory.DEFAULT);
 		}
 
-		// 执行写入
 		try (ExcelWriter writer = builder.build()) {
 			for (Consumer<ExcelWriter> task : context.getSheetTasks()) {
 				task.accept(writer);
@@ -102,12 +100,12 @@ public class ExcelWriteService {
 		var csvBuilder = builder.csv();
 
 		Optional.ofNullable(context.delimiter())
-			.map(CsvDelimiter::getValue)
+			.map(CsvDelimiter::getCode)
 			.map(String::valueOf)
 			.ifPresent(csvBuilder::delimiter);
-		Optional.ofNullable(context.quote()).map(CsvQuote::getValue).ifPresent(csvBuilder::quote);
+		Optional.ofNullable(context.quote()).map(CsvQuote::getCode).ifPresent(csvBuilder::quote);
 		Optional.ofNullable(context.recordSeparator())
-			.map(CsvRecordSeparator::getValue)
+			.map(CsvRecordSeparator::getCode)
 			.ifPresent(csvBuilder::recordSeparator);
 		Optional.ofNullable(context.nullString()).ifPresent(csvBuilder::nullString);
 

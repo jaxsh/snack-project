@@ -116,7 +116,6 @@ class CsvWriteTests {
 			List<User> users = List.of(new User("CustomUser", 25));
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-			// Just verify that customizer is called without throwing exception
 			CsvWriteTests.this.factory.writeCsv(outputStream, users, User.class,
 					(ctx) -> ctx.customize((builder) -> builder.autoCloseStream(true)).doWrite());
 

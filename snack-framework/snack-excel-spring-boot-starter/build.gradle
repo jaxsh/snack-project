@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+	implementation project(':snack-framework:snack-core')
 	api 'cn.idev.excel:fastexcel:1.3.0'
 
 	compileOnly 'org.springframework.boot:spring-boot-starter-webmvc'

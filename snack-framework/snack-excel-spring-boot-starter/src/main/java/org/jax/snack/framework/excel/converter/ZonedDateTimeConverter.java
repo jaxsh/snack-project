@@ -81,7 +81,6 @@ public class ZonedDateTimeConverter implements Converter<ZonedDateTime> {
 			}
 		}
 		catch (IllegalStateException ignored) {
-			// Web 环境未初始化
 		}
 		return ZoneOffset.UTC;
 	}

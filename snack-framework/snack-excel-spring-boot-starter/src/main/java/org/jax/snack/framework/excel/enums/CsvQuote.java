@@ -19,6 +19,7 @@ package org.jax.snack.framework.excel.enums;
 import cn.idev.excel.metadata.csv.CsvConstant;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
  * CSV 引号枚举.
@@ -27,33 +28,50 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public enum CsvQuote {
+public enum CsvQuote implements BaseEnum<Character> {
 
 	/**
 	 * 空格.
 	 */
-	SPACE(CsvConstant.SPACE),
+	SPACE(CsvConstant.SPACE, "空格"),
 
 	/**
 	 * 反斜杠.
 	 */
-	BACKSLASH(CsvConstant.BACKSLASH),
+	BACKSLASH(CsvConstant.BACKSLASH, "反斜杠"),
 
 	/**
 	 * 退格.
 	 */
-	BACKSPACE(CsvConstant.BACKSPACE),
+	BACKSPACE(CsvConstant.BACKSPACE, "退格"),
 
 	/**
 	 * 管道符.
 	 */
-	PIPE(CsvConstant.PIPE),
+	PIPE(CsvConstant.PIPE, "管道符"),
 
 	/**
 	 * 双引号.
 	 */
-	DOUBLE_QUOTE(CsvConstant.DOUBLE_QUOTE);
+	DOUBLE_QUOTE(CsvConstant.DOUBLE_QUOTE, "双引号");
 
-	private final char value;
+	/**
+	 * 状态值.
+	 */
+	private final Character code;
+
+	/**
+	 * 状态名称.
+	 */
+	private final String name;
+
+	/**
+	 * 根据 code 获取枚举实例.
+	 * @param code 状态值
+	 * @return CsvQuote 实例
+	 */
+	public static CsvQuote of(Character code) {
+		return BaseEnum.fromCode(CsvQuote.class, code);
+	}
 
 }

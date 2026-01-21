@@ -65,17 +65,12 @@ public class ExcelReadService {
 
 		ExcelReaderBuilder builder;
 
-		// 分情况构建不同泛型的 Listener
 		if (context.converter() != null) {
-			// Map 模式: R = Map<Integer, String>
-			// EasyExcel 读取为 Map, Listener 通过 converter 转换为 T
 			ExcelDataListener<T, Map<Integer, String>> listener = new ExcelDataListener<>(context.converter(),
 					this.validator, saveFunction, context.businessValidator(), batchSize, failFast);
 			builder = EasyExcel.read(context.inputStream(), listener);
 		}
 		else {
-			// Bean 模式: R = T
-			// EasyExcel 读取为 T, Listener 直接透传
 			ExcelDataListener<T, T> listener = new ExcelDataListener<>((data, headers) -> data, this.validator,
 					saveFunction, context.businessValidator(), batchSize, failFast);
 			builder = EasyExcel.read(context.inputStream(), context.clazz(), listener);

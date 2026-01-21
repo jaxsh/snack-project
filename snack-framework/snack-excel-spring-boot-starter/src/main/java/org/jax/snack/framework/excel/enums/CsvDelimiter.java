@@ -19,6 +19,7 @@ package org.jax.snack.framework.excel.enums;
 import cn.idev.excel.metadata.csv.CsvConstant;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
  * CSV 分隔符枚举.
@@ -27,23 +28,40 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public enum CsvDelimiter {
+public enum CsvDelimiter implements BaseEnum<Character> {
 
 	/**
 	 * 逗号.
 	 */
-	COMMA(CsvConstant.COMMA.charAt(0)),
+	COMMA(CsvConstant.COMMA.charAt(0), "逗号"),
 
 	/**
 	 * 制表符.
 	 */
-	TAB(CsvConstant.TAB.charAt(0)),
+	TAB(CsvConstant.TAB.charAt(0), "制表符"),
 
 	/**
 	 * At 符号 (@).
 	 */
-	AT(CsvConstant.AT.charAt(0));
+	AT(CsvConstant.AT.charAt(0), "At 符号");
 
-	private final char value;
+	/**
+	 * 状态值.
+	 */
+	private final Character code;
+
+	/**
+	 * 状态名称.
+	 */
+	private final String name;
+
+	/**
+	 * 根据 code 获取枚举实例.
+	 * @param code 状态值
+	 * @return CsvDelimiter 实例
+	 */
+	public static CsvDelimiter of(Character code) {
+		return BaseEnum.fromCode(CsvDelimiter.class, code);
+	}
 
 }

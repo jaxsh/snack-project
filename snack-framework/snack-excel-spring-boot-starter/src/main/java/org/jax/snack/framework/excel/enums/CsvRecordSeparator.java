@@ -19,6 +19,7 @@ package org.jax.snack.framework.excel.enums;
 import cn.idev.excel.metadata.csv.CsvConstant;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
  * CSV 行分隔符枚举.
@@ -27,28 +28,45 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public enum CsvRecordSeparator {
+public enum CsvRecordSeparator implements BaseEnum<String> {
 
 	/**
 	 * Windows 换行符 (\r\n).
 	 */
-	CRLF(CsvConstant.CRLF),
+	CRLF(CsvConstant.CRLF, "Windows 换行符"),
 
 	/**
 	 * Unix/Linux 换行符 (\n).
 	 */
-	LF(CsvConstant.LF),
+	LF(CsvConstant.LF, "Unix/Linux 换行符"),
 
 	/**
 	 * Mac 经典换行符 (\r).
 	 */
-	CR(CsvConstant.CR),
+	CR(CsvConstant.CR, "Mac 经典换行符"),
 
 	/**
 	 * Form Feed (\f).
 	 */
-	FF(CsvConstant.FF);
+	FF(CsvConstant.FF, "Form Feed");
 
-	private final String value;
+	/**
+	 * 状态值.
+	 */
+	private final String code;
+
+	/**
+	 * 状态名称.
+	 */
+	private final String name;
+
+	/**
+	 * 根据 code 获取枚举实例.
+	 * @param code 状态值
+	 * @return CsvRecordSeparator 实例
+	 */
+	public static CsvRecordSeparator of(String code) {
+		return BaseEnum.fromCode(CsvRecordSeparator.class, code);
+	}
 
 }
