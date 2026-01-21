@@ -95,9 +95,7 @@ public final class LogbackNodeUtils {
 		Node insertionPointPrev = injectionTarget;
 		Node walker = injectionTarget.getNext();
 
-		// 跳过目标后的字面量节点 (如空格), 寻找最佳插入点
 		while (walker != null) {
-			// 0 = LITERAL
 			if (walker.getType() != 0) {
 				break;
 			}

@@ -47,8 +47,7 @@ class MdcPropertiesUnitTests {
 		assertThat(properties.isEnabled()).isTrue();
 		assertThat(properties.getTraceIdKey()).isEqualTo("traceId");
 		assertThat(properties.getTraceIdPattern()).isEqualTo("[%X{traceId:-}] ");
-		assertThat(properties.getTargetConverter().getName())
-			.isEqualTo(ThreadConverter.class.getName());
+		assertThat(properties.getTargetConverter().getName()).isEqualTo(ThreadConverter.class.getName());
 		assertThat(properties.isIncludeInResponse()).isTrue();
 		assertThat(properties.getResponseHeaderName()).isEqualTo("X-Trace-Id");
 		assertThat(properties.getIncludePatterns()).containsExactly("/**");

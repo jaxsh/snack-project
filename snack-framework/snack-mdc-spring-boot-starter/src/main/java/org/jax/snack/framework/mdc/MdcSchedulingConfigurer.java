@@ -85,7 +85,6 @@ public class MdcSchedulingConfigurer implements BeanPostProcessor, ApplicationCo
 			Object[] args = invocation.getArguments();
 			if (isTaskSubmissionMethod(methodName) && args.length > 0 && args[0] instanceof Runnable originalTask) {
 				Runnable wrappedTask = () -> {
-					// 动态获取 Bean 以避免循环依赖
 					MdcProperties properties = this.applicationContext.getBean(MdcProperties.class);
 					TraceIdGenerator traceIdGenerator = this.applicationContext.getBean(TraceIdGenerator.class);
 
