@@ -234,7 +234,6 @@ class RestClientIntegrationTests {
 				.build();
 			RestClient restClient = RestClientIntegrationTests.this.restClientBuilder.baseUrl(BASE_URL).build();
 
-			// 模拟连接错误，使用 SERVER_ERROR 响应并期望抛出异常
 			mockServer.expect(requestTo(BASE_URL + API_ENDPOINT)).andRespond((request) -> {
 				throw new IOException("Connection refused");
 			});
@@ -261,7 +260,6 @@ class RestClientIntegrationTests {
 				.build();
 			RestClient restClient = RestClientIntegrationTests.this.restClientBuilder.baseUrl(BASE_URL).build();
 
-			// 模拟 SocketTimeoutException (读取或连接超时)
 			mockServer.expect(requestTo(BASE_URL + API_ENDPOINT)).andRespond((request) -> {
 				throw new SocketTimeoutException("Read timed out");
 			});
@@ -284,7 +282,6 @@ class RestClientIntegrationTests {
 				.build();
 			RestClient restClient = RestClientIntegrationTests.this.restClientBuilder.baseUrl(BASE_URL).build();
 
-			// 模拟通用 IOException
 			mockServer.expect(requestTo(BASE_URL + API_ENDPOINT)).andRespond((request) -> {
 				throw new IOException("Network error occurred");
 			});

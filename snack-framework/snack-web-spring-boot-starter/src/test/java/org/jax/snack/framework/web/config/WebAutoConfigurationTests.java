@@ -86,11 +86,7 @@ class WebAutoConfigurationTests {
 	void shouldRegisterWebAutoConfigurationAsWebMvcConfigurer() {
 		this.contextRunner.run((context) -> {
 			assertThat(context).hasSingleBean(WebAutoConfiguration.class);
-			assertThat(context).hasSingleBean(WebMvcConfigurer.class); // Check if
-																		// WebAutoConfiguration
-																		// is registered
-																		// as
-																		// WebMvcConfigurer
+			assertThat(context).hasSingleBean(WebMvcConfigurer.class);
 		});
 	}
 
