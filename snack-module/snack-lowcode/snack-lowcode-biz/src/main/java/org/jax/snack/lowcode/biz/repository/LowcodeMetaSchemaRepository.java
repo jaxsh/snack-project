@@ -17,13 +17,13 @@
 package org.jax.snack.lowcode.biz.repository;
 
 import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
-import org.jax.snack.lowcode.biz.entity.LowcodePage;
+import org.jax.snack.lowcode.biz.entity.LowcodeMetaSchema;
 
 /**
- * 页面配置仓储接口.
+ * 元数据模板仓储接口.
  *
  * @author Jax Jiang
  */
-public interface LowcodePageRepository extends BaseRepository<LowcodePage, Long> {
+public interface LowcodeMetaSchemaRepository extends BaseRepository<LowcodeMetaSchema, Long> {
 
 }

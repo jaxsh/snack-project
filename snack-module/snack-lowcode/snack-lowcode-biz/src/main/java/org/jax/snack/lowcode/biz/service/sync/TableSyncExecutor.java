@@ -58,6 +58,7 @@ import tools.jackson.databind.JsonNode;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * 表同步执行器.
@@ -126,7 +127,7 @@ public class TableSyncExecutor {
 		}
 		catch (SQLException | LiquibaseException ex) {
 			log.error("Table creation failed: {}", ex.getMessage(), ex);
-			throw new RuntimeException("表创建失败: " + ex.getMessage(), ex);
+			throw new RuntimeException("Table creation failed: " + ex.getMessage(), ex);
 		}
 	}
 
@@ -158,7 +159,7 @@ public class TableSyncExecutor {
 		}
 		catch (SQLException | LiquibaseException ex) {
 			log.error("Table structure update failed: {}", ex.getMessage(), ex);
-			throw new RuntimeException("表结构变更失败: " + ex.getMessage(), ex);
+			throw new RuntimeException("Table structure update failed: " + ex.getMessage(), ex);
 		}
 	}
 
@@ -210,7 +211,7 @@ public class TableSyncExecutor {
 				}
 			}
 			case MODIFY_DEFAULT -> {
-				if (change.getNewValue() == null || change.getNewValue().isEmpty()) {
+				if (ObjectUtils.isEmpty(change.getNewValue())) {
 					DropDefaultValueChange drop = new DropDefaultValueChange();
 					drop.setTableName(tableName);
 					drop.setColumnName(change.getColumnName());
@@ -254,23 +255,21 @@ public class TableSyncExecutor {
 		};
 	}
 
-	private void executeChanges(Connection conn, String schemaName, List<Change> changes)
-			throws LiquibaseException, SQLException {
+	private void executeChanges(Connection conn, String schemaName, List<Change> changes) throws LiquibaseException {
 		Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(conn));
-		try (database) {
-			String uniqueId = "sync-" + schemaName + "-" + System.currentTimeMillis();
-			DatabaseChangeLog changeLog = new DatabaseChangeLog("dynamic/" + schemaName + ".yaml");
-			ChangeSet changeSet = new ChangeSet(uniqueId, "lowcode", false, false, "dynamic/" + schemaName, null, null,
-					changeLog);
 
-			for (Change change : changes) {
-				changeSet.addChange(change);
-			}
-			changeLog.addChangeSet(changeSet);
+		String uniqueId = "sync-" + schemaName + "-" + System.currentTimeMillis();
+		DatabaseChangeLog changeLog = new DatabaseChangeLog("dynamic/" + schemaName + ".yaml");
+		ChangeSet changeSet = new ChangeSet(uniqueId, "lowcode", false, false, "dynamic/" + schemaName, null, null,
+				changeLog);
 
-			try (Liquibase liquibase = new Liquibase(changeLog, new ClassLoaderResourceAccessor(), database)) {
-				liquibase.update("");
-			}
+		for (Change change : changes) {
+			changeSet.addChange(change);
+		}
+		changeLog.addChangeSet(changeSet);
+
+		try (Liquibase liquibase = new Liquibase(changeLog, new ClassLoaderResourceAccessor(), database)) {
+			liquibase.update("");
 		}
 	}
 
@@ -294,7 +293,7 @@ public class TableSyncExecutor {
 		column.setConstraints(constraints);
 
 		String defaultValue = xDatabase.path("default").asString(null);
-		if (defaultValue != null && !defaultValue.isEmpty()) {
+		if (!ObjectUtils.isEmpty(defaultValue)) {
 			column.setDefaultValue(defaultValue);
 		}
 

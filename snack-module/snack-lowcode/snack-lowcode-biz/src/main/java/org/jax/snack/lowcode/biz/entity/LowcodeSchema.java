@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 import tools.jackson.databind.JsonNode;
 
@@ -33,6 +34,7 @@ import tools.jackson.databind.JsonNode;
 @Getter
 @Setter
 @ToString
+@FieldNameConstants
 @TableName(value = "lowcode_schema", autoResultMap = true)
 public class LowcodeSchema extends BaseEntity {
 
@@ -71,5 +73,12 @@ public class LowcodeSchema extends BaseEntity {
 	 * 状态.
 	 */
 	private Integer status;
+
+	/**
+	 * 字段名常量, 继承父类字段.
+	 */
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

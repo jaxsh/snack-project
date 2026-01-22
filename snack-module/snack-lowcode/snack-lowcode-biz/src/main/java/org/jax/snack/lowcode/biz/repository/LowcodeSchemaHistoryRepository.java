@@ -16,6 +16,7 @@
 
 package org.jax.snack.lowcode.biz.repository;
 
+import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
 import org.jax.snack.lowcode.biz.entity.LowcodeSchemaHistory;
 
 /**
@@ -23,13 +24,6 @@ import org.jax.snack.lowcode.biz.entity.LowcodeSchemaHistory;
  *
  * @author Jax Jiang
  */
-@FunctionalInterface
-public interface LowcodeSchemaHistoryRepository {
-
-	/**
-	 * 保存历史记录.
-	 * @param history 历史记录实体
-	 */
-	void save(LowcodeSchemaHistory history);
+public interface LowcodeSchemaHistoryRepository extends BaseRepository<LowcodeSchemaHistory, Long> {
 
 }

@@ -40,8 +40,6 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface DynamicCrudMapper {
 
-	// ==================== 查询 ====================
-
 	/**
 	 * 动态分页查询.
 	 * @param page 分页参数
@@ -63,8 +61,6 @@ public interface DynamicCrudMapper {
 	List<Map<String, Object>> dynamicSelectList(@Param("selectColumns") String selectColumns,
 			@Param(Constants.WRAPPER) Wrapper<Void> wrapper);
 
-	// ==================== 插入 ====================
-
 	/**
 	 * 动态插入数据.
 	 * @param data 数据 Map
@@ -77,8 +73,6 @@ public interface DynamicCrudMapper {
 	@Options(useGeneratedKeys = true, keyProperty = "data.id", keyColumn = "id")
 	int dynamicInsert(@Param("data") Map<String, Object> data);
 
-	// ==================== 更新 ====================
-
 	/**
 	 * 动态更新数据 (支持 Patch 更新，即仅更新 Wrapper 中 set 的字段).
 	 * @param wrapper 包含 set 语句和 where 条件的 UpdateWrapper
@@ -86,8 +80,6 @@ public interface DynamicCrudMapper {
 	 */
 	@Update("UPDATE lowcode_dynamic_table SET ${ew.sqlSet} ${ew.customSqlSegment}")
 	int dynamicUpdate(@Param(Constants.WRAPPER) Wrapper<Void> wrapper);
-
-	// ==================== 删除 ====================
 
 	/**
 	 * 动态删除数据 (物理删除或根据 Wrapper 条件删除).

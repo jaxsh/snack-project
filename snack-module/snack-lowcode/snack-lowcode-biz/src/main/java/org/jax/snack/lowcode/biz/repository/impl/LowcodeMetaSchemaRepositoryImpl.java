@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.biz.repository;
+package org.jax.snack.lowcode.biz.repository.impl;
 
-import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
-import org.jax.snack.lowcode.biz.entity.LowcodePage;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
+import org.jax.snack.lowcode.biz.entity.LowcodeMetaSchema;
+import org.jax.snack.lowcode.biz.mapper.LowcodeMetaSchemaMapper;
+import org.jax.snack.lowcode.biz.repository.LowcodeMetaSchemaRepository;
+
+import org.springframework.stereotype.Repository;
 
 /**
- * 页面配置仓储接口.
+ * 元数据模板仓储实现.
  *
  * @author Jax Jiang
  */
-public interface LowcodePageRepository extends BaseRepository<LowcodePage, Long> {
+@Repository
+public class LowcodeMetaSchemaRepositoryImpl extends
+		AbstractRepository<LowcodeMetaSchema, Long, LowcodeMetaSchemaMapper> implements LowcodeMetaSchemaRepository {
 
 }

@@ -17,6 +17,10 @@
 package org.jax.snack.lowcode.biz.service.crud;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,6 +33,7 @@ import org.jax.snack.lowcode.biz.model.FieldDefinition;
 import org.jax.snack.lowcode.biz.options.OptionsResolver;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 /**
  * 数据转换器.
@@ -72,7 +77,7 @@ public class DataTransformer {
 			Object convertedValue = convertToJavaType(value, field.getType());
 			displayData.put(field.getFieldName(), convertedValue);
 
-			if (field.getXOptions() != null) {
+			if (!ObjectUtils.isEmpty(field.getXOptions())) {
 				String label = this.optionsResolver.getLabel(field.getXOptions(), convertedValue);
 				displayData.put(field.getFieldName() + "Label", label);
 			}
@@ -117,11 +122,11 @@ public class DataTransformer {
 	 * 与数据库无关，基于 JSON Schema 标准.
 	 * </p>
 	 * @param value 原始值
-	 * @param jsonSchemaType JSON Schema 类型 (integer, number, string, boolean)
+	 * @param jsonSchemaType JSON Schema 类型 (integer, number, string, boolean, timestamp)
 	 * @return 转换后的值
 	 */
 	private Object convertToJavaType(Object value, String jsonSchemaType) {
-		if (value == null || jsonSchemaType == null) {
+		if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(jsonSchemaType)) {
 			return value;
 		}
 
@@ -130,6 +135,7 @@ public class DataTransformer {
 			case "number" -> convertToDecimal(value);
 			case "string" -> value.toString();
 			case "boolean" -> convertToBoolean(value);
+			case "timestamp" -> convertToZonedDateTime(value);
 			default -> value;
 		};
 	}
@@ -168,7 +174,28 @@ public class DataTransformer {
 		if (value instanceof Number n) {
 			return n.intValue() != 0;
 		}
-		return Boolean.parseBoolean(value.toString());
+		return "true".equalsIgnoreCase(value.toString()) || "1".equals(value.toString());
+	}
+
+	/**
+	 * 转换为 ZonedDateTime.
+	 * <p>
+	 * 统一将数据库时间类型转换为 ZonedDateTime, 与 UPMS Entity (BaseEntity) 保持一致.
+	 * </p>
+	 * @param value 原始值 (可能是 Timestamp, LocalDateTime, ZonedDateTime)
+	 * @return ZonedDateTime 或 null
+	 */
+	private ZonedDateTime convertToZonedDateTime(Object value) {
+		if (value instanceof ZonedDateTime zdt) {
+			return zdt;
+		}
+		if (value instanceof Timestamp ts) {
+			return ts.toInstant().atZone(ZoneId.systemDefault());
+		}
+		if (value instanceof LocalDateTime ldt) {
+			return ldt.atZone(ZoneId.systemDefault());
+		}
+		return null;
 	}
 
 }

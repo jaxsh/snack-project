@@ -17,8 +17,6 @@
 package org.jax.snack.lowcode.biz.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.jax.snack.lowcode.biz.entity.LowcodeResource;
 
 /**
@@ -27,13 +25,5 @@ import org.jax.snack.lowcode.biz.entity.LowcodeResource;
  * @author Jax Jiang
  */
 public interface LowcodeResourceMapper extends BaseMapper<LowcodeResource> {
-
-	/**
-	 * 根据资源路径查询.
-	 * @param resourcePath 资源路径
-	 * @return 资源配置
-	 */
-	@Select("SELECT * FROM lowcode_resource WHERE resource_path = #{resourcePath} AND deleted = 0")
-	LowcodeResource selectByPath(@Param("resourcePath") String resourcePath);
 
 }

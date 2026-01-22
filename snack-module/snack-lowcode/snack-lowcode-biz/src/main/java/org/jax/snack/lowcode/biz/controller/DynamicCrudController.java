@@ -22,11 +22,12 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.lowcode.api.service.DynamicCrudService;
 import org.jax.snack.lowcode.biz.options.OptionItem;
-import org.jax.snack.lowcode.biz.service.crud.DynamicCrudService;
 import org.jax.snack.lowcode.biz.service.schema.SchemaService;
 import tools.jackson.databind.JsonNode;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,6 +65,20 @@ public class DynamicCrudController {
 	}
 
 	/**
+	 * 根据 ID 获取单条数据.
+	 * @param resourcePath API 路径 (kebab-case)
+	 * @param id 主键
+	 * @return 数据
+	 */
+	@GetMapping("/{resourcePath}/{id}")
+	public ResponseEntity<Map<String, Object>> getById(@PathVariable String resourcePath, @PathVariable Long id) {
+		String schemaName = this.schemaService.getSchemaNameByResourcePath(resourcePath);
+		return this.dynamicCrudService.getById(schemaName, id)
+			.map(ResponseEntity::ok)
+			.orElse(ResponseEntity.notFound().build());
+	}
+
+	/**
 	 * 创建数据.
 	 * @param resourcePath API 路径 (kebab-case)
 	 * @param data 数据
@@ -88,14 +103,14 @@ public class DynamicCrudController {
 	}
 
 	/**
-	 * 删除数据.
+	 * 批量删除数据.
 	 * @param resourcePath API 路径 (kebab-case)
-	 * @param id 主键
+	 * @param ids 主键列表
 	 */
-	@DeleteMapping("/{resourcePath}/{id}")
-	public void delete(@PathVariable String resourcePath, @PathVariable Long id) {
+	@DeleteMapping("/{resourcePath}/{ids}")
+	public void delete(@PathVariable String resourcePath, @PathVariable List<Long> ids) {
 		String schemaName = this.schemaService.getSchemaNameByResourcePath(resourcePath);
-		this.dynamicCrudService.delete(schemaName, id);
+		this.dynamicCrudService.delete(schemaName, ids);
 	}
 
 	/**

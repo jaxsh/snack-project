@@ -78,7 +78,6 @@ public class EnumOptionsProvider implements OptionsProvider {
 					result.add(new OptionItem(baseEnum.getName(), baseEnum.getCode()));
 				}
 				else {
-					// 普通枚举
 					Enum<?> e = (Enum<?>) constant;
 					result.add(new OptionItem(e.name(), e.ordinal()));
 				}

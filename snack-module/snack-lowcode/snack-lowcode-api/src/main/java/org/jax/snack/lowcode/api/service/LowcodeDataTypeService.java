@@ -14,16 +14,36 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.biz.repository;
+package org.jax.snack.lowcode.api.service;
 
-import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
-import org.jax.snack.lowcode.biz.entity.LowcodePage;
+import java.util.List;
+
+import org.jax.snack.lowcode.api.vo.LowcodeDataTypeVO;
+import tools.jackson.databind.JsonNode;
 
 /**
- * 页面配置仓储接口.
+ * 数据类型服务接口.
  *
  * @author Jax Jiang
  */
-public interface LowcodePageRepository extends BaseRepository<LowcodePage, Long> {
+public interface LowcodeDataTypeService {
+
+	/**
+	 * 获取所有启用的数据类型.
+	 * @return 数据类型 VO 列表
+	 */
+	List<LowcodeDataTypeVO> getDataTypes();
+
+	/**
+	 * 获取实体模板 Schema.
+	 * @return JSON Schema
+	 */
+	JsonNode getEntityTemplate();
+
+	/**
+	 * 获取字段模板 Schema.
+	 * @return JSON Schema
+	 */
+	JsonNode getFieldTemplate();
 
 }

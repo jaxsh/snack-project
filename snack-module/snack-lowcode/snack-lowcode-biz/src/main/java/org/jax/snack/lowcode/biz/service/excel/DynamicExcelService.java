@@ -36,17 +36,19 @@ import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.excel.ExcelBuilderFactory;
 import org.jax.snack.framework.excel.listener.ExcelDataListener;
 import org.jax.snack.framework.excel.web.ResponseHelper;
+import org.jax.snack.lowcode.api.service.DynamicCrudService;
 import org.jax.snack.lowcode.biz.excel.DropdownHandler;
 import org.jax.snack.lowcode.biz.model.FieldDefinition;
 import org.jax.snack.lowcode.biz.model.SchemaMetadata;
 import org.jax.snack.lowcode.biz.options.OptionItem;
 import org.jax.snack.lowcode.biz.options.OptionsResolver;
-import org.jax.snack.lowcode.biz.service.crud.DynamicCrudService;
 import org.jax.snack.lowcode.biz.service.crud.DynamicValidator;
 import org.jax.snack.lowcode.biz.service.schema.SchemaService;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -83,26 +85,22 @@ public class DynamicExcelService {
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
 		List<FieldDefinition> fields = this.schemaService.extractVisibleFields(schema);
 
-		// 构建表头 (支持多层)
 		Map<String, List<String>> headers = buildHeadersMap(fields, schema);
 		int headerRowCount = getHeaderRowCount(schema);
 
-		// 构建下拉框配置
 		List<DropdownHandler.DropdownConfig> dropdownConfigs = buildDropdownConfigs(fields);
 
-		// 使用 ExcelBuilderFactory 写入
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		this.excelFactory.write(buffer,
 				(ctx) -> ctx.sheet("数据",
 						(sheetCtx) -> sheetCtx.headers(headers)
 							.data(Collections.emptyList())
 							.customize((ExcelWriterSheetBuilder builder) -> {
-								if (!dropdownConfigs.isEmpty()) {
+								if (!CollectionUtils.isEmpty(dropdownConfigs)) {
 									builder.registerWriteHandler(new DropdownHandler(dropdownConfigs, headerRowCount));
 								}
 							})));
 
-		// 输出文件
 		ResponseHelper.downloadExcel(response, buffer, metadata.getLabel() + "_导入模板");
 
 		log.info("Exporting template for: {}", schemaName);
@@ -119,23 +117,18 @@ public class DynamicExcelService {
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
 		List<FieldDefinition> fields = this.schemaService.extractVisibleFields(schema);
 
-		// 查询全部数据 (size 为 null 时返回全部)
-		QueryCondition condition = new QueryCondition();
+		QueryCondition condition = QueryCondition.builder().build();
 		PageResult<Map<String, Object>> pageResult = this.dynamicCrudService.queryPage(schemaName, condition);
 		List<Map<String, Object>> dataList = pageResult.getRecords();
 
-		// 构建表头 (支持多层)
 		Map<String, List<String>> headers = buildHeadersMap(fields, schema);
 
-		// 转换数据为列表格式
 		List<List<Object>> rows = convertToRows(dataList, fields);
 
-		// 使用 ExcelBuilderFactory 写入
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		this.excelFactory.write(buffer,
 				(ctx) -> ctx.sheet("数据", (sheetCtx) -> sheetCtx.headers(headers).data(new ArrayList<>(rows))));
 
-		// 输出文件
 		ResponseHelper.downloadExcel(response, buffer, metadata.getLabel() + "_导出数据");
 
 		log.info("Exporting data for: {}, Total count: {}", schemaName, dataList.size());
@@ -153,19 +146,15 @@ public class DynamicExcelService {
 		List<FieldDefinition> fields = this.schemaService.extractVisibleFields(schema);
 		int headerRowCount = getHeaderRowCount(schema);
 
-		// 构建表头映射
 		Map<String, FieldDefinition> headerMap = new HashMap<>();
 		for (FieldDefinition field : fields) {
 			headerMap.put(field.getFieldName(), field);
 			headerMap.put(field.getLabel(), field);
 		}
 
-		// 成功计数
 		AtomicInteger successCount = new AtomicInteger(0);
 
-		// 创建 ExcelDataListener
 		ExcelDataListener<Map<String, Object>, Map<Integer, String>> listener = new ExcelDataListener<>(
-				// processor: 数据转换
 				(rowData, colToHeader) -> {
 					Map<String, Object> entityMap = new LinkedHashMap<>();
 
@@ -176,9 +165,9 @@ public class DynamicExcelService {
 						}
 
 						FieldDefinition field = headerMap.get(headerName);
-						if (field != null) {
+						if (!ObjectUtils.isEmpty(field)) {
 							Object value;
-							if (field.getXOptions() != null) {
+							if (!ObjectUtils.isEmpty(field.getXOptions())) {
 								value = this.optionsResolver.getValue(field.getXOptions(), val);
 							}
 							else {
@@ -189,20 +178,13 @@ public class DynamicExcelService {
 					});
 
 					return entityMap.isEmpty() ? null : entityMap;
-				}, null, // validator: 不用 Jakarta Validator
-				// saveFunction: 批量保存
-				(batch) -> {
+				}, null, (batch) -> {
 					for (Map<String, Object> data : batch) {
 						this.dynamicCrudService.create(schemaName, data);
 						successCount.incrementAndGet();
 					}
-				},
-				// businessValidator: JSON Schema 校验
-				(data) -> this.dynamicValidator.validate(schemaName, data), 100, // batchSize
-				false // failFast: 收集所有错误
-		);
+				}, (data) -> this.dynamicValidator.validate(schemaName, data), 100, false);
 
-		// 执行读取
 		FastExcel.read(file.getInputStream())
 			.headRowNumber(headerRowCount)
 			.registerReadListener(listener)
@@ -223,7 +205,6 @@ public class DynamicExcelService {
 		Map<String, List<String>> headers = new LinkedHashMap<>();
 
 		if (!headersNode.isMissingNode() && headersNode.isArray() && !headersNode.isEmpty()) {
-			// 多层表头模式
 			for (int colIdx = 0; colIdx < fields.size(); colIdx++) {
 				FieldDefinition field = fields.get(colIdx);
 				List<String> colHeaders = new ArrayList<>();
@@ -239,7 +220,6 @@ public class DynamicExcelService {
 			}
 		}
 		else {
-			// 默认单层表头
 			for (FieldDefinition field : fields) {
 				headers.put(field.getFieldName(), List.of(field.getLabel()));
 			}
@@ -264,11 +244,10 @@ public class DynamicExcelService {
 			List<Object> row = new ArrayList<>();
 			for (FieldDefinition field : fields) {
 				Object value = data.get(field.getFieldName());
-				// 如果字段有 x-options 配置，翻译为标签
-				if (value != null && field.getXOptions() != null) {
+				if (!ObjectUtils.isEmpty(value) && !ObjectUtils.isEmpty(field.getXOptions())) {
 					value = this.optionsResolver.getLabel(field.getXOptions(), value);
 				}
-				row.add((value != null) ? value : "");
+				row.add(!ObjectUtils.isEmpty(value) ? value : "");
 			}
 			rows.add(row);
 		}
@@ -278,16 +257,15 @@ public class DynamicExcelService {
 	private List<DropdownHandler.DropdownConfig> buildDropdownConfigs(List<FieldDefinition> fields) {
 		List<DropdownHandler.DropdownConfig> configs = new ArrayList<>();
 
-		// 计算公式列起始位置 (在所有字段列之后)
 		int formulaColumnOffset = fields.size();
 		int formulaColumnCounter = 0;
 
 		for (int i = 0; i < fields.size(); i++) {
 			FieldDefinition field = fields.get(i);
-			if (field.getXOptions() != null) {
+			if (!ObjectUtils.isEmpty(field.getXOptions())) {
 				List<OptionItem> options = this.optionsResolver.resolveOptions(field.getXOptions());
 
-				if (!options.isEmpty()) {
+				if (!CollectionUtils.isEmpty(options)) {
 					List<String[]> items = options.stream()
 						.map((opt) -> new String[] { opt.label(), opt.valueAsString() })
 						.toList();
@@ -304,7 +282,7 @@ public class DynamicExcelService {
 	}
 
 	private Object convertValue(String value, String type) {
-		if (value == null || value.isEmpty()) {
+		if (ObjectUtils.isEmpty(value)) {
 			return null;
 		}
 		return switch (type) {

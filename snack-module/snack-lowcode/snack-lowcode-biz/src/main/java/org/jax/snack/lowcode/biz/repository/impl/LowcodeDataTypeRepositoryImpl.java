@@ -16,13 +16,7 @@
 
 package org.jax.snack.lowcode.biz.repository.impl;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
-import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
 import org.jax.snack.lowcode.biz.mapper.LowcodeDataTypeMapper;
 import org.jax.snack.lowcode.biz.repository.LowcodeDataTypeRepository;
@@ -35,29 +29,7 @@ import org.springframework.stereotype.Repository;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class LowcodeDataTypeRepositoryImpl implements LowcodeDataTypeRepository {
-
-	private final LowcodeDataTypeMapper mapper;
-
-	@Override
-	public boolean existsByDsl(QueryCondition condition) {
-		QueryWrapper<LowcodeDataType> wrapper = QueryWrapperBuilder.build(condition, LowcodeDataType.class);
-		return this.mapper.exists(wrapper);
-	}
-
-	@Override
-	public Page<LowcodeDataType> queryPageByDsl(QueryCondition condition) {
-		QueryWrapper<LowcodeDataType> wrapper = QueryWrapperBuilder.build(condition, LowcodeDataType.class);
-		long current = (condition.getCurrent() != null) ? condition.getCurrent() : 1L;
-		Page<LowcodeDataType> page = new Page<>(current, condition.getSize());
-		return this.mapper.selectPage(page, wrapper);
-	}
-
-	@Override
-	public List<LowcodeDataType> queryListByDsl(QueryCondition condition) {
-		QueryWrapper<LowcodeDataType> wrapper = QueryWrapperBuilder.build(condition, LowcodeDataType.class);
-		return this.mapper.selectList(wrapper);
-	}
+public class LowcodeDataTypeRepositoryImpl extends AbstractRepository<LowcodeDataType, Long, LowcodeDataTypeMapper>
+		implements LowcodeDataTypeRepository {
 
 }

@@ -4,11 +4,18 @@ plugins {
 
 dependencies {
 	implementation project(':snack-module:snack-lowcode:snack-lowcode-biz')
+	implementation project(':snack-framework:snack-oauth2-resource-server-spring-boot-starter')
 	implementation 'org.springframework.boot:spring-boot-starter-liquibase'
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+	testAndDevelopmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation project(':snack-framework:snack-webtest-spring-boot-starter')
+	testImplementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')
+	testImplementation project(':snack-module:snack-lowcode:snack-lowcode-api')
+	testImplementation project(':snack-module:snack-lowcode:snack-lowcode-biz')
 }
 
 

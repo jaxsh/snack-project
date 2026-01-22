@@ -19,6 +19,7 @@ package org.jax.snack.lowcode.biz.service.crud;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -27,35 +28,36 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.mybatisplus.context.TableContextHolder;
 import org.jax.snack.framework.mybatisplus.manager.SystemFieldManager;
-import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
-import org.jax.snack.lowcode.biz.mapper.DynamicCrudMapper;
+import org.jax.snack.framework.mybatisplus.query.WrapperBuilder;
+import org.jax.snack.lowcode.api.service.DynamicCrudService;
 import org.jax.snack.lowcode.biz.model.FieldDefinition;
 import org.jax.snack.lowcode.biz.model.SchemaMetadata;
+import org.jax.snack.lowcode.biz.repository.DynamicCrudRepository;
 import org.jax.snack.lowcode.biz.service.schema.SchemaService;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
- * 动态 CRUD 服务.
- * <p>
- * 使用 MyBatis Plus Wrapper 处理查询/更新，手动处理审计字段.
- * </p>
+ * 动态 CRUD 服务实现.
  *
  * @author Jax Jiang
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DynamicCrudService {
+public class DynamicCrudServiceImpl implements DynamicCrudService {
 
 	private final SchemaService schemaService;
 
-	private final DynamicCrudMapper dynamicCrudMapper;
+	private final DynamicCrudRepository dynamicCrudRepository;
 
 	private final DataTransformer dataTransformer;
 
@@ -63,12 +65,8 @@ public class DynamicCrudService {
 
 	private final SystemFieldManager systemFieldManager;
 
-	/**
-	 * 创建数据.
-	 * @param schemaName Schema 名称
-	 * @param data 数据
-	 */
-	@Transactional
+	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void create(String schemaName, Map<String, Object> data) {
 		this.validator.validate(schemaName, data);
 
@@ -81,7 +79,7 @@ public class DynamicCrudService {
 
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
-			this.dynamicCrudMapper.dynamicInsert(storageData);
+			this.dynamicCrudRepository.insert(storageData);
 
 			Object idObj = storageData.get(SystemFieldManager.COLUMN_ID);
 			Long id = (idObj instanceof Number n) ? n.longValue() : null;
@@ -97,94 +95,106 @@ public class DynamicCrudService {
 		}
 	}
 
-	/**
-	 * 更新数据.
-	 * @param schemaName Schema 名称
-	 * @param id 主键
-	 * @param data 数据
-	 */
-	@Transactional
+	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void update(String schemaName, Long id, Map<String, Object> data) {
 		JsonNode schema = this.schemaService.getSchema(schemaName);
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
 		List<FieldDefinition> fields = this.schemaService.extractFields(schema);
 
+		Map<String, String> fieldMapping = buildFieldMapping(fields);
+
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
-
-			UpdateWrapper<Void> wrapper = new UpdateWrapper<>();
-			wrapper.eq(SystemFieldManager.COLUMN_ID, id);
 
 			Map<String, Object> storageData = this.dataTransformer.toStorage(data, fields);
 			this.systemFieldManager.fillSystemParams(storageData, true);
+			storageData.remove(SystemFieldManager.COLUMN_ID);
 
-			storageData.forEach((column, value) -> {
-				if (value != null && !SystemFieldManager.COLUMN_ID.equals(column)) {
-					wrapper.set(column, value);
-				}
-			});
+			WhereCondition condition = WhereCondition.builder().eq(SystemFieldManager.FIELD_ID, id).build();
 
-			int rows = this.dynamicCrudMapper.dynamicUpdate(wrapper);
+			UpdateWrapper<Void> wrapper = WrapperBuilder.update(storageData, condition, fieldMapping);
+			this.dynamicCrudRepository.update(wrapper);
 		}
 		finally {
 			TableContextHolder.clear();
 		}
 	}
 
-	/**
-	 * 删除数据 (物理删除).
-	 * @param schemaName Schema 名称
-	 * @param id 主键
-	 */
-	@Transactional
-	public void delete(String schemaName, Long id) {
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void delete(String schemaName, List<Long> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return;
+		}
+
 		JsonNode schema = this.schemaService.getSchema(schemaName);
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
+		List<FieldDefinition> fields = this.schemaService.extractFields(schema);
+
+		Map<String, String> fieldMapping = buildFieldMapping(fields);
 
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
 
-			QueryWrapper<Void> wrapper = new QueryWrapper<>();
-			wrapper.eq(SystemFieldManager.COLUMN_ID, id);
+			WhereCondition condition = WhereCondition.builder().in(SystemFieldManager.FIELD_ID, ids).build();
 
-			int rows = this.dynamicCrudMapper.dynamicDelete(wrapper);
+			QueryWrapper<Void> wrapper = WrapperBuilder.where(condition, fieldMapping);
+			this.dynamicCrudRepository.delete(wrapper);
 		}
 		finally {
 			TableContextHolder.clear();
 		}
 	}
 
-	/**
-	 * 分页查询.
-	 * @param schemaName Schema 名称
-	 * @param condition 查询条件
-	 * @return 分页结果
-	 */
-	public PageResult<Map<String, Object>> queryPage(String schemaName, QueryCondition condition) {
+	@Override
+	public Optional<Map<String, Object>> getById(String schemaName, Long id) {
 		JsonNode schema = this.schemaService.getSchema(schemaName);
 		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
 		List<FieldDefinition> fields = this.schemaService.extractVisibleFields(schema);
 
-		Map<String, String> fieldMapping = new HashMap<>();
-		for (FieldDefinition field : fields) {
-			fieldMapping.put(field.getFieldName(), field.getDbColumn());
-		}
+		Map<String, String> fieldMapping = buildFieldMapping(fields);
 
-		for (SystemFieldManager.SystemField sysField : this.systemFieldManager.getSystemFields()) {
-			fieldMapping.putIfAbsent(sysField.fieldName(), sysField.columnName());
-		}
+		WhereCondition condition = WhereCondition.builder().eq(SystemFieldManager.FIELD_ID, id).build();
 
-		QueryWrapper<Void> wrapper = QueryWrapperBuilder.build(condition, fieldMapping);
+		QueryWrapper<Void> wrapper = WrapperBuilder.where(condition, fieldMapping);
 
 		try {
 			TableContextHolder.setTableName(metadata.getTableName());
 			String selectColumns = this.dataTransformer.buildSelectColumns(fields);
 
-			if (condition.getSize() != null && condition.getSize() > 0) {
+			List<Map<String, Object>> list = this.dynamicCrudRepository.selectList(selectColumns, wrapper);
+			if (list.isEmpty()) {
+				return Optional.empty();
+			}
+
+			List<Map<String, Object>> records = this.dataTransformer.toDisplayList(list, fields);
+			return Optional.of(records.get(0));
+		}
+		finally {
+			TableContextHolder.clear();
+		}
+	}
+
+	@Override
+	public PageResult<Map<String, Object>> queryPage(String schemaName, QueryCondition condition) {
+		JsonNode schema = this.schemaService.getSchema(schemaName);
+		SchemaMetadata metadata = this.schemaService.extractMetadata(schema);
+		List<FieldDefinition> fields = this.schemaService.extractVisibleFields(schema);
+
+		Map<String, String> fieldMapping = buildFieldMapping(fields);
+
+		QueryWrapper<Void> wrapper = WrapperBuilder.query(condition, fieldMapping);
+
+		try {
+			TableContextHolder.setTableName(metadata.getTableName());
+			String selectColumns = this.dataTransformer.buildSelectColumns(fields);
+
+			if (!ObjectUtils.isEmpty(condition.getSize())) {
 				Page<Map<String, Object>> page = new Page<>(
 						(condition.getCurrent() != null) ? condition.getCurrent() : 1, condition.getSize());
 
-				IPage<Map<String, Object>> pageResult = this.dynamicCrudMapper.dynamicSelectPage(page, selectColumns,
+				IPage<Map<String, Object>> pageResult = this.dynamicCrudRepository.selectPage(page, selectColumns,
 						wrapper);
 
 				List<Map<String, Object>> records = this.dataTransformer.toDisplayList(pageResult.getRecords(), fields);
@@ -192,7 +202,7 @@ public class DynamicCrudService {
 						pageResult.getPages());
 			}
 			else {
-				List<Map<String, Object>> list = this.dynamicCrudMapper.dynamicSelectList(selectColumns, wrapper);
+				List<Map<String, Object>> list = this.dynamicCrudRepository.selectList(selectColumns, wrapper);
 				List<Map<String, Object>> records = this.dataTransformer.toDisplayList(list, fields);
 				return new PageResult<>(records, records.size(), records.size(), 1L, 1L);
 			}
@@ -200,6 +210,17 @@ public class DynamicCrudService {
 		finally {
 			TableContextHolder.clear();
 		}
+	}
+
+	private Map<String, String> buildFieldMapping(List<FieldDefinition> fields) {
+		Map<String, String> fieldMapping = new HashMap<>();
+		for (FieldDefinition field : fields) {
+			fieldMapping.put(field.getFieldName(), field.getDbColumn());
+		}
+		for (SystemFieldManager.SystemField sysField : this.systemFieldManager.getSystemFields()) {
+			fieldMapping.putIfAbsent(sysField.fieldName(), sysField.columnName());
+		}
+		return fieldMapping;
 	}
 
 }

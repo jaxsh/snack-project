@@ -72,7 +72,7 @@ public class DropdownHandler implements SheetWriteHandler {
 
 		writeDictDataAndCreateDropdowns(ctx.getWriteWorkbookHolder().getWorkbook(), mainSheet);
 		presetFormulaColumns(mainSheet);
-		hideSheet(ctx.getWriteWorkbookHolder().getWorkbook(), DICT_SHEET_NAME);
+		hideSheet(ctx.getWriteWorkbookHolder().getWorkbook());
 	}
 
 	private void writeDictDataAndCreateDropdowns(Workbook workbook, Sheet mainSheet) {
@@ -95,12 +95,11 @@ public class DropdownHandler implements SheetWriteHandler {
 
 			for (String[] item : items) {
 				Row row = dictSheet.createRow(currentRow);
-				row.createCell(0).setCellValue(item[0]); // label
-				row.createCell(1).setCellValue(item[1]); // value
+				row.createCell(0).setCellValue(item[0]);
+				row.createCell(1).setCellValue(item[1]);
 				currentRow++;
 			}
 
-			// 记录范围 (Excel 行号从 1 开始)
 			this.dictRanges.put(config, new int[] { startRow + 1, currentRow });
 
 			String nameRef = "N_" + this.nameCounter;
@@ -133,7 +132,6 @@ public class DropdownHandler implements SheetWriteHandler {
 
 			String dropdownColLetter = getColumnLetter(config.getDropdownColumnIndex());
 
-			// 在数据起始行设置公式
 			int dataStartRowIndex = this.headerRowCount;
 			Row row = mainSheet.getRow(dataStartRowIndex);
 			if (row == null) {
@@ -148,13 +146,12 @@ public class DropdownHandler implements SheetWriteHandler {
 					excelRowNumber, DICT_SHEET_NAME, range[0], range[1]);
 			cell.setCellFormula(formula);
 
-			// 隐藏公式列
 			mainSheet.setColumnHidden(formulaCol, true);
 		}
 	}
 
-	private void hideSheet(Workbook workbook, String sheetName) {
-		workbook.setSheetHidden(workbook.getSheetIndex(sheetName), true);
+	private void hideSheet(Workbook workbook) {
+		workbook.setSheetHidden(workbook.getSheetIndex(DropdownHandler.DICT_SHEET_NAME), true);
 	}
 
 	private String getColumnLetter(int columnIndex) {

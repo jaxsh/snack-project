@@ -62,11 +62,9 @@ public class SchemaAssembler {
 	public JsonNode toJsonSchema(LowcodeSchemaDTO request) {
 		ObjectNode schema = this.jsonMapper.createObjectNode();
 
-		// 根节点
 		schema.put("$schema", "http://json-schema.org/draft-07/schema#");
 		schema.put(PROPERTY_TYPE, "object");
 
-		// x-lowcode 扩展
 		ObjectNode xLowcode = schema.putObject("x-lowcode");
 		xLowcode.put("entityName", request.getSchemaName());
 		xLowcode.put("tableName", request.getTableName());
@@ -77,22 +75,18 @@ public class SchemaAssembler {
 
 		ObjectNode properties = schema.putObject("properties");
 
-		// 添加系统字段 (ID + Audit)
 		addSystemFields(properties);
 
-		// 添加用户定义字段
 		ArrayNode required = schema.putArray("required");
 		for (FieldDTO field : request.getFields()) {
 			ObjectNode fieldSchema = properties.putObject(field.getFieldName());
 			buildFieldSchema(fieldSchema, field);
 
-			// 必填字段
 			if (Boolean.FALSE.equals(field.getNullable())) {
 				required.add(field.getFieldName());
 			}
 		}
 
-		// 添加联合索引
 		addIndexes(xLowcode, request);
 
 		return schema;
@@ -104,14 +98,12 @@ public class SchemaAssembler {
 
 			ObjectNode field = properties.putObject(fieldName);
 
-			// 查找类型配置获取 JSON Schema 类型
 			LowcodeDataType config = this.dataTypeManager.getConfig(sysCol.logicType());
 			String jsonType = (config != null) ? config.getJsonSchemaType() : "string";
 
 			field.put(PROPERTY_TYPE, jsonType);
 			field.put("title", sysCol.remarks());
 
-			// 对于非主键的系统字段，前端只读
 			if (!sysCol.isPrimaryKey()) {
 				field.put("readOnly", true);
 			}
@@ -121,7 +113,6 @@ public class SchemaAssembler {
 			xDatabase.put("type", sysCol.sqlType());
 			xDatabase.put("system", sysCol.isSystem());
 
-			// 添加长度（如有）
 			if (sysCol.length() != null) {
 				xDatabase.put("length", sysCol.length());
 			}
@@ -150,17 +141,14 @@ public class SchemaAssembler {
 		for (LowcodeSchemaDTO.IndexDTO idx : request.getIndexes()) {
 			ObjectNode indexNode = indexesArray.addObject();
 
-			// 索引名: 用户指定或自动生成
 			String indexName = StringUtils.hasText(idx.getIndexName()) ? idx.getIndexName() : generateIndexName(idx);
 			indexNode.put("name", indexName);
 
-			// 列名列表
 			ArrayNode columnsArray = indexNode.putArray("columns");
 			for (String column : idx.getColumns()) {
 				columnsArray.add(column);
 			}
 
-			// 是否唯一
 			if (Boolean.TRUE.equals(idx.getUnique())) {
 				indexNode.put("unique", true);
 			}
@@ -173,20 +161,16 @@ public class SchemaAssembler {
 	}
 
 	private void buildFieldSchema(ObjectNode fieldSchema, FieldDTO field) {
-		// 字段唯一标识
 		String fieldId = StringUtils.hasText(field.getFieldId()) ? field.getFieldId() : generateFieldId();
 		fieldSchema.put("x-field-id", fieldId);
 
-		// 查找类型配置
 		LowcodeDataType config = this.dataTypeManager.getConfig(field.getLogicType());
 		String jsonType = (config != null) ? config.getJsonSchemaType() : "string";
 		String dbType = (config != null) ? config.getDbType() : field.getLogicType();
 
-		// JSON Schema 类型
 		fieldSchema.put(PROPERTY_TYPE, jsonType);
 		fieldSchema.put("title", field.getTitle());
 
-		// x-database 扩展
 		ObjectNode xDatabase = fieldSchema.putObject("x-database");
 		xDatabase.put("column", field.getDbColumn());
 		xDatabase.put(PROPERTY_TYPE, dbType);
@@ -213,7 +197,6 @@ public class SchemaAssembler {
 			xDatabase.put("unique", true);
 		}
 
-		// x-list 扩展
 		ObjectNode xList = fieldSchema.putObject("x-list");
 		xList.put("visible", true);
 	}

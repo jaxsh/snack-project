@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.biz.repository;
+package org.jax.snack.lowcode;
 
-import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
-import org.jax.snack.lowcode.biz.entity.LowcodePage;
+import org.jax.snack.framework.webtest.MockMvcTestSupport;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 页面配置仓储接口.
+ * Lowcode 模块集成测试基类.
  *
  * @author Jax Jiang
  */
-public interface LowcodePageRepository extends BaseRepository<LowcodePage, Long> {
+@SpringBootTest(properties = { "spring.profiles.active=lowcode" })
+@AutoConfigureMockMvc
+@Transactional
+public abstract class LowcodeIntegrationTests extends MockMvcTestSupport {
 
 }

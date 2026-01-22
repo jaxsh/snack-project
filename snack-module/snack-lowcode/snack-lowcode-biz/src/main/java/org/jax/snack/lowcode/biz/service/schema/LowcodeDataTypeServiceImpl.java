@@ -17,83 +17,63 @@
 package org.jax.snack.lowcode.biz.service.schema;
 
 import java.util.List;
-import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jax.snack.framework.core.api.query.OrderByCondition;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
-import org.jax.snack.framework.core.api.query.SortDirection;
+import org.jax.snack.lowcode.api.service.LowcodeDataTypeService;
 import org.jax.snack.lowcode.api.vo.LowcodeDataTypeVO;
 import org.jax.snack.lowcode.biz.converter.LowcodeDataTypeConverter;
+import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
 import org.jax.snack.lowcode.biz.entity.LowcodeMetaSchema;
-import org.jax.snack.lowcode.biz.mapper.LowcodeMetaSchemaMapper;
 import org.jax.snack.lowcode.biz.repository.LowcodeDataTypeRepository;
+import org.jax.snack.lowcode.biz.repository.LowcodeMetaSchemaRepository;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.stereotype.Service;
 
 /**
- * 数据类型服务.
- * <p>
- * 提供元数据模板管理功能.
- * </p>
+ * 数据类型服务实现.
  *
  * @author Jax Jiang
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LowcodeDataTypeService {
+public class LowcodeDataTypeServiceImpl implements LowcodeDataTypeService {
 
 	private final LowcodeDataTypeRepository dataTypeRepository;
 
 	private final LowcodeDataTypeConverter dataTypeConverter;
 
-	private final LowcodeMetaSchemaMapper metaSchemaMapper;
+	private final LowcodeMetaSchemaRepository metaSchemaRepository;
 
-	/**
-	 * 获取所有启用的数据类型.
-	 * @return 数据类型 VO 列表
-	 */
+	@Override
 	public List<LowcodeDataTypeVO> getDataTypes() {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("enabled", Map.of(QueryOperator.EQ.getValue(), true)));
-		OrderByCondition orderBy = new OrderByCondition();
-		orderBy.setField("sortOrder");
-		orderBy.setDirection(SortDirection.ASC.getValue());
-		condition.setOrderBy(List.of(orderBy));
+		QueryCondition condition = QueryCondition.builder()
+			.eq(LowcodeDataType.Fields.enabled, true)
+			.orderByAsc(LowcodeDataType.Fields.sortOrder)
+			.build();
 		return this.dataTypeRepository.queryListByDsl(condition).stream().map(this.dataTypeConverter::toVo).toList();
 	}
 
-	/**
-	 * 获取实体模板 Schema.
-	 * @return JSON Schema
-	 */
+	@Override
 	public JsonNode getEntityTemplate() {
 		return getTemplateByType("entity");
 	}
 
-	/**
-	 * 获取字段模板 Schema.
-	 * @return JSON Schema
-	 */
+	@Override
 	public JsonNode getFieldTemplate() {
 		return getTemplateByType("field");
 	}
 
-	/**
-	 * 根据类型获取模板.
-	 * @param metaType 模板类型
-	 * @return JSON Schema
-	 */
-	public JsonNode getTemplateByType(String metaType) {
-		LowcodeMetaSchema metaSchema = this.metaSchemaMapper.selectByMetaType(metaType);
-		if (metaSchema == null) {
-			throw new IllegalArgumentException("未找到模板: " + metaType);
+	private JsonNode getTemplateByType(String metaType) {
+		QueryCondition condition = QueryCondition.builder().eq(LowcodeMetaSchema.Fields.metaType, metaType).build();
+		List<LowcodeMetaSchema> list = this.metaSchemaRepository.queryListByDsl(condition);
+		if (list.isEmpty()) {
+			throw new IllegalArgumentException("Template not found: " + metaType);
 		}
-		return metaSchema.getSchemaJson();
+		return list.get(0).getSchemaJson();
 	}
 
 }

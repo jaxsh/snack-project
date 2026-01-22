@@ -30,6 +30,7 @@ import org.jax.snack.lowcode.biz.model.SchemaChangeType;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -56,19 +57,16 @@ public class SchemaChangeDetector {
 	public List<SchemaChange> detectChanges(JsonNode newSchema, JsonNode oldSchema) {
 		List<SchemaChange> changes = new ArrayList<>();
 
-		// 1. 无旧 Schema，视为全量新增表
-		if (oldSchema == null || oldSchema.isMissingNode()) {
+		if (ObjectUtils.isEmpty(oldSchema) || oldSchema.isMissingNode()) {
 			SchemaChange addTable = new SchemaChange();
 			addTable.setType(SchemaChangeType.ADD_TABLE);
 			changes.add(addTable);
 			return changes;
 		}
 
-		// 2. 提取字段定义（按 fieldId 索引）
 		Map<String, ColumnInfo> newColumnsById = getColumnsByFieldId(newSchema);
 		Map<String, ColumnInfo> oldColumnsById = getColumnsByFieldId(oldSchema);
 
-		// 3. 对比检测变更
 		Set<String> processedOldIds = new HashSet<>();
 
 		for (Map.Entry<String, ColumnInfo> entry : newColumnsById.entrySet()) {
@@ -76,35 +74,29 @@ public class SchemaChangeDetector {
 			ColumnInfo newCol = entry.getValue();
 
 			if (oldColumnsById.containsKey(fieldId)) {
-				// 相同 fieldId 存在于旧 Schema
 				ColumnInfo oldCol = oldColumnsById.get(fieldId);
 				processedOldIds.add(fieldId);
 
-				// 检测列名变更 (RENAME_COLUMN)
 				if (!newCol.name.equals(oldCol.name)) {
 					String colType = this.dataTypeManager.resolveSqlType(newCol.type, newCol.length, newCol.scale);
 					changes.add(SchemaChange.renameColumn(oldCol.name, newCol.name, colType));
 				}
 
-				// 检测其他属性变更
 				detectColumnChanges(newCol.name, newCol, oldCol, changes);
 			}
 			else {
-				// 新字段 (新增)
 				String colType = this.dataTypeManager.resolveSqlType(newCol.type, newCol.length, newCol.scale);
 				changes.add(SchemaChange.addColumn(newCol.name, colType, newCol.nullable, newCol.defaultValue,
 						newCol.remarks));
 			}
 		}
 
-		// 4. 检测删除列（旧 Schema 中有但新 Schema 中没有的 fieldId）
 		for (Map.Entry<String, ColumnInfo> entry : oldColumnsById.entrySet()) {
 			if (!processedOldIds.contains(entry.getKey())) {
 				changes.add(SchemaChange.dropColumn(entry.getValue().name));
 			}
 		}
 
-		// 5. 检测联合索引变更
 		detectIndexChanges(newSchema, oldSchema, changes);
 
 		return changes;
@@ -128,8 +120,7 @@ public class SchemaChangeDetector {
 			JsonNode fieldSchema = fieldEntry.getValue();
 
 			String fieldId = fieldSchema.path("x-field-id").asString(null);
-			if (fieldId == null) {
-				// 没有 fieldId，使用列名作为 fallback
+			if (ObjectUtils.isEmpty(fieldId)) {
 				JsonNode xDatabase = fieldSchema.path("x-database");
 				fieldId = xDatabase.path("column").asString(fieldName);
 			}
@@ -153,7 +144,6 @@ public class SchemaChangeDetector {
 	}
 
 	private void detectColumnChanges(String colName, ColumnInfo newCol, ColumnInfo oldCol, List<SchemaChange> changes) {
-		// 1. 检测类型/长度/精度变更 (直接比对属性)
 		boolean typeChanged = !newCol.type.equalsIgnoreCase(oldCol.type);
 		boolean lengthChanged = newCol.length != oldCol.length;
 		boolean scaleChanged = newCol.scale != oldCol.scale;
@@ -164,18 +154,15 @@ public class SchemaChangeDetector {
 			changes.add(SchemaChange.modifyType(colName, oldTypeStr, newTypeStr));
 		}
 
-		// 2. 检测可空约束变更 (排除主键)
 		if (newCol.nullable != oldCol.nullable) {
 			String newTypeStr = this.dataTypeManager.resolveSqlType(newCol.type, newCol.length, newCol.scale);
 			changes.add(SchemaChange.modifyNullable(colName, newCol.nullable, newTypeStr));
 		}
 
-		// 3. 检测默认值变更
 		if (!equalsDefault(newCol.defaultValue, oldCol.defaultValue)) {
 			changes.add(SchemaChange.modifyDefault(colName, oldCol.defaultValue, newCol.defaultValue));
 		}
 
-		// 4. 检测索引变更
 		boolean newHasIndex = newCol.index || newCol.unique;
 		boolean oldHasIndex = oldCol.index || oldCol.unique;
 		if (newHasIndex && !oldHasIndex) {
@@ -187,7 +174,6 @@ public class SchemaChangeDetector {
 			changes.add(SchemaChange.dropIndex(indexName));
 		}
 		else if (newHasIndex && newCol.unique != oldCol.unique) {
-			// unique 变更需要先删后加
 			String indexName = "idx_" + colName;
 			changes.add(SchemaChange.dropIndex(indexName));
 			changes.add(SchemaChange.addIndex(colName, indexName, newCol.unique));
@@ -198,7 +184,7 @@ public class SchemaChangeDetector {
 		if (!StringUtils.hasText(a) && !StringUtils.hasText(b)) {
 			return true;
 		}
-		if (a == null || b == null) {
+		if (ObjectUtils.isEmpty(a) || ObjectUtils.isEmpty(b)) {
 			return false;
 		}
 		return a.equals(b);
@@ -208,26 +194,22 @@ public class SchemaChangeDetector {
 		Map<String, IndexInfo> newIndexes = getIndexes(newSchema);
 		Map<String, IndexInfo> oldIndexes = getIndexes(oldSchema);
 
-		// 检测新增/修改的索引
 		for (Map.Entry<String, IndexInfo> entry : newIndexes.entrySet()) {
 			String indexName = entry.getKey();
 			IndexInfo newIdx = entry.getValue();
 
 			if (oldIndexes.containsKey(indexName)) {
 				IndexInfo oldIdx = oldIndexes.get(indexName);
-				// 列组合或 unique 变化, 需要先删后加
 				if (!newIdx.columns.equals(oldIdx.columns) || newIdx.unique != oldIdx.unique) {
 					changes.add(SchemaChange.dropIndex(indexName));
 					changes.add(SchemaChange.addCompositeIndex(newIdx.columns, indexName, newIdx.unique));
 				}
 			}
 			else {
-				// 新增索引
 				changes.add(SchemaChange.addCompositeIndex(newIdx.columns, indexName, newIdx.unique));
 			}
 		}
 
-		// 检测删除的索引
 		for (String indexName : oldIndexes.keySet()) {
 			if (!newIndexes.containsKey(indexName)) {
 				changes.add(SchemaChange.dropIndex(indexName));
@@ -267,6 +249,9 @@ public class SchemaChangeDetector {
 		return indexes;
 	}
 
+	/**
+	 * 内部列信息承载类.
+	 */
 	private static class ColumnInfo {
 
 		String name;
@@ -289,6 +274,9 @@ public class SchemaChangeDetector {
 
 	}
 
+	/**
+	 * 内部索引信息承载类.
+	 */
 	private static class IndexInfo {
 
 		String name;

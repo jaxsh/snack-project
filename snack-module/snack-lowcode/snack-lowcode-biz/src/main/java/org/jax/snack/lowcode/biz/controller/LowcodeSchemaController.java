@@ -16,16 +16,18 @@
 
 package org.jax.snack.lowcode.biz.controller;
 
-import java.util.Map;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
+import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.lowcode.api.dto.LowcodeSchemaDTO;
+import org.jax.snack.lowcode.api.service.LowcodeSchemaService;
 import org.jax.snack.lowcode.api.vo.LowcodeSchemaVO;
-import org.jax.snack.lowcode.biz.service.schema.LowcodeSchemaService;
+import org.jax.snack.lowcode.biz.entity.LowcodeSchema;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +49,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LowcodeSchemaController {
 
-	private final LowcodeSchemaService lowcodeSchemaService;
+	private final LowcodeSchemaService service;
+
+	/**
+	 * 创建 Schema.
+	 * @param dto Schema DTO
+	 */
+	@PostMapping
+	public void create(@Validated(Create.class) @RequestBody LowcodeSchemaDTO dto) {
+		this.service.create(dto);
+	}
 
 	/**
 	 * 按 ID 查询 Schema.
@@ -56,9 +67,8 @@ public class LowcodeSchemaController {
 	 */
 	@GetMapping("/{id}")
 	public PageResult<LowcodeSchemaVO> getById(@PathVariable Long id) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("id", Map.of(QueryOperator.EQ.getValue(), id)));
-		return this.lowcodeSchemaService.queryByDsl(condition);
+		QueryCondition condition = QueryCondition.builder().eq(LowcodeSchema.Fields.id, id).build();
+		return this.service.queryByDsl(condition);
 	}
 
 	/**
@@ -68,16 +78,7 @@ public class LowcodeSchemaController {
 	 */
 	@PostMapping("/query")
 	public PageResult<LowcodeSchemaVO> query(@RequestBody QueryCondition condition) {
-		return this.lowcodeSchemaService.queryByDsl(condition);
-	}
-
-	/**
-	 * 创建 Schema 草稿.
-	 * @param dto Schema DTO
-	 */
-	@PostMapping
-	public void create(@Validated(Create.class) @RequestBody LowcodeSchemaDTO dto) {
-		this.lowcodeSchemaService.createSchema(dto);
+		return this.service.queryByDsl(condition);
 	}
 
 	/**
@@ -86,17 +87,18 @@ public class LowcodeSchemaController {
 	 * @param dto Schema DTO
 	 */
 	@PutMapping("/{id}")
-	public void update(@PathVariable Long id, @RequestBody LowcodeSchemaDTO dto) {
-		this.lowcodeSchemaService.updateSchema(id, dto);
+	public void update(@PathVariable Long id, @Validated(Update.class) @RequestBody LowcodeSchemaDTO dto) {
+		this.service.update(id, dto);
 	}
 
 	/**
 	 * 删除 Schema.
-	 * @param id Schema ID
+	 * @param ids Schema ID 列表
 	 */
-	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		this.lowcodeSchemaService.deleteById(id);
+	@DeleteMapping("/{ids}")
+	public void delete(@PathVariable List<Long> ids) {
+		WhereCondition condition = WhereCondition.builder().in(LowcodeSchema.Fields.id, ids).build();
+		this.service.deleteByDsl(condition);
 	}
 
 	/**
@@ -105,7 +107,7 @@ public class LowcodeSchemaController {
 	 */
 	@PostMapping("/{id}/publish")
 	public void publish(@PathVariable Long id) {
-		this.lowcodeSchemaService.publishSchema(id);
+		this.service.publishSchema(id);
 	}
 
 }

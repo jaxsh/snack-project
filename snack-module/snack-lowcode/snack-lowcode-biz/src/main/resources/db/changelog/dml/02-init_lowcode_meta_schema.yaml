@@ -11,7 +11,7 @@ databaseChangeLog:
               - column: { name: description, value: 实体定义模板 }
               - column:
                   name: schema_json
-                  valueClobFile: db/changelog/data/entity-template.json
+                  valueClobFile: ../data/entity-template.json
 
   - changeSet:
       id: insert-field-template
@@ -25,4 +25,6 @@ databaseChangeLog:
               - column: { name: description, value: 字段定义模板 }
               - column:
                   name: schema_json
-                  valueClobFile: db/changelog/data/field-template.json
+                  valueClobFile: ../data/field-template.json
+
+

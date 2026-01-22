@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 import tools.jackson.databind.JsonNode;
 
@@ -36,6 +37,7 @@ import tools.jackson.databind.JsonNode;
 @Getter
 @Setter
 @ToString(callSuper = true)
+@FieldNameConstants
 @TableName(value = "lowcode_meta_schema", autoResultMap = true)
 public class LowcodeMetaSchema extends BaseEntity {
 
@@ -59,5 +61,12 @@ public class LowcodeMetaSchema extends BaseEntity {
 	 * 描述.
 	 */
 	private String description;
+
+	/**
+	 * 字段名常量, 继承父类字段.
+	 */
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

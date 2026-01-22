@@ -16,14 +16,7 @@
 
 package org.jax.snack.lowcode.biz.repository.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
-import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.lowcode.biz.entity.LowcodePage;
 import org.jax.snack.lowcode.biz.mapper.LowcodePageMapper;
 import org.jax.snack.lowcode.biz.repository.LowcodePageRepository;
@@ -36,49 +29,7 @@ import org.springframework.stereotype.Repository;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class LowcodePageRepositoryImpl implements LowcodePageRepository {
-
-	private final LowcodePageMapper mapper;
-
-	@Override
-	public void save(LowcodePage entity) {
-		this.mapper.insert(entity);
-	}
-
-	@Override
-	public void update(LowcodePage entity) {
-		this.mapper.updateById(entity);
-	}
-
-	@Override
-	public Optional<LowcodePage> findById(Long id) {
-		return Optional.ofNullable(this.mapper.selectById(id));
-	}
-
-	@Override
-	public void deleteById(Long id) {
-		this.mapper.deleteById(id);
-	}
-
-	@Override
-	public boolean existsByDsl(QueryCondition condition) {
-		QueryWrapper<LowcodePage> wrapper = QueryWrapperBuilder.build(condition, LowcodePage.class);
-		return this.mapper.exists(wrapper);
-	}
-
-	@Override
-	public Page<LowcodePage> queryPageByDsl(QueryCondition condition) {
-		QueryWrapper<LowcodePage> wrapper = QueryWrapperBuilder.build(condition, LowcodePage.class);
-		long current = (condition.getCurrent() != null) ? condition.getCurrent() : 1L;
-		Page<LowcodePage> page = new Page<>(current, condition.getSize());
-		return this.mapper.selectPage(page, wrapper);
-	}
-
-	@Override
-	public List<LowcodePage> queryListByDsl(QueryCondition condition) {
-		QueryWrapper<LowcodePage> wrapper = QueryWrapperBuilder.build(condition, LowcodePage.class);
-		return this.mapper.selectList(wrapper);
-	}
+public class LowcodePageRepositoryImpl extends AbstractRepository<LowcodePage, Long, LowcodePageMapper>
+		implements LowcodePageRepository {
 
 }

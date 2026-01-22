@@ -16,7 +16,6 @@
 
 package org.jax.snack.lowcode.biz.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.jax.snack.lowcode.biz.entity.LowcodeMetaSchema;
 
@@ -26,14 +25,5 @@ import org.jax.snack.lowcode.biz.entity.LowcodeMetaSchema;
  * @author Jax Jiang
  */
 public interface LowcodeMetaSchemaMapper extends BaseMapper<LowcodeMetaSchema> {
-
-	/**
-	 * 根据模板类型查询.
-	 * @param metaType 模板类型 (entity, field)
-	 * @return 元数据模板
-	 */
-	default LowcodeMetaSchema selectByMetaType(String metaType) {
-		return selectOne(new LambdaQueryWrapper<LowcodeMetaSchema>().eq(LowcodeMetaSchema::getMetaType, metaType));
-	}
 
 }

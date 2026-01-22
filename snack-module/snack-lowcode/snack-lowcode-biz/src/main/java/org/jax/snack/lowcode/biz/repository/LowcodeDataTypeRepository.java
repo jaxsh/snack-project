@@ -16,10 +16,7 @@
 
 package org.jax.snack.lowcode.biz.repository;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
 import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
 
 /**
@@ -27,27 +24,6 @@ import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
  *
  * @author Jax Jiang
  */
-public interface LowcodeDataTypeRepository {
-
-	/**
-	 * DSL 存在性查询.
-	 * @param condition 查询条件
-	 * @return 是否存在
-	 */
-	boolean existsByDsl(QueryCondition condition);
-
-	/**
-	 * DSL 分页查询.
-	 * @param condition 查询条件
-	 * @return MyBatis-Plus 分页对象
-	 */
-	Page<LowcodeDataType> queryPageByDsl(QueryCondition condition);
-
-	/**
-	 * DSL 列表查询.
-	 * @param condition 查询条件
-	 * @return 实体列表
-	 */
-	List<LowcodeDataType> queryListByDsl(QueryCondition condition);
+public interface LowcodeDataTypeRepository extends BaseRepository<LowcodeDataType, Long> {
 
 }

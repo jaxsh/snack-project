@@ -19,8 +19,8 @@ package org.jax.snack.lowcode.biz.controller;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.jax.snack.lowcode.api.service.LowcodeDataTypeService;
 import org.jax.snack.lowcode.api.vo.LowcodeDataTypeVO;
-import org.jax.snack.lowcode.biz.service.schema.LowcodeDataTypeService;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.web.bind.annotation.GetMapping;

@@ -24,14 +24,13 @@ import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jax.snack.framework.core.api.query.OrderByCondition;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
-import org.jax.snack.framework.core.api.query.SortDirection;
 import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
 import org.jax.snack.lowcode.biz.repository.LowcodeDataTypeRepository;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * 数据类型管理器.
@@ -53,10 +52,9 @@ public class DataTypeManager {
 	 * @return 配置对象 (可能为 null)
 	 */
 	public LowcodeDataType getConfig(String logicType) {
-		if (logicType == null) {
+		if (!StringUtils.hasText(logicType)) {
 			return null;
 		}
-		// 1. 获取所有类型配置
 		List<LowcodeDataType> dataTypes = findAllEnabledDataTypes();
 		Map<String, LowcodeDataType> typeMap = dataTypes.stream()
 			.collect(Collectors.toMap((dt) -> dt.getLogicType().toUpperCase(Locale.ROOT), Function.identity(),
@@ -77,15 +75,15 @@ public class DataTypeManager {
 
 		LowcodeDataType config = getConfig(normalizedLogicType);
 
-		// 2. 如果没有配置，回退到通用逻辑 (假设 logicType 就是 dbType)
 		if (config == null) {
 			return buildDefault(normalizedLogicType, length, scale);
 		}
 
-		// 3. 应用配置
 		String dbType = config.getDbType().toUpperCase(Locale.ROOT);
-		int finalLength = (length > 0) ? length : ((config.getDefaultLength() != null) ? config.getDefaultLength() : 0);
-		int finalScale = (scale > 0) ? scale : ((config.getDefaultScale() != null) ? config.getDefaultScale() : 0);
+		int finalLength = (length > 0) ? length
+				: ((!ObjectUtils.isEmpty(config.getDefaultLength())) ? config.getDefaultLength() : 0);
+		int finalScale = (scale > 0) ? scale
+				: ((!ObjectUtils.isEmpty(config.getDefaultScale())) ? config.getDefaultScale() : 0);
 
 		boolean needLength = Boolean.TRUE.equals(config.getNeedLength());
 		boolean needScale = Boolean.TRUE.equals(config.getNeedScale());
@@ -101,7 +99,6 @@ public class DataTypeManager {
 	}
 
 	private String buildDefault(String type, int length, int scale) {
-		// 保留原来的兜底逻辑
 		if (length > 0) {
 			if (scale > 0) {
 				return type + "(" + length + "," + scale + ")";
@@ -117,7 +114,7 @@ public class DataTypeManager {
 	 * @return 类型配置, 如果不存在返回 null
 	 */
 	public LowcodeDataType getDataType(String logicType) {
-		if (logicType == null) {
+		if (!StringUtils.hasText(logicType)) {
 			return null;
 		}
 		List<LowcodeDataType> dataTypes = findAllEnabledDataTypes();
@@ -128,12 +125,7 @@ public class DataTypeManager {
 	}
 
 	private List<LowcodeDataType> findAllEnabledDataTypes() {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("enabled", Map.of(QueryOperator.EQ.getValue(), true)));
-		OrderByCondition orderBy = new OrderByCondition();
-		orderBy.setField("sortOrder");
-		orderBy.setDirection(SortDirection.ASC.getValue());
-		condition.setOrderBy(List.of(orderBy));
+		QueryCondition condition = QueryCondition.builder().eq("enabled", true).orderByAsc("sortOrder").build();
 		return this.dataTypeRepository.queryListByDsl(condition);
 	}
 

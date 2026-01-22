@@ -26,17 +26,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.mybatisplus.manager.SystemFieldManager;
+import org.jax.snack.lowcode.api.enums.SchemaStatus;
 import org.jax.snack.lowcode.biz.entity.LowcodeSchema;
 import org.jax.snack.lowcode.biz.exception.SchemaNotFoundException;
-import org.jax.snack.lowcode.biz.mapper.LowcodeSchemaMapper;
 import org.jax.snack.lowcode.biz.model.FieldDefinition;
 import org.jax.snack.lowcode.biz.model.SchemaMetadata;
 import org.jax.snack.lowcode.biz.options.OptionItem;
 import org.jax.snack.lowcode.biz.options.OptionsResolver;
+import org.jax.snack.lowcode.biz.repository.LowcodeSchemaRepository;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Schema 管理服务.
@@ -48,9 +53,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SchemaService {
 
-	private final LowcodeSchemaMapper schemaMapper;
+	private final LowcodeSchemaRepository schemaRepository;
 
 	private final ObjectProvider<OptionsResolver> optionsResolverProvider;
+
+	private final SystemFieldManager systemFieldManager;
 
 	/**
 	 * Schema 缓存.
@@ -64,10 +71,7 @@ public class SchemaService {
 	 */
 	public JsonNode getSchema(String schemaName) {
 		return this.schemaCache.computeIfAbsent(schemaName, (name) -> {
-			LowcodeSchema entity = this.schemaMapper.selectPublishedByName(name);
-			if (entity == null) {
-				throw new SchemaNotFoundException(name + " (published)");
-			}
+			LowcodeSchema entity = findPublishedByName(name);
 			return entity.getSchemaJson();
 		});
 	}
@@ -78,11 +82,7 @@ public class SchemaService {
 	 * @return JSON Schema
 	 */
 	public JsonNode getSchemaByResourcePath(String resourcePath) {
-		LowcodeSchema entity = this.schemaMapper.selectPublishedByResourcePath(resourcePath);
-		if (entity == null) {
-			throw new SchemaNotFoundException("resourcePath: " + resourcePath + " (published)");
-		}
-		// 使用 schemaName 作为缓存 key
+		LowcodeSchema entity = findPublishedByResourcePath(resourcePath);
 		return this.schemaCache.computeIfAbsent(entity.getSchemaName(), (k) -> entity.getSchemaJson());
 	}
 
@@ -92,11 +92,31 @@ public class SchemaService {
 	 * @return Schema 名称
 	 */
 	public String getSchemaNameByResourcePath(String resourcePath) {
-		LowcodeSchema entity = this.schemaMapper.selectPublishedByResourcePath(resourcePath);
-		if (entity == null) {
+		return findPublishedByResourcePath(resourcePath).getSchemaName();
+	}
+
+	private LowcodeSchema findPublishedByName(String schemaName) {
+		QueryCondition condition = QueryCondition.builder()
+			.eq(LowcodeSchema.Fields.schemaName, schemaName)
+			.eq(LowcodeSchema.Fields.status, SchemaStatus.PUBLISHED.getCode())
+			.build();
+		List<LowcodeSchema> list = this.schemaRepository.queryListByDsl(condition);
+		if (CollectionUtils.isEmpty(list)) {
+			throw new SchemaNotFoundException(schemaName + " (published)");
+		}
+		return list.get(0);
+	}
+
+	private LowcodeSchema findPublishedByResourcePath(String resourcePath) {
+		QueryCondition condition = QueryCondition.builder()
+			.eq(LowcodeSchema.Fields.resourcePath, resourcePath)
+			.eq(LowcodeSchema.Fields.status, SchemaStatus.PUBLISHED.getCode())
+			.build();
+		List<LowcodeSchema> list = this.schemaRepository.queryListByDsl(condition);
+		if (CollectionUtils.isEmpty(list)) {
 			throw new SchemaNotFoundException("resourcePath: " + resourcePath + " (published)");
 		}
-		return entity.getSchemaName();
+		return list.get(0);
 	}
 
 	/**
@@ -107,7 +127,7 @@ public class SchemaService {
 	public SchemaMetadata extractMetadata(JsonNode schema) {
 		JsonNode lowcode = schema.get("x-lowcode");
 		if (lowcode == null) {
-			throw new IllegalArgumentException("Schema 缺少 x-lowcode 配置");
+			throw new IllegalArgumentException("Schema is missing x-lowcode configuration");
 		}
 		return SchemaMetadata.builder()
 			.entityName(getTextOrNull(lowcode, "entityName"))
@@ -123,7 +143,7 @@ public class SchemaService {
 	 */
 	public List<FieldDefinition> extractFields(JsonNode schema) {
 		JsonNode properties = schema.get("properties");
-		if (properties == null) {
+		if (ObjectUtils.isEmpty(properties)) {
 			return new ArrayList<>();
 		}
 
@@ -141,11 +161,20 @@ public class SchemaService {
 
 	/**
 	 * 提取列表可见的字段.
+	 * <p>
+	 * 自动追加系统审计字段 (createTime, createBy, updateTime, updateBy).
 	 * @param schema JSON Schema
-	 * @return 可见字段列表
+	 * @return 可见字段列表 (包含系统字段)
 	 */
 	public List<FieldDefinition> extractVisibleFields(JsonNode schema) {
-		return extractFields(schema).stream().filter(FieldDefinition::isListVisible).toList();
+		List<FieldDefinition> visibleFields = extractFields(schema).stream()
+			.filter(FieldDefinition::isListVisible)
+			.toList();
+
+		List<FieldDefinition> allVisible = new ArrayList<>(visibleFields);
+		allVisible.addAll(buildSystemFieldDefinitions());
+
+		return allVisible;
 	}
 
 	/**
@@ -168,7 +197,7 @@ public class SchemaService {
 	private Set<String> extractRequiredFields(JsonNode schema) {
 		JsonNode required = schema.get("required");
 		Set<String> requiredSet = new HashSet<>();
-		if (required != null && required.isArray()) {
+		if (!ObjectUtils.isEmpty(required) && required.isArray()) {
 			required.forEach((node) -> requiredSet.add(node.asString()));
 		}
 		return requiredSet;
@@ -185,28 +214,23 @@ public class SchemaService {
 			.label(getTextOrNull(fieldSchema, "title"))
 			.required(isRequired);
 
-		// 解析 x-database
-		if (xDatabase != null) {
+		if (!ObjectUtils.isEmpty(xDatabase)) {
 			builder.dbColumn(getTextOrNull(xDatabase, "column"));
 		}
 		else {
-			// 无 x-database 配置时，使用 fieldName 作为默认列名
 			builder.dbColumn(fieldName);
 		}
 
-		// 解析 x-ui
-		if (xUi != null) {
+		if (!ObjectUtils.isEmpty(xUi)) {
 			builder.widget(getTextOrNull(xUi, "widget"));
 		}
 
-		// 解析 x-options (选项配置)
 		JsonNode xOptions = fieldSchema.get("x-options");
-		if (xOptions != null) {
+		if (!ObjectUtils.isEmpty(xOptions)) {
 			builder.xOptions(xOptions);
 		}
 
-		// 解析 x-list
-		if (xList != null) {
+		if (!ObjectUtils.isEmpty(xList)) {
 			builder.listVisible(xList.path("visible").asBoolean(false));
 			if (xList.has("width")) {
 				builder.width(xList.get("width").asInt());
@@ -218,7 +242,7 @@ public class SchemaService {
 
 	private String getTextOrNull(JsonNode node, String fieldName) {
 		JsonNode child = node.get(fieldName);
-		return (child != null && !child.isNull()) ? child.asString() : null;
+		return (!ObjectUtils.isEmpty(child) && !child.isNull()) ? child.asString() : null;
 	}
 
 	/**
@@ -236,11 +260,41 @@ public class SchemaService {
 		}
 
 		JsonNode xOptions = fieldSchema.get("x-options");
-		if (xOptions == null) {
+		if (ObjectUtils.isEmpty(xOptions)) {
 			return List.of();
 		}
 
 		return Objects.requireNonNull(this.optionsResolverProvider.getIfAvailable()).resolveOptions(xOptions);
+	}
+
+	/**
+	 * 构建系统字段定义列表.
+	 * <p>
+	 * 将 SystemFieldManager 中的系统字段转换为 FieldDefinition, 用于查询和显示.
+	 * @return 系统字段定义列表 (不包含 id)
+	 */
+	private List<FieldDefinition> buildSystemFieldDefinitions() {
+		return this.systemFieldManager.getSystemFields()
+			.stream()
+			.filter((sf) -> !sf.isPrimaryKey())
+			.map(this::convertToFieldDefinition)
+			.toList();
+	}
+
+	/**
+	 * 将 SystemField 转换为 FieldDefinition.
+	 * @param systemField 系统字段
+	 * @return FieldDefinition
+	 */
+	private FieldDefinition convertToFieldDefinition(SystemFieldManager.SystemField systemField) {
+		return FieldDefinition.builder()
+			.fieldName(systemField.fieldName())
+			.dbColumn(systemField.columnName())
+			.type(systemField.logicType())
+			.label(systemField.remarks())
+			.required(false)
+			.listVisible(true)
+			.build();
 	}
 
 }

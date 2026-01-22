@@ -20,8 +20,8 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.lowcode.api.dto.SavePageRequest;
+import org.jax.snack.lowcode.api.service.LowcodePageService;
 import org.jax.snack.lowcode.api.vo.LowcodePageVO;
-import org.jax.snack.lowcode.biz.service.page.LowcodePageService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,35 +46,35 @@ public class LowcodePageController {
 	private final LowcodePageService pageService;
 
 	/**
-	 * 获取 Schema 下的所有页面.
+	 * 查询 Schema 下的所有页面.
 	 * @param schemaId Schema ID
 	 * @return 页面列表
 	 */
 	@GetMapping
-	public List<LowcodePageVO> list(@RequestParam Long schemaId) {
+	public List<LowcodePageVO> query(@RequestParam Long schemaId) {
 		return this.pageService.getPages(schemaId);
 	}
 
 	/**
-	 * 获取指定类型的页面.
+	 * 按 ID 获取指定类型的页面.
 	 * @param schemaId Schema ID
 	 * @param type 页面类型
 	 * @return 页面配置
 	 */
 	@GetMapping("/{schemaId}/{type}")
-	public ResponseEntity<LowcodePageVO> get(@PathVariable Long schemaId, @PathVariable String type) {
+	public ResponseEntity<LowcodePageVO> getById(@PathVariable Long schemaId, @PathVariable String type) {
 		return this.pageService.getPage(schemaId, type)
 			.map(ResponseEntity::ok)
 			.orElse(ResponseEntity.notFound().build());
 	}
 
 	/**
-	 * 保存页面配置.
+	 * 创建或更新页面配置.
 	 * @param request 保存请求
 	 * @return 页面ID
 	 */
 	@PostMapping
-	public Long save(@RequestBody SavePageRequest request) {
+	public Long create(@RequestBody SavePageRequest request) {
 		return this.pageService.savePage(request);
 	}
 

@@ -17,18 +17,18 @@
 package org.jax.snack.lowcode.biz.service.schema;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.lowcode.api.dto.LowcodeSchemaDTO;
 import org.jax.snack.lowcode.api.enums.SchemaStatus;
+import org.jax.snack.lowcode.api.service.LowcodeSchemaService;
 import org.jax.snack.lowcode.api.vo.LowcodeSchemaVO;
 import org.jax.snack.lowcode.biz.converter.LowcodeSchemaConverter;
 import org.jax.snack.lowcode.biz.entity.LowcodeSchema;
@@ -41,16 +41,17 @@ import tools.jackson.databind.JsonNode;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 /**
- * Schema 管理服务.
+ * Schema 管理服务实现.
  *
  * @author Jax Jiang
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LowcodeSchemaService {
+public class LowcodeSchemaServiceImpl implements LowcodeSchemaService {
 
 	private final LowcodeSchemaHistoryRepository historyRepository;
 
@@ -66,13 +67,9 @@ public class LowcodeSchemaService {
 
 	private final TableSyncExecutor tableSyncExecutor;
 
-	/**
-	 * 按条件查询 Schema.
-	 * @param condition 查询条件
-	 * @return 分页结果
-	 */
+	@Override
 	public PageResult<LowcodeSchemaVO> queryByDsl(QueryCondition condition) {
-		if (condition.getSize() != null && condition.getSize() > 0) {
+		if (!ObjectUtils.isEmpty(condition.getSize())) {
 			return this.schemaConverter.toPageResult(this.schemaRepository.queryPageByDsl(condition));
 		}
 		else {
@@ -80,14 +77,12 @@ public class LowcodeSchemaService {
 		}
 	}
 
-	/**
-	 * 创建 Schema 草稿.
-	 * @param dto Schema DTO
-	 */
-	@Transactional
-	public void createSchema(LowcodeSchemaDTO dto) {
-		QueryCondition existsCondition = new QueryCondition();
-		existsCondition.setWhere(Map.of("schemaName", Map.of(QueryOperator.EQ.getValue(), dto.getSchemaName())));
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void create(LowcodeSchemaDTO dto) {
+		QueryCondition existsCondition = QueryCondition.builder()
+			.eq(LowcodeSchema.Fields.schemaName, dto.getSchemaName())
+			.build();
 		if (this.schemaRepository.existsByDsl(existsCondition)) {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Schema");
 		}
@@ -99,13 +94,9 @@ public class LowcodeSchemaService {
 		this.schemaRepository.save(entity);
 	}
 
-	/**
-	 * 更新 Schema.
-	 * @param id Schema ID
-	 * @param dto Schema DTO
-	 */
-	@Transactional
-	public void updateSchema(Long id, LowcodeSchemaDTO dto) {
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void update(Long id, LowcodeSchemaDTO dto) {
 		this.schemaRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Schema"));
 
 		LowcodeSchema entity = this.schemaConverter.toEntity(dto);
@@ -115,40 +106,33 @@ public class LowcodeSchemaService {
 		this.schemaRepository.update(entity);
 	}
 
-	/**
-	 * 删除 Schema.
-	 * @param id Schema ID
-	 */
-	@Transactional
-	public void deleteById(Long id) {
-		LowcodeSchema entity = this.schemaRepository.findById(id).orElse(null);
-		if (entity != null) {
-			this.schemaRepository.deleteById(id);
-			this.schemaService.clearCache(entity.getSchemaName());
-			log.info("Deleting Schema: {}", entity.getSchemaName());
-		}
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteByDsl(WhereCondition condition) {
+		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
+		this.schemaRepository.queryListByDsl(queryCondition).forEach((schema) -> {
+			this.schemaService.clearCache(schema.getSchemaName());
+			log.info("Deleting Schema: {}", schema.getSchemaName());
+		});
+
+		this.schemaRepository.deleteByDsl(condition);
 	}
 
-	/**
-	 * 发布 Schema, 对比变更并同步到物理表.
-	 * @param id Schema ID
-	 */
-	@Transactional
+	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void publishSchema(Long id) {
 		LowcodeSchema draft = this.schemaRepository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Schema"));
 
 		if (!SchemaStatus.DRAFT.getCode().equals(draft.getStatus())) {
-			throw new BusinessException(ErrorCode.DATA_STATUS_ERROR, "只有草稿状态的 Schema 才能发布");
+			throw new BusinessException(ErrorCode.DATA_STATUS_ERROR, "Only schemas in DRAFT status can be published");
 		}
 
-		// 查询已发布版本
 		LowcodeSchema published = findPublishedSchema(draft.getSchemaName());
 
 		JsonNode baseJson = (published != null) ? published.getSchemaJson() : null;
 		List<SchemaChange> changes = this.changeDetector.detectChanges(draft.getSchemaJson(), baseJson);
 
-		// 同步到物理数据库
 		this.tableSyncExecutor.syncTable(draft.getSchemaName(), draft.getSchemaJson(), changes);
 
 		if (published != null) {
@@ -167,9 +151,10 @@ public class LowcodeSchemaService {
 	}
 
 	private LowcodeSchema findPublishedSchema(String schemaName) {
-		QueryCondition publishedCondition = new QueryCondition();
-		publishedCondition.setWhere(Map.of("schemaName", Map.of(QueryOperator.EQ.getValue(), schemaName), "status",
-				Map.of(QueryOperator.EQ.getValue(), SchemaStatus.PUBLISHED.getCode())));
+		QueryCondition publishedCondition = QueryCondition.builder()
+			.eq(LowcodeSchema.Fields.schemaName, schemaName)
+			.eq(LowcodeSchema.Fields.status, SchemaStatus.PUBLISHED.getCode())
+			.build();
 		List<LowcodeSchema> publishedList = this.schemaRepository.queryListByDsl(publishedCondition);
 		return publishedList.isEmpty() ? null : publishedList.get(0);
 	}

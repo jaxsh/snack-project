@@ -16,7 +16,7 @@
 
 package org.jax.snack.lowcode.biz.repository.impl;
 
-import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.lowcode.biz.entity.LowcodeSchemaHistory;
 import org.jax.snack.lowcode.biz.mapper.LowcodeSchemaHistoryMapper;
 import org.jax.snack.lowcode.biz.repository.LowcodeSchemaHistoryRepository;
@@ -29,14 +29,8 @@ import org.springframework.stereotype.Repository;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class LowcodeSchemaHistoryRepositoryImpl implements LowcodeSchemaHistoryRepository {
-
-	private final LowcodeSchemaHistoryMapper historyMapper;
-
-	@Override
-	public void save(LowcodeSchemaHistory history) {
-		this.historyMapper.insert(history);
-	}
+public class LowcodeSchemaHistoryRepositoryImpl
+		extends AbstractRepository<LowcodeSchemaHistory, Long, LowcodeSchemaHistoryMapper>
+		implements LowcodeSchemaHistoryRepository {
 
 }
