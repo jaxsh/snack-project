@@ -1,0 +1,108 @@
+# 初始化 OAuth2 客户端数据
+databaseChangeLog:
+  - changeSet:
+      id: insert-snack-upms-server
+      author: Jax Jiang
+      comment: "Client ID: snack-upms-server, Secret: secret"
+      changes:
+        - insert:
+            tableName: oauth2_registered_client
+            columns:
+              - column:
+                  name: id
+                  value: e4b6f6d6-7f8e-4a9b-8c1d-2e3f4g5h6i7j
+              - column:
+                  name: client_id
+                  value: snack-upms-server
+              - column:
+                  name: client_id_issued_at
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: client_secret
+                  value: "{bcrypt}$2a$10$Z9nU7NHnwhrn6v/eHplun.4Z2Z40EF0bcJna1he0kGfBmiyjTH4qm"
+              - column:
+                  name: client_name
+                  value: SNACK UPMS Server
+              - column:
+                  name: client_authentication_methods
+                  value: client_secret_basic
+              - column:
+                  name: authorization_grant_types
+                  value: authorization_code,refresh_token
+              - column:
+                  name: redirect_uris
+                  value: "http://localhost:8080/login/oauth2/code/snack-upms-server"
+              - column:
+                  name: scopes
+                  value: openid,profile
+              - column:
+                  name: client_settings
+                  value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":false}'
+              - column:
+                  name: token_settings
+                  value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.token.reuse-refresh-tokens":true,"settings.token.x509-certificate-bound-access-tokens":false,"settings.token.id-token-signature-algorithm":["org.springframework.security.oauth2.jose.jws.SignatureAlgorithm","RS256"],"settings.token.access-token-time-to-live":["java.time.Duration","PT5M"],"settings.token.access-token-format":{"@class":"org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat","value":"self-contained"},"settings.token.refresh-token-time-to-live":["java.time.Duration","PT1H"],"settings.token.authorization-code-time-to-live":["java.time.Duration","PT5M"],"settings.token.device-code-time-to-live":["java.time.Duration","PT5M"]}'
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: update_by
+                  value: system
+  - changeSet:
+      id: insert-snack-oauth-server
+      author: Jax Jiang
+      comment: "Client ID: snack-oauth-server, Secret: secret"
+      changes:
+        - insert:
+            tableName: oauth2_registered_client
+            columns:
+              - column:
+                  name: id
+                  value: f5c7a7e7-8f9f-5b0c-9d2e-3f4g5h6i7j8k
+              - column:
+                  name: client_id
+                  value: snack-oauth-server
+              - column:
+                  name: client_id_issued_at
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: client_secret
+                  value: "{bcrypt}$2a$10$Z9nU7NHnwhrn6v/eHplun.4Z2Z40EF0bcJna1he0kGfBmiyjTH4qm"
+              - column:
+                  name: client_name
+                  value: SNACK OAuth Server
+              - column:
+                  name: client_authentication_methods
+                  value: client_secret_basic
+              - column:
+                  name: authorization_grant_types
+                  value: authorization_code,refresh_token
+              - column:
+                  name: redirect_uris
+                  value: "http://localhost:9000/login/oauth2/code/snack-oauth-server"
+              - column:
+                  name: scopes
+                  value: openid,profile
+              - column:
+                  name: client_settings
+                  value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":false}'
+              - column:
+                  name: token_settings
+                  value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.token.reuse-refresh-tokens":true,"settings.token.x509-certificate-bound-access-tokens":false,"settings.token.id-token-signature-algorithm":["org.springframework.security.oauth2.jose.jws.SignatureAlgorithm","RS256"],"settings.token.access-token-time-to-live":["java.time.Duration","PT5M"],"settings.token.access-token-format":{"@class":"org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat","value":"self-contained"},"settings.token.refresh-token-time-to-live":["java.time.Duration","PT1H"],"settings.token.authorization-code-time-to-live":["java.time.Duration","PT5M"],"settings.token.device-code-time-to-live":["java.time.Duration","PT5M"]}'
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: update_by
+                  value: system

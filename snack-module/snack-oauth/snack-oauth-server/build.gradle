@@ -1,0 +1,17 @@
+plugins {
+	id 'spring-boot-application-conventions'
+}
+
+dependencies {
+	implementation project(':snack-module:snack-oauth:snack-oauth-biz')
+	implementation 'org.springframework.boot:spring-boot-starter-liquibase'
+
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	testAndDevelopmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation project(':snack-framework:snack-webtest-spring-boot-starter')
+	testImplementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')
+}
+

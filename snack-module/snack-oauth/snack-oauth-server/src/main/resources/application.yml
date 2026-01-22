@@ -1,0 +1,57 @@
+spring:
+  profiles:
+    active: oauth,${ENV:dev}
+    name: snack-oauth
+  docker:
+    compose:
+      lifecycle-management: start-and-stop
+      file: ../../../compose.yml
+      skip:
+        in-tests: false
+  liquibase:
+    change-log: classpath:db/changelog/root.yaml
+  security:
+    oauth2:
+      client:
+        registration:
+          snack-oauth-server:
+            provider: snack-oauth
+            client-id: snack-oauth-server
+            client-secret: secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid,profile
+        provider:
+          snack-oauth:
+            authorization-uri: ${snack.oauth2.client.server-url}/oauth2/authorize
+            token-uri: ${snack.oauth2.client.server-url}/oauth2/token
+            jwk-set-uri: ${snack.oauth2.client.server-url}/oauth2/jwks
+            user-info-uri: ${snack.oauth2.client.server-url}/userinfo
+            user-name-attribute: sub
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${snack.oauth2.client.server-url}/oauth2/jwks
+
+snack:
+  oauth2:
+    client:
+      server-url: ${OAUTH_SERVER_URL:http://localhost:${server.port:9000}}
+  logging:
+    file:
+      name: logs/${spring.application.name}.log
+server:
+  port: 9000
+  servlet:
+    session:
+      cookie:
+        name: OAUTH_SESSION
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.authentication: TRACE
+    org.springframework.security.crypto: DEBUG

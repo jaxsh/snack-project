@@ -1,0 +1,23 @@
+plugins {
+	id 'java-library'
+	id 'spring-boot-library-conventions'
+}
+
+dependencies {
+	api project(':snack-module:snack-oauth:snack-oauth-api')
+
+	implementation project(':snack-framework:snack-web-spring-boot-starter')
+	implementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')
+	implementation project(':snack-framework:snack-utils')
+	compileOnly project(':snack-framework:snack-oauth2-client-spring-boot-starter')
+
+	implementation 'org.mapstruct:mapstruct'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'tools.jackson.core:jackson-databind'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
+	annotationProcessor 'org.mapstruct:mapstruct-processor'
+
+}
+

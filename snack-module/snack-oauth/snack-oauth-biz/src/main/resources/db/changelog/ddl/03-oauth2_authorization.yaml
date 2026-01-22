@@ -1,0 +1,154 @@
+# oauth2_authorization 表结构
+databaseChangeLog:
+  - changeSet:
+      id: create-oauth2_authorization
+      author: Jax Jiang
+      changes:
+        - createTable:
+            tableName: oauth2_authorization
+            remarks: OAuth2 授权表
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  remarks: 主键 ID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: registered_client_id
+                  type: varchar(100)
+                  remarks: 注册客户端 ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: principal_name
+                  type: varchar(200)
+                  remarks: 用户主体名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: authorization_grant_type
+                  type: varchar(100)
+                  remarks: 授权类型
+                  constraints:
+                    nullable: false
+              - column:
+                  name: authorized_scopes
+                  type: varchar(1000)
+                  remarks: 已授权范围
+              - column:
+                  name: attributes
+                  type: blob
+                  remarks: 属性
+              - column:
+                  name: state
+                  type: varchar(500)
+                  remarks: 状态
+              - column:
+                  name: authorization_code_value
+                  type: blob
+                  remarks: 授权码值
+              - column:
+                  name: authorization_code_issued_at
+                  type: TIMESTAMP
+                  remarks: 授权码发行时间
+              - column:
+                  name: authorization_code_expires_at
+                  type: TIMESTAMP
+                  remarks: 授权码过期时间
+              - column:
+                  name: authorization_code_metadata
+                  type: blob
+                  remarks: 授权码元数据
+              - column:
+                  name: access_token_value
+                  type: blob
+                  remarks: 访问令牌值
+              - column:
+                  name: access_token_issued_at
+                  type: TIMESTAMP
+                  remarks: 访问令牌发行时间
+              - column:
+                  name: access_token_expires_at
+                  type: TIMESTAMP
+                  remarks: 访问令牌过期时间
+              - column:
+                  name: access_token_metadata
+                  type: blob
+                  remarks: 访问令牌元数据
+              - column:
+                  name: access_token_type
+                  type: varchar(100)
+                  remarks: 访问令牌类型
+              - column:
+                  name: access_token_scopes
+                  type: varchar(1000)
+                  remarks: 访问令牌范围
+              - column:
+                  name: oidc_id_token_value
+                  type: blob
+                  remarks: OIDC ID Token 值
+              - column:
+                  name: oidc_id_token_issued_at
+                  type: TIMESTAMP
+                  remarks: OIDC ID Token 发行时间
+              - column:
+                  name: oidc_id_token_expires_at
+                  type: TIMESTAMP
+                  remarks: OIDC ID Token 过期时间
+              - column:
+                  name: oidc_id_token_metadata
+                  type: blob
+                  remarks: OIDC ID Token 元数据
+              - column:
+                  name: refresh_token_value
+                  type: blob
+                  remarks: 刷新令牌值
+              - column:
+                  name: refresh_token_issued_at
+                  type: TIMESTAMP
+                  remarks: 刷新令牌发行时间
+              - column:
+                  name: refresh_token_expires_at
+                  type: TIMESTAMP
+                  remarks: 刷新令牌过期时间
+              - column:
+                  name: refresh_token_metadata
+                  type: blob
+                  remarks: 刷新令牌元数据
+              - column:
+                  name: user_code_value
+                  type: blob
+                  remarks: 用户码值
+              - column:
+                  name: user_code_issued_at
+                  type: TIMESTAMP
+                  remarks: 用户码发行时间
+              - column:
+                  name: user_code_expires_at
+                  type: TIMESTAMP
+                  remarks: 用户码过期时间
+              - column:
+                  name: user_code_metadata
+                  type: blob
+                  remarks: 用户码元数据
+              - column:
+                  name: device_code_value
+                  type: blob
+                  remarks: 设备码值
+              - column:
+                  name: device_code_issued_at
+                  type: TIMESTAMP
+                  remarks: 设备码发行时间
+              - column:
+                  name: device_code_expires_at
+                  type: TIMESTAMP
+                  remarks: 设备码过期时间
+              - column:
+                  name: device_code_metadata
+                  type: blob
+                  remarks: 设备码元数据
+      rollback:
+        - dropTable:
+            tableName: oauth2_authorization

@@ -1,0 +1,15 @@
+spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=10m,maximumSize=10000
+
+snack:
+  oauth:
+    security:
+      rsa:
+        keys:
+          - key-id: snack-jwt-key-v1
+            private-key: classpath:keys/jwt-private.pem
+            public-key: classpath:keys/jwt-public.pem
+            active: true

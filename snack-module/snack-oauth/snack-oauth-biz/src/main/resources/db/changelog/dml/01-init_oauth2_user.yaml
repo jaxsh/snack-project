@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: init_oauth2_user_data_final
+      author: Jax Jiang
+      changes:
+        - insert:
+            tableName: oauth2_user
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 1
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  value: "{bcrypt}$2a$10$qRZi7RVWwVAwX7BqdBWkw.Yum38UwNtm1ANiQBnDadzHYeDUb/7Qq" # password: password
+              - column:
+                  name: mobile
+                  value: "13800138000"
+              - column:
+                  name: email
+                  value: "admin@snack.org"
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: locked
+                  valueBoolean: false
+              - column:
+                  name: expired
+                  valueBoolean: false
+              - column:
+                  name: initial_password
+                  valueBoolean: true
+              - column:
+                  name: deleted
+                  valueNumeric: 0
