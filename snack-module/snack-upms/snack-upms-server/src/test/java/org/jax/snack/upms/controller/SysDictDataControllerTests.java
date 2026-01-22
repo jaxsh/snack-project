@@ -16,29 +16,24 @@
 
 package org.jax.snack.upms.controller;
 
-import java.util.Map;
-
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.framework.webtest.MockMvcTestSupport;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
+import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysDictDataDTO;
 import org.jax.snack.upms.api.dto.SysDictTypeDTO;
 import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.service.SysDictDataService;
 import org.jax.snack.upms.api.service.SysDictTypeService;
 import org.jax.snack.upms.api.vo.SysDictDataVO;
+import org.jax.snack.upms.biz.entity.SysDictData;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -49,16 +44,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author Jax Jiang
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
-@Transactional
-class SysDictDataControllerTests extends MockMvcTestSupport {
+class SysDictDataControllerTests extends UpmsIntegrationTests {
 
 	private static final String API_DICT_DATA = "/api/upms/dict-data";
 
 	private static final String API_DICT_DATA_QUERY = "/api/upms/dict-data/query";
 
 	private static final String API_DICT_DATA_ID = "/api/upms/dict-data/{id}";
+
+	private static final String API_DICT_DATA_IDS = "/api/upms/dict-data/{ids}";
 
 	private static final String API_DICT_DATA_TYPE = "/api/upms/dict-data/type/{dictType}";
 
@@ -69,9 +63,7 @@ class SysDictDataControllerTests extends MockMvcTestSupport {
 	private SysDictDataService dictDataService;
 
 	private QueryCondition queryCondition(String dictType) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("dictType", Map.of(QueryOperator.EQ.getValue(), dictType)));
-		return condition;
+		return QueryCondition.builder().eq(SysDictData.Fields.dictType, dictType).build();
 	}
 
 	private void createDictType(String type, String name, Integer status) {
@@ -93,9 +85,10 @@ class SysDictDataControllerTests extends MockMvcTestSupport {
 	}
 
 	private SysDictDataVO queryDataByValue(String dictType, String value) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("dictType", Map.of(QueryOperator.EQ.getValue(), dictType), "dictValue",
-				Map.of(QueryOperator.EQ.getValue(), value)));
+		QueryCondition condition = QueryCondition.builder()
+			.eq(SysDictData.Fields.dictType, dictType)
+			.eq(SysDictData.Fields.dictValue, value)
+			.build();
 		PageResult<SysDictDataVO> result = this.dictDataService.queryByDsl(condition);
 		if (result.getRecords().isEmpty()) {
 			throw new IllegalStateException("DictData not found: " + dictType + "/" + value);
@@ -104,8 +97,7 @@ class SysDictDataControllerTests extends MockMvcTestSupport {
 	}
 
 	private boolean existsDataById(Long id) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("id", Map.of(QueryOperator.EQ.getValue(), id)));
+		QueryCondition condition = QueryCondition.builder().eq(SysDictData.Fields.id, id).build();
 		return !this.dictDataService.queryByDsl(condition).getRecords().isEmpty();
 	}
 
@@ -129,8 +121,7 @@ class SysDictDataControllerTests extends MockMvcTestSupport {
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
-			QueryCondition condition = new QueryCondition();
-			condition.setWhere(Map.of("dictValue", Map.of(QueryOperator.EQ.getValue(), dictValue)));
+			QueryCondition condition = QueryCondition.builder().eq(SysDictData.Fields.dictValue, dictValue).build();
 			postJson(API_DICT_DATA_QUERY, condition).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess())
@@ -207,9 +198,7 @@ class SysDictDataControllerTests extends MockMvcTestSupport {
 			createDictData(dictType, "P1", "p1", Status.ENABLED.getCode());
 			createDictData(dictType, "P2", "p2", Status.ENABLED.getCode());
 
-			QueryCondition condition = queryCondition(dictType);
-			condition.setCurrent(1);
-			condition.setSize(10);
+			QueryCondition condition = queryCondition(dictType).toBuilder().current(1).size(10).build();
 
 			postJson(API_DICT_DATA_QUERY, condition).andDo(print())
 				.andExpect(status().isOk())
@@ -328,7 +317,7 @@ class SysDictDataControllerTests extends MockMvcTestSupport {
 				.andExpect(status().isOk())
 				.andExpect(PageResultMatchers.totalIs(1));
 
-			deleteJson(API_DICT_DATA_ID, id).andDo(print())
+			deleteJson(API_DICT_DATA_IDS, id).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 

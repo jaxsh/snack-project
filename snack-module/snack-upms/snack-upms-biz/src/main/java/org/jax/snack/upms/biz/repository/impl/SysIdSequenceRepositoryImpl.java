@@ -16,16 +16,12 @@
 
 package org.jax.snack.upms.biz.repository.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.upms.biz.entity.SysIdSequence;
 import org.jax.snack.upms.biz.mapper.SysIdSequenceMapper;
 import org.jax.snack.upms.biz.repository.SysIdSequenceRepository;
 
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ID 序列号仓储实现.
@@ -33,45 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class SysIdSequenceRepositoryImpl implements SysIdSequenceRepository {
-
-	private final SysIdSequenceMapper mapper;
-
-	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-	public long getNextValue(Long ruleId, String cycleKey) {
-		try {
-			SysIdSequence initialSeq = new SysIdSequence();
-			initialSeq.setRuleId(ruleId);
-			initialSeq.setCycleKey(cycleKey);
-			initialSeq.setCurrentValue(0L);
-			this.mapper.insert(initialSeq);
-		}
-		catch (DuplicateKeyException ignored) {
-		}
-
-		LambdaQueryWrapper<SysIdSequence> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(SysIdSequence::getRuleId, ruleId).eq(SysIdSequence::getCycleKey, cycleKey).last("FOR UPDATE");
-
-		SysIdSequence sequence = this.mapper.selectOne(queryWrapper);
-
-		if (sequence == null) {
-			return getNextValue(ruleId, cycleKey);
-		}
-
-		long nextVal = sequence.getCurrentValue() + 1;
-		sequence.setCurrentValue(nextVal);
-		this.mapper.updateById(sequence);
-
-		return nextVal;
-	}
-
-	@Override
-	public void deleteByRuleId(Long ruleId) {
-		LambdaQueryWrapper<SysIdSequence> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(SysIdSequence::getRuleId, ruleId);
-		this.mapper.delete(wrapper);
-	}
+public class SysIdSequenceRepositoryImpl extends AbstractRepository<SysIdSequence, Long, SysIdSequenceMapper>
+		implements SysIdSequenceRepository {
 
 }

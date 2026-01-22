@@ -46,6 +46,11 @@ public class SysIdRuleSegmentVO {
 	private String segmentType;
 
 	/**
+	 * 片段类型标签.
+	 */
+	private String segmentTypeLabel;
+
+	/**
 	 * 片段配置.
 	 */
 	private Map<String, Object> config;

@@ -19,8 +19,10 @@ package org.jax.snack.upms.biz.entity;
 import java.io.Serial;
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 
 /**
@@ -30,6 +32,8 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
  */
 @Getter
 @Setter
+@FieldNameConstants
+@TableName("sys_dict_type")
 public class SysDictType extends BaseEntity implements Serializable {
 
 	@Serial
@@ -41,7 +45,7 @@ public class SysDictType extends BaseEntity implements Serializable {
 	private String dictName;
 
 	/**
-	 * 字典类型 (业务上唯一).
+	 * 字典类型.
 	 */
 	private String dictType;
 
@@ -59,5 +63,12 @@ public class SysDictType extends BaseEntity implements Serializable {
 	 * 备注.
 	 */
 	private String remark;
+
+	/**
+	 * 字段名常量, 继承父类字段.
+	 */
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

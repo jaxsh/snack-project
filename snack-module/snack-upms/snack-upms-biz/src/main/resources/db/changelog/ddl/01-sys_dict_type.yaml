@@ -24,7 +24,7 @@ databaseChangeLog:
               - column:
                   name: dict_type
                   type: varchar(100)
-                  remarks: 字典类型 (业务上唯一)
+                  remarks: 字典类型
                   constraints:
                     nullable: false
               - column:

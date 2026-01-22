@@ -1,0 +1,51 @@
+# sys_role_resource 角色-资源关联表
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_role_resource
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_role_resource
+            remarks: 角色-资源关联表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: role_code
+                  type: varchar(50)
+                  remarks: 角色编码
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_id
+                  type: bigint
+                  remarks: 资源ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_role_resource
+            columnNames: role_code, resource_id
+            constraintName: uk_role_resource

@@ -25,9 +25,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 import org.jax.snack.upms.api.dto.SysIdRuleSegmentDTO;
-import org.jax.snack.upms.biz.enums.ResetCycle;
 
 /**
  * ID 规则表.
@@ -36,7 +36,8 @@ import org.jax.snack.upms.biz.enums.ResetCycle;
  */
 @Getter
 @Setter
-@TableName(autoResultMap = true)
+@FieldNameConstants
+@TableName(value = "sys_id_rule", autoResultMap = true)
 public class SysIdRule extends BaseEntity implements Serializable {
 
 	@Serial
@@ -66,6 +67,13 @@ public class SysIdRule extends BaseEntity implements Serializable {
 	/**
 	 * 序列号重置周期.
 	 */
-	private ResetCycle resetCycle;
+	private String resetCycle;
+
+	/**
+	 * 字段名常量, 继承父类字段.
+	 */
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

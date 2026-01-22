@@ -16,11 +16,7 @@
 
 package org.jax.snack.upms.biz.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
 import org.jax.snack.upms.biz.entity.SysOrgLevelName;
 
 /**
@@ -28,45 +24,6 @@ import org.jax.snack.upms.biz.entity.SysOrgLevelName;
  *
  * @author Jax Jiang
  */
-public interface SysOrgLevelNameRepository {
-
-	/**
-	 * 保存层级名称配置.
-	 * @param entity 层级名称实体
-	 */
-	void save(SysOrgLevelName entity);
-
-	/**
-	 * 根据 ID 查询.
-	 * @param id 主键 ID
-	 * @return Optional 包装的实体
-	 */
-	Optional<SysOrgLevelName> findById(Long id);
-
-	/**
-	 * 更新层级名称配置.
-	 * @param entity 层级名称实体
-	 */
-	void update(SysOrgLevelName entity);
-
-	/**
-	 * 根据 ID 删除.
-	 * @param id 主键 ID
-	 */
-	void deleteById(Long id);
-
-	/**
-	 * DSL 分页查询.
-	 * @param condition 查询条件
-	 * @return MyBatis-Plus 分页对象
-	 */
-	Page<SysOrgLevelName> queryPageByDsl(QueryCondition condition);
-
-	/**
-	 * DSL 列表查询.
-	 * @param condition 查询条件
-	 * @return 实体列表
-	 */
-	List<SysOrgLevelName> queryListByDsl(QueryCondition condition);
+public interface SysOrgLevelNameRepository extends BaseRepository<SysOrgLevelName, Long> {
 
 }

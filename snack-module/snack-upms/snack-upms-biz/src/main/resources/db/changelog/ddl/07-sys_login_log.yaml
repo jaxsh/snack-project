@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: sys_login_log
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_login_log
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+                  remarks: "用户名"
+              - column:
+                  name: action
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+                  remarks: "事件类型: LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT"
+              - column:
+                  name: ip_address
+                  type: VARCHAR(64)
+                  remarks: "客户端IP地址"
+              - column:
+                  name: user_agent
+                  type: VARCHAR(512)
+                  remarks: "浏览器User-Agent"
+              - column:
+                  name: session_id
+                  type: VARCHAR(128)
+                  remarks: "会话ID"
+              - column:
+                  name: failure_reason
+                  type: VARCHAR(255)
+                  remarks: "失败原因"
+              - column:
+                  name: create_by
+                  type: VARCHAR(64)
+                  remarks: "创建人"
+              - column:
+                  name: create_time
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+                  remarks: "创建时间"
+              - column:
+                  name: update_by
+                  type: VARCHAR(64)
+                  remarks: "更新人"
+              - column:
+                  name: update_time
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+                  remarks: "更新时间"
+        - createIndex:
+            indexName: idx_sys_login_log_username
+            tableName: sys_login_log
+            columns:
+              - column:
+                  name: username
+        - createIndex:
+            indexName: idx_sys_login_log_create_time
+            tableName: sys_login_log
+            columns:
+              - column:
+                  name: create_time

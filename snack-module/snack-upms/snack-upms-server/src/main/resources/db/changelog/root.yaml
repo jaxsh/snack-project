@@ -1,0 +1,13 @@
+# ============================================
+# 数据库 Changelog 全局自动入口
+# ============================================
+
+databaseChangeLog:
+
+  # 1. 结构层：隐式扫描 Classpath 下所有模块的 DDL
+  - includeAll:
+      path: "db/changelog/ddl/"
+
+  # 2. 数据层：隐式扫描 Classpath 下所有模块的 DML
+  - includeAll:
+      path: "db/changelog/dml/"

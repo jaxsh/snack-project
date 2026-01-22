@@ -21,8 +21,8 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.upms.biz.enums.SegmentType;
-import org.jax.snack.upms.biz.repository.SysIdSequenceRepository;
+import org.jax.snack.upms.api.enums.SegmentType;
+import org.jax.snack.upms.biz.manager.SysIdSequenceManager;
 
 import org.springframework.stereotype.Component;
 
@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SequenceSegmentGenerator implements SegmentGenerator {
 
-	private final SysIdSequenceRepository sequenceRepository;
+	private final SysIdSequenceManager sequenceManager;
 
 	@Override
 	public void validate(Map<String, Object> config) {
@@ -51,7 +51,7 @@ public class SequenceSegmentGenerator implements SegmentGenerator {
 	@Override
 	public String generate(Map<String, Object> config, GeneratorContext context) {
 		int length = (Integer) config.get("length");
-		long nextValue = this.sequenceRepository.getNextValue(context.getRule().getId(), context.getCycleKey());
+		long nextValue = this.sequenceManager.getNextValue(context.getRule().getId(), context.getCycleKey());
 		return String.format("%0" + length + "d", nextValue);
 	}
 

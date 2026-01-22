@@ -17,12 +17,11 @@
 package org.jax.snack.upms.biz.controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
@@ -30,6 +29,7 @@ import org.jax.snack.framework.utils.tree.TreeNode;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
 import org.jax.snack.upms.api.service.SysOrgService;
 import org.jax.snack.upms.api.vo.SysOrgVO;
+import org.jax.snack.upms.biz.entity.SysOrg;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,8 +70,7 @@ public class SysOrgController {
 	 */
 	@GetMapping("/{id}")
 	public PageResult<SysOrgVO> getById(@PathVariable Long id) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("id", Map.of(QueryOperator.EQ.getValue(), id)));
+		QueryCondition condition = QueryCondition.builder().eq(SysOrg.Fields.id, id).build();
 		return this.sysOrgService.queryByDsl(condition);
 	}
 
@@ -120,11 +119,12 @@ public class SysOrgController {
 
 	/**
 	 * 删除组织机构及其所有子节点.
-	 * @param id 组织机构 ID.
+	 * @param ids 组织机构 ID 列表.
 	 */
-	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		this.sysOrgService.deleteById(id);
+	@DeleteMapping("/{ids}")
+	public void delete(@PathVariable List<Long> ids) {
+		WhereCondition condition = WhereCondition.builder().in(SysOrg.Fields.id, ids).build();
+		this.sysOrgService.deleteByDsl(condition);
 	}
 
 }

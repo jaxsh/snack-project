@@ -17,6 +17,7 @@
 package org.jax.snack.upms.api.service;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.upms.api.dto.SysDictTypeDTO;
 import org.jax.snack.upms.api.vo.SysDictTypeVO;
@@ -42,10 +43,10 @@ public interface SysDictTypeService {
 	void update(Long id, SysDictTypeDTO dto);
 
 	/**
-	 * 删除字典类型.
-	 * @param id 主键 ID.
+	 * 根据条件删除字典类型.
+	 * @param condition 删除条件
 	 */
-	void deleteById(Long id);
+	void deleteByDsl(WhereCondition condition);
 
 	/**
 	 * 使用 JSON DSL 查询字典类型.

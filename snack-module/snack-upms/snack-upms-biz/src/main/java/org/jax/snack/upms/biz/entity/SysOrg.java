@@ -22,6 +22,7 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 
 /**
@@ -31,6 +32,7 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
  */
 @Getter
 @Setter
+@FieldNameConstants
 @TableName("sys_org")
 public class SysOrg extends BaseEntity implements Serializable {
 
@@ -106,5 +108,12 @@ public class SysOrg extends BaseEntity implements Serializable {
 	 * 状态.
 	 */
 	private Integer status;
+
+	/**
+	 * 字段名常量, 继承父类字段.
+	 */
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

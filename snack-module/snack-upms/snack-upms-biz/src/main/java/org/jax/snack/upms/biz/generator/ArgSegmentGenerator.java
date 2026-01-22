@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.upms.biz.enums.SegmentType;
+import org.jax.snack.upms.api.enums.SegmentType;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

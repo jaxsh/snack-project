@@ -1,0 +1,70 @@
+# sys_user 用户表结构
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_user
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_user
+            remarks: 用户表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(64)
+                  remarks: 用户名
+                  constraints:
+                    nullable: false
+              - column:
+                  name: real_name
+                  type: varchar(50)
+                  remarks: 真实姓名
+              - column:
+                  name: nickname
+                  type: varchar(50)
+                  remarks: 昵称
+              - column:
+                  name: avatar
+                  type: varchar(255)
+                  remarks: 头像 URL
+              - column:
+                  name: gender
+                  type: tinyint
+                  defaultValueNumeric: '0'
+                  remarks: 性别(0:未知, 1:男, 2:女)
+              - column:
+                  name: birthday
+                  type: date
+                  remarks: 生日
+              - column:
+                  name: remark
+                  type: varchar(500)
+                  remarks: 备注
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_user
+            columnNames: username
+            constraintName: uk_user_username

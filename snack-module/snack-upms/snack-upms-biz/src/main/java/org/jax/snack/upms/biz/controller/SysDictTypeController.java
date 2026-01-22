@@ -16,17 +16,18 @@
 
 package org.jax.snack.upms.biz.controller;
 
-import java.util.Map;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.upms.api.dto.SysDictTypeDTO;
 import org.jax.snack.upms.api.service.SysDictTypeService;
 import org.jax.snack.upms.api.vo.SysDictTypeVO;
+import org.jax.snack.upms.biz.entity.SysDictType;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -66,8 +67,7 @@ public class SysDictTypeController {
 	 */
 	@GetMapping("/{id}")
 	public PageResult<SysDictTypeVO> getById(@PathVariable Long id) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("id", Map.of(QueryOperator.EQ.getValue(), id)));
+		QueryCondition condition = QueryCondition.builder().eq(SysDictType.Fields.id, id).build();
 		return this.sysDictTypeService.queryByDsl(condition);
 	}
 
@@ -93,11 +93,12 @@ public class SysDictTypeController {
 
 	/**
 	 * 删除字典类型.
-	 * @param id 字典类型 ID.
+	 * @param ids 字典类型 ID 列表.
 	 */
-	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		this.sysDictTypeService.deleteById(id);
+	@DeleteMapping("/{ids}")
+	public void delete(@PathVariable List<Long> ids) {
+		WhereCondition condition = WhereCondition.builder().in(SysDictType.Fields.id, ids).build();
+		this.sysDictTypeService.deleteByDsl(condition);
 	}
 
 }

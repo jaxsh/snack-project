@@ -18,7 +18,7 @@ package org.jax.snack.upms.biz.generator;
 
 import java.util.Map;
 
-import org.jax.snack.upms.biz.enums.SegmentType;
+import org.jax.snack.upms.api.enums.SegmentType;
 
 /**
  * 片段生成器策略接口.

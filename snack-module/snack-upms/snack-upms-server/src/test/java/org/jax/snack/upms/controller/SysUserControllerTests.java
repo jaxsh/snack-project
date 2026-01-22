@@ -1,0 +1,315 @@
+/*
+ * Copyright 2023-2025 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jax.snack.upms.controller;
+
+import java.time.LocalDate;
+import java.util.Set;
+
+import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.exception.constants.ErrorCode;
+import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
+import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
+import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
+import org.jax.snack.upms.UpmsIntegrationTests;
+import org.jax.snack.upms.api.dto.SysResourceDTO;
+import org.jax.snack.upms.api.dto.SysRoleDTO;
+import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.enums.UserGender;
+import org.jax.snack.upms.api.service.SysResourceService;
+import org.jax.snack.upms.api.service.SysRoleService;
+import org.jax.snack.upms.api.service.SysUserService;
+import org.jax.snack.upms.api.vo.SysUserVO;
+import org.jax.snack.upms.biz.client.OAuth2UserClient;
+import org.jax.snack.upms.biz.entity.SysUser;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/**
+ * 用户管理 Controller 集成测试.
+ *
+ * @author Jax Jiang
+ */
+class SysUserControllerTests extends UpmsIntegrationTests {
+
+	private static final String API_USERS = "/api/upms/users";
+
+	private static final String API_USERS_ID = "/api/upms/users/{id}";
+
+	private static final String API_USERS_IDS = "/api/upms/users/{ids}";
+
+	private static final String API_USERS_QUERY = "/api/upms/users/query";
+
+	private static final String API_USERS_INFO = "/api/upms/users/info";
+
+	private static final String API_USERS_RESOURCES = "/api/upms/users/resources";
+
+	@Autowired
+	private SysUserService sysUserService;
+
+	@Autowired
+	private SysRoleService sysRoleService;
+
+	@Autowired
+	private SysResourceService sysResourceService;
+
+	@MockitoBean
+	private OAuth2UserClient oAuth2UserClient;
+
+	private SysUserDTO buildDto(String username, String realName) {
+		SysUserDTO dto = new SysUserDTO();
+		dto.setUsername(username);
+		dto.setRealName(realName);
+		dto.setNickname(username + "_nick");
+		dto.setGender(UserGender.MALE.getCode());
+		dto.setBirthday(LocalDate.of(1990, 1, 1));
+		return dto;
+	}
+
+	private SysUserVO queryByUsername(String username) {
+		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.username, username).build();
+		PageResult<SysUserVO> result = SysUserControllerTests.this.sysUserService.queryByDsl(condition);
+		if (result.getRecords().isEmpty()) {
+			throw new IllegalStateException("User not found: " + username);
+		}
+		return result.getRecords().get(0);
+	}
+
+	@Nested
+	class CreateUser {
+
+		@Test
+		void shouldCreateUserSuccess() throws Exception {
+			String username = "user_create";
+			SysUserDTO dto = buildDto(username, "Creator");
+
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+
+			postJson(API_USERS, dto).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			SysUserVO vo = queryByUsername(username);
+			assertThat(vo).isNotNull();
+			assertThat(vo.getRealName()).isEqualTo("Creator");
+			assertThat(vo.getGender()).isEqualTo(UserGender.MALE.getCode());
+			assertThat(vo.getGenderLabel()).isEqualTo(UserGender.MALE.getName());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).create(any());
+		}
+
+		@Test
+		void shouldFailWhenUsernameAvailable() throws Exception {
+			String username = "user_fail";
+			SysUserDTO dto = buildDto(username, "FailUser");
+
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(dto);
+
+			postJson(API_USERS, dto).andDo(print())
+				.andExpect(status().isInternalServerError())
+				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
+		}
+
+		@Test
+		void shouldFailWhenParamInvalid() throws Exception {
+			SysUserDTO dto = new SysUserDTO();
+
+			postJson(API_USERS, dto).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(ExceptionMatchers.code(ErrorCode.PARAM_INVALID))
+				.andExpect(ExceptionMatchers.fieldHasError("username"));
+		}
+
+	}
+
+	@Nested
+	class QueryUsers {
+
+		@Test
+		void shouldReturnPaginatedResults() throws Exception {
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto("user_q1", "QUser1"));
+			SysUserControllerTests.this.sysUserService.create(buildDto("user_q2", "QUser2"));
+
+			QueryCondition condition = QueryCondition.builder()
+				.size(10)
+				.like(SysUser.Fields.nickname, "user_q")
+				.build();
+
+			postJson(API_USERS_QUERY, condition).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess())
+				.andExpect(PageResultMatchers.totalIs(2));
+		}
+
+	}
+
+	@Nested
+	class GetById {
+
+		@Test
+		void shouldReturnUserById() throws Exception {
+			String username = "user_get";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Getter"));
+			SysUserVO created = queryByUsername(username);
+
+			getJson(API_USERS_ID, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess())
+				.andExpect(jsonPath("$.data.records[0].nickname").value(username + "_nick"))
+				.andExpect(jsonPath("$.data.records[0].genderLabel").exists());
+		}
+
+		@Test
+		void shouldReturnEmptyWhenNotFound() throws Exception {
+			getJson(API_USERS_ID, 99999L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess())
+				.andExpect(PageResultMatchers.totalIs(0));
+		}
+
+	}
+
+	@Nested
+	class UpdateUser {
+
+		@Test
+		void shouldUpdateUserSuccess() throws Exception {
+			String username = "user_update";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Updater"));
+			SysUserVO created = queryByUsername(username);
+
+			SysUserDTO updateDto = new SysUserDTO();
+			updateDto.setNickname("UpdatedNick");
+			updateDto.setGender(UserGender.FEMALE.getCode());
+
+			putJson(API_USERS_ID, updateDto, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			SysUserVO updated = queryByUsername(username);
+			assertThat(updated.getNickname()).isEqualTo("UpdatedNick");
+			assertThat(updated.getGender()).isEqualTo(UserGender.FEMALE.getCode());
+			assertThat(updated.getGenderLabel()).isEqualTo("女");
+		}
+
+	}
+
+	@Nested
+	class DeleteUser {
+
+		@Test
+		void shouldDeleteUserSuccess() throws Exception {
+			String username = "user_delete";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).delete(username);
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Deleter"));
+			SysUserVO created = queryByUsername(username);
+
+			deleteJson(API_USERS_IDS, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.nickname, username + "_nick").build();
+			assertThat(SysUserControllerTests.this.sysUserService.queryByDsl(condition).getRecords()).isEmpty();
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).delete(username);
+		}
+
+	}
+
+	@Nested
+	class GetUserInfo {
+
+		@Test
+		void shouldReturnUserInfo() throws Exception {
+			String username = "admin_test";
+			SysUserDTO userDto = buildDto(username, "Administrator");
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(userDto);
+
+			SysUserControllerTests.this.mockMvc
+				.perform(get(API_USERS_INFO).with(defaultJwt().jwt((builder) -> builder.subject(username))))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess())
+				.andExpect(jsonPath("$.data.username").value(username))
+				.andExpect(jsonPath("$.data.realName").value("Administrator"));
+		}
+
+	}
+
+	@Nested
+	class GetUserResources {
+
+		@Test
+		void shouldReturnResources() throws Exception {
+			String permCode = "sys:test:view";
+			SysResourceDTO resourceDto = new SysResourceDTO();
+			resourceDto.setName("Test Resource");
+			resourceDto.setParentId(0L);
+			resourceDto.setPermission(permCode);
+			resourceDto.setType(2);
+			SysUserControllerTests.this.sysResourceService.create(resourceDto);
+
+			Long resourceId = SysUserControllerTests.this.sysResourceService.buildTree()
+				.stream()
+				.filter((node) -> "Test Resource".equals(node.getData().getName()))
+				.findFirst()
+				.orElseThrow()
+				.getData()
+				.getId();
+
+			String roleCode = "ROLE_RESOURCE_TEST";
+			SysRoleDTO roleDto = new SysRoleDTO();
+			roleDto.setRoleCode(roleCode);
+			roleDto.setRoleName("Test Resource Role");
+			roleDto.setResourceIds(Set.of(resourceId));
+			SysUserControllerTests.this.sysRoleService.create(roleDto);
+
+			String username = "res_test";
+			SysUserDTO userDto = buildDto(username, "ResUser");
+			userDto.setRoleCodes(Set.of(roleCode));
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(userDto);
+
+			SysUserControllerTests.this.mockMvc
+				.perform(get(API_USERS_RESOURCES).with(defaultJwt().jwt((builder) -> builder.subject(username))))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess())
+				.andExpect(jsonPath("$.data").isArray())
+				.andExpect(jsonPath("$.data[?(@.permission == '%s')]", permCode).exists());
+		}
+
+	}
+
+}

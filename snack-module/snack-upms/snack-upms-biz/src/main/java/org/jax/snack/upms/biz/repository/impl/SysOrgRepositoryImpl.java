@@ -16,16 +16,9 @@
 
 package org.jax.snack.upms.biz.repository.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
-import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.upms.biz.entity.SysOrg;
 import org.jax.snack.upms.biz.mapper.SysOrgMapper;
 import org.jax.snack.upms.biz.repository.SysOrgRepository;
@@ -38,71 +31,17 @@ import org.springframework.stereotype.Repository;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class SysOrgRepositoryImpl implements SysOrgRepository {
-
-	private final SysOrgMapper mapper;
-
-	@Override
-	public boolean existsByDsl(QueryCondition condition) {
-		QueryWrapper<SysOrg> wrapper = QueryWrapperBuilder.build(condition, SysOrg.class);
-		return this.mapper.exists(wrapper);
-	}
-
-	@Override
-	public void save(SysOrg entity) {
-		this.mapper.insert(entity);
-	}
-
-	@Override
-	public Optional<SysOrg> findById(Long id) {
-		return Optional.ofNullable(this.mapper.selectById(id));
-	}
-
-	@Override
-	public void update(SysOrg entity) {
-		this.mapper.updateById(entity);
-	}
-
-	@Override
-	public void deleteById(Long id) {
-		this.mapper.deleteById(id);
-	}
-
-	@Override
-	public void deleteByIds(List<Long> ids) {
-		this.mapper.deleteByIds(ids);
-	}
-
-	@Override
-	public Page<SysOrg> queryPageByDsl(QueryCondition condition) {
-		QueryWrapper<SysOrg> wrapper = QueryWrapperBuilder.build(condition, SysOrg.class);
-		long current = (condition.getCurrent() != null) ? condition.getCurrent() : 1L;
-		Page<SysOrg> page = new Page<>(current, condition.getSize());
-		return this.mapper.selectPage(page, wrapper);
-	}
-
-	@Override
-	public List<SysOrg> queryListByDsl(QueryCondition condition) {
-		QueryWrapper<SysOrg> wrapper = QueryWrapperBuilder.build(condition, SysOrg.class);
-		return this.mapper.selectList(wrapper);
-	}
+public class SysOrgRepositoryImpl extends AbstractRepository<SysOrg, Long, SysOrgMapper> implements SysOrgRepository {
 
 	@Override
 	public void batchUpdateDescendants(String oldPrefix, String newPrefix, int levelDiff) {
+		String ancestorsCol = SysOrg.Fields.ancestors;
+
 		LambdaUpdateWrapper<SysOrg> wrapper = Wrappers.<SysOrg>lambdaUpdate()
 			.likeRight(SysOrg::getAncestors, oldPrefix)
-			.setSql("ancestors = REPLACE(ancestors, '" + oldPrefix + "', '" + newPrefix + "')")
-			.setSql("level = level + " + levelDiff);
-		this.mapper.update(wrapper);
-	}
-
-	@Override
-	public void batchUpdateDescendantsStatus(String ancestorsPrefix, Integer status) {
-		LambdaUpdateWrapper<SysOrg> wrapper = Wrappers.<SysOrg>lambdaUpdate()
-			.likeRight(SysOrg::getAncestors, ancestorsPrefix)
-			.set(SysOrg::getStatus, status);
-		this.mapper.update(wrapper);
+			.setSql(ancestorsCol + " = REPLACE(" + ancestorsCol + ", {0}, {1})", oldPrefix, newPrefix)
+			.setIncrBy(SysOrg::getLevel, levelDiff);
+		getMapper().update(wrapper);
 	}
 
 }

@@ -21,29 +21,27 @@ import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.framework.webtest.MockMvcTestSupport;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
+import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysIdRuleDTO;
 import org.jax.snack.upms.api.dto.SysIdRuleSegmentDTO;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
+import org.jax.snack.upms.api.enums.ResetCycle;
+import org.jax.snack.upms.api.enums.SegmentType;
 import org.jax.snack.upms.api.service.SysIdRuleService;
 import org.jax.snack.upms.api.service.SysOrgService;
 import org.jax.snack.upms.api.vo.SysOrgVO;
-import org.jax.snack.upms.biz.enums.ResetCycle;
-import org.jax.snack.upms.biz.enums.SegmentType;
+import org.jax.snack.upms.biz.entity.SysIdRule;
+import org.jax.snack.upms.biz.entity.SysOrg;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -51,18 +49,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 组织机构 Controller 集成测试.
+ * 组织架构 Controller 集成测试.
  *
  * @author Jax Jiang
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
-@Transactional
-class SysOrgControllerTests extends MockMvcTestSupport {
+class SysOrgControllerTests extends UpmsIntegrationTests {
 
 	private static final String API_ORGS = "/api/upms/orgs";
 
 	private static final String API_ORGS_ID = "/api/upms/orgs/{id}";
+
+	private static final String API_ORGS_IDS = "/api/upms/orgs/{ids}";
 
 	private static final String API_ORGS_QUERY = "/api/upms/orgs/query";
 
@@ -78,16 +75,15 @@ class SysOrgControllerTests extends MockMvcTestSupport {
 
 	@BeforeEach
 	void setupOrgCodeRule() {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("ruleCode", Map.of(QueryOperator.EQ.getValue(), "org_code")));
+		QueryCondition condition = QueryCondition.builder().eq(SysIdRule.Fields.ruleCode, "org_code").build();
 		if (this.sysIdRuleService.queryByDsl(condition).getRecords().isEmpty()) {
 			SysIdRuleDTO dto = new SysIdRuleDTO();
 			dto.setRuleCode("org_code");
 			dto.setRuleName("组织机构编码规则");
 			dto.setResetCycle(ResetCycle.NEVER.name());
 
-			SysIdRuleSegmentDTO seg1 = createFixedSegment("ORG");
-			SysIdRuleSegmentDTO seg2 = createSequenceSegment(5);
+			SysIdRuleSegmentDTO seg1 = createFixedSegment();
+			SysIdRuleSegmentDTO seg2 = createSequenceSegment();
 
 			dto.setSegments(List.of(seg1, seg2));
 			this.sysIdRuleService.create(dto);
@@ -103,7 +99,7 @@ class SysOrgControllerTests extends MockMvcTestSupport {
 	}
 
 	private SysOrgVO queryFirst() {
-		PageResult<SysOrgVO> result = this.sysOrgService.queryByDsl(new QueryCondition());
+		PageResult<SysOrgVO> result = this.sysOrgService.queryByDsl(QueryCondition.builder().build());
 		if (result.getRecords().isEmpty()) {
 			throw new IllegalStateException("Expected at least one org, but found none");
 		}
@@ -111,20 +107,20 @@ class SysOrgControllerTests extends MockMvcTestSupport {
 	}
 
 	private List<SysOrgVO> queryAll() {
-		return this.sysOrgService.queryByDsl(new QueryCondition()).getRecords();
+		return this.sysOrgService.queryByDsl(QueryCondition.builder().build()).getRecords();
 	}
 
-	private SysIdRuleSegmentDTO createFixedSegment(String value) {
+	private SysIdRuleSegmentDTO createFixedSegment() {
 		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
 		seg.setSegmentType(SegmentType.FIXED.name());
-		seg.setConfig(Map.of("value", value));
+		seg.setConfig(Map.of("value", "ORG"));
 		return seg;
 	}
 
-	private SysIdRuleSegmentDTO createSequenceSegment(int length) {
+	private SysIdRuleSegmentDTO createSequenceSegment() {
 		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
 		seg.setSegmentType(SegmentType.SEQUENCE.name());
-		seg.setConfig(Map.of("length", length));
+		seg.setConfig(Map.of("length", 5));
 		return seg;
 	}
 
@@ -189,9 +185,7 @@ class SysOrgControllerTests extends MockMvcTestSupport {
 			SysOrgControllerTests.this.sysOrgService.create(buildDto(null));
 			SysOrgControllerTests.this.sysOrgService.create(buildDto(null));
 
-			QueryCondition condition = new QueryCondition();
-			condition.setCurrent(1);
-			condition.setSize(10);
+			QueryCondition condition = QueryCondition.builder().current(1).size(10).build();
 
 			postJson(API_ORGS_QUERY, condition).andDo(print())
 				.andExpect(status().isOk())
@@ -203,8 +197,7 @@ class SysOrgControllerTests extends MockMvcTestSupport {
 		void shouldFilterByOrgName() throws Exception {
 			SysOrgControllerTests.this.sysOrgService.create(buildDto(null));
 
-			QueryCondition condition = new QueryCondition();
-			condition.setWhere(Map.of("orgName", Map.of(QueryOperator.EQ.getValue(), "测试机构")));
+			QueryCondition condition = QueryCondition.builder().eq(SysOrg.Fields.orgName, "测试机构").build();
 
 			postJson(API_ORGS_QUERY, condition).andDo(print())
 				.andExpect(status().isOk())
@@ -440,7 +433,7 @@ class SysOrgControllerTests extends MockMvcTestSupport {
 			SysOrgControllerTests.this.sysOrgService.create(buildDto(parentVo.getOrgCode()));
 			assertThat(queryAll()).hasSize(2);
 
-			deleteJson(API_ORGS_ID, parentVo.getId()).andDo(print())
+			deleteJson(API_ORGS_IDS, parentVo.getId()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 

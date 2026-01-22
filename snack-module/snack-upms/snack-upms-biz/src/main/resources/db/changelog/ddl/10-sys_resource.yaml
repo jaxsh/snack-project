@@ -1,0 +1,88 @@
+# sys_resource 资源表结构 (菜单/按钮/接口)
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_resource
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_resource
+            remarks: 资源表 (菜单/按钮/接口)
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: parent_id
+                  type: bigint
+                  remarks: 父节点ID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(50)
+                  remarks: 资源名称
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: tinyint
+                  remarks: 类型(0:菜单, 1:按钮, 2:接口)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: permission
+                  type: varchar(100)
+                  remarks: 权限标识
+              - column:
+                  name: path
+                  type: varchar(255)
+                  remarks: 路由路径/接口URL
+              - column:
+                  name: component
+                  type: varchar(255)
+                  remarks: 前端组件路径
+              - column:
+                  name: method
+                  type: varchar(10)
+                  remarks: HTTP方法(GET/POST)
+              - column:
+                  name: icon
+                  type: varchar(50)
+                  remarks: 图标
+              - column:
+                  name: sort_order
+                  type: int
+                  defaultValueNumeric: 0
+                  remarks: 排序(数值越小越靠前)
+              - column:
+                  name: visible
+                  type: boolean
+                  defaultValueBoolean: true
+                  remarks: 是否可见(仅菜单有效)
+              - column:
+                  name: status
+                  type: int
+                  defaultValueNumeric: 1
+                  remarks: 状态(1:启用, 0:禁用)
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间

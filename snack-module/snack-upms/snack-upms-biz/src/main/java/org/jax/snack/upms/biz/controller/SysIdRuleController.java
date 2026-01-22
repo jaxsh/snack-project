@@ -16,14 +16,18 @@
 
 package org.jax.snack.upms.biz.controller;
 
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.upms.api.dto.SysIdRuleDTO;
 import org.jax.snack.upms.api.service.SysIdRuleService;
 import org.jax.snack.upms.api.vo.SysIdRuleVO;
+import org.jax.snack.upms.biz.entity.SysIdRule;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -88,11 +92,12 @@ public class SysIdRuleController {
 
 	/**
 	 * 删除 ID 规则.
-	 * @param id 规则 ID
+	 * @param ids ID 规则 ID 列表.
 	 */
-	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		this.sysIdRuleService.deleteById(id);
+	@DeleteMapping("/{ids}")
+	public void delete(@PathVariable List<Long> ids) {
+		WhereCondition condition = WhereCondition.builder().in(SysIdRule.Fields.id, ids).build();
+		this.sysIdRuleService.deleteByDsl(condition);
 	}
 
 }

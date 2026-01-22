@@ -19,6 +19,7 @@ package org.jax.snack.upms.api.service;
 import java.util.Map;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.upms.api.dto.SysIdRuleDTO;
 import org.jax.snack.upms.api.vo.SysIdRuleVO;
@@ -44,10 +45,10 @@ public interface SysIdRuleService {
 	void update(Long id, SysIdRuleDTO dto);
 
 	/**
-	 * 删除规则.
-	 * @param id 规则 ID
+	 * 根据条件删除规则.
+	 * @param condition 删除条件
 	 */
-	void deleteById(Long id);
+	void deleteByDsl(WhereCondition condition);
 
 	/**
 	 * 根据 ID 查询规则详情 (含片段).

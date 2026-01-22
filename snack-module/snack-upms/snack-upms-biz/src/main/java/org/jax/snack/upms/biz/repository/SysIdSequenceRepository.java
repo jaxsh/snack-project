@@ -16,27 +16,14 @@
 
 package org.jax.snack.upms.biz.repository;
 
+import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
+import org.jax.snack.upms.biz.entity.SysIdSequence;
+
 /**
  * ID 序列号仓储接口.
  *
  * @author Jax Jiang
  */
-public interface SysIdSequenceRepository {
-
-	/**
-	 * 获取下一个序列号.
-	 * <p>
-	 * 如果周期记录不存在则自动创建.
-	 * @param ruleId 规则 ID
-	 * @param cycleKey 周期标识
-	 * @return 下一个序列号
-	 */
-	long getNextValue(Long ruleId, String cycleKey);
-
-	/**
-	 * 根据规则 ID 删除所有序列号记录.
-	 * @param ruleId 规则 ID
-	 */
-	void deleteByRuleId(Long ruleId);
+public interface SysIdSequenceRepository extends BaseRepository<SysIdSequence, Long> {
 
 }

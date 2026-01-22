@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package org.jax.snack.upms.biz.enums;
+package org.jax.snack.upms.api.enums;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
  * 序列号重置周期枚举.
@@ -31,12 +30,12 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public enum ResetCycle {
+public enum ResetCycle implements BaseEnum<String> {
 
 	/**
 	 * 永不重置.
 	 */
-	NEVER("NEVER") {
+	NEVER("NEVER", "永不重置") {
 		@Override
 		public String computeCycleKey(LocalDate date) {
 			return "GLOBAL";
@@ -46,7 +45,7 @@ public enum ResetCycle {
 	/**
 	 * 每天重置.
 	 */
-	DAILY("DAILY") {
+	DAILY("DAILY", "每天重置") {
 		@Override
 		public String computeCycleKey(LocalDate date) {
 			return date.format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -56,7 +55,7 @@ public enum ResetCycle {
 	/**
 	 * 每月重置.
 	 */
-	MONTHLY("MONTHLY") {
+	MONTHLY("MONTHLY", "每月重置") {
 		@Override
 		public String computeCycleKey(LocalDate date) {
 			return date.format(DateTimeFormatter.ofPattern("yyyyMM"));
@@ -66,16 +65,22 @@ public enum ResetCycle {
 	/**
 	 * 每年重置.
 	 */
-	YEARLY("YEARLY") {
+	YEARLY("YEARLY", "每年重置") {
 		@Override
 		public String computeCycleKey(LocalDate date) {
 			return String.valueOf(date.getYear());
 		}
 	};
 
-	@EnumValue
-	@JsonValue
-	private final String value;
+	/**
+	 * 状态值.
+	 */
+	private final String code;
+
+	/**
+	 * 状态名称.
+	 */
+	private final String name;
 
 	/**
 	 * 根据日期计算周期标识.
@@ -83,5 +88,14 @@ public enum ResetCycle {
 	 * @return 周期标识
 	 */
 	public abstract String computeCycleKey(LocalDate date);
+
+	/**
+	 * 根据 code 获取枚举实例.
+	 * @param code 状态值
+	 * @return ResetCycle 实例
+	 */
+	public static ResetCycle of(String code) {
+		return BaseEnum.fromCode(ResetCycle.class, code);
+	}
 
 }

@@ -16,15 +16,7 @@
 
 package org.jax.snack.upms.biz.repository.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
-import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.upms.biz.entity.SysDictData;
 import org.jax.snack.upms.biz.mapper.SysDictDataMapper;
 import org.jax.snack.upms.biz.repository.SysDictDataRepository;
@@ -37,54 +29,7 @@ import org.springframework.stereotype.Repository;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class SysDictDataRepositoryImpl implements SysDictDataRepository {
-
-	private final SysDictDataMapper mapper;
-
-	@Override
-	public boolean existsByDsl(QueryCondition condition) {
-		QueryWrapper<SysDictData> wrapper = QueryWrapperBuilder.build(condition, SysDictData.class);
-		return this.mapper.exists(wrapper);
-	}
-
-	@Override
-	public void save(SysDictData entity) {
-		this.mapper.insert(entity);
-	}
-
-	@Override
-	public Optional<SysDictData> findById(Long id) {
-		return Optional.ofNullable(this.mapper.selectById(id));
-	}
-
-	@Override
-	public void update(SysDictData entity) {
-		this.mapper.updateById(entity);
-	}
-
-	@Override
-	public void deleteById(Long id) {
-		this.mapper.deleteById(id);
-	}
-
-	@Override
-	public Page<SysDictData> queryPageByDsl(QueryCondition condition) {
-		QueryWrapper<SysDictData> wrapper = QueryWrapperBuilder.build(condition, SysDictData.class);
-		long current = (condition.getCurrent() != null) ? condition.getCurrent() : 1L;
-		Page<SysDictData> page = new Page<>(current, condition.getSize());
-		return this.mapper.selectPage(page, wrapper);
-	}
-
-	@Override
-	public List<SysDictData> queryListByDsl(QueryCondition condition) {
-		QueryWrapper<SysDictData> wrapper = QueryWrapperBuilder.build(condition, SysDictData.class);
-		return this.mapper.selectList(wrapper);
-	}
-
-	@Override
-	public void deleteByDictType(String dictType) {
-		this.mapper.delete(new LambdaQueryWrapper<SysDictData>().eq(SysDictData::getDictType, dictType));
-	}
+public class SysDictDataRepositoryImpl extends AbstractRepository<SysDictData, Long, SysDictDataMapper>
+		implements SysDictDataRepository {
 
 }

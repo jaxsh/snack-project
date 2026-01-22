@@ -16,11 +16,9 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
-import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
@@ -28,12 +26,14 @@ import org.jax.snack.upms.api.dto.SysDictTypeDTO;
 import org.jax.snack.upms.api.service.SysDictTypeService;
 import org.jax.snack.upms.api.vo.SysDictTypeVO;
 import org.jax.snack.upms.biz.converter.SysDictTypeConverter;
+import org.jax.snack.upms.biz.entity.SysDictData;
 import org.jax.snack.upms.biz.entity.SysDictType;
 import org.jax.snack.upms.biz.repository.SysDictDataRepository;
 import org.jax.snack.upms.biz.repository.SysDictTypeRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 /**
  * 字典类型服务实现.
@@ -51,9 +51,11 @@ public class SysDictTypeServiceImpl implements SysDictTypeService {
 	private final SysDictTypeConverter converter;
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void create(SysDictTypeDTO dto) {
-		QueryCondition existsCondition = new QueryCondition();
-		existsCondition.setWhere(Map.of("dictType", Map.of(QueryOperator.EQ.getValue(), dto.getDictType())));
+		QueryCondition existsCondition = QueryCondition.builder()
+			.eq(SysDictType.Fields.dictType, dto.getDictType())
+			.build();
 		if (this.repository.existsByDsl(existsCondition)) {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Dictionary Type");
 		}
@@ -63,6 +65,7 @@ public class SysDictTypeServiceImpl implements SysDictTypeService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void update(Long id, SysDictTypeDTO dto) {
 		this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Dictionary Type"));
@@ -75,18 +78,21 @@ public class SysDictTypeServiceImpl implements SysDictTypeService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteById(Long id) {
-		SysDictType entity = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Dictionary Type"));
+	public void deleteByDsl(WhereCondition condition) {
+		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
+		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {
+			WhereCondition dataCondition = WhereCondition.builder()
+				.eq(SysDictData.Fields.dictType, entity.getDictType())
+				.build();
+			this.dictDataRepository.deleteByDsl(dataCondition);
+		});
 
-		this.dictDataRepository.deleteByDictType(entity.getDictType());
-
-		this.repository.deleteById(id);
+		this.repository.deleteByDsl(condition);
 	}
 
 	@Override
 	public PageResult<SysDictTypeVO> queryByDsl(QueryCondition condition) {
-		if (condition.getSize() != null && condition.getSize() > 0) {
+		if (!ObjectUtils.isEmpty(condition.getSize())) {
 			return this.converter.toPageResult(this.repository.queryPageByDsl(condition));
 		}
 		else {

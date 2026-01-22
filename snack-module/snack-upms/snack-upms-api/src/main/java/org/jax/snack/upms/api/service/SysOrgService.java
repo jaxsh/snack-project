@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.utils.tree.TreeNode;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
@@ -46,10 +47,10 @@ public interface SysOrgService {
 	void update(Long id, SysOrgDTO dto);
 
 	/**
-	 * 删除组织机构及其所有子节点.
-	 * @param id 主键 ID.
+	 * 根据条件删除组织机构及其所有子节点.
+	 * @param condition 删除条件
 	 */
-	void deleteById(Long id);
+	void deleteByDsl(WhereCondition condition);
 
 	/**
 	 * 使用 JSON DSL 查询组织机构.

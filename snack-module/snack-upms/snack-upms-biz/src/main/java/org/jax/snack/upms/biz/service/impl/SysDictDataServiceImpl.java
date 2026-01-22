@@ -17,13 +17,10 @@
 package org.jax.snack.upms.biz.service.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
-import org.jax.snack.framework.core.api.query.OrderByCondition;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
-import org.jax.snack.framework.core.api.query.SortDirection;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
@@ -38,6 +35,8 @@ import org.jax.snack.upms.biz.repository.SysDictDataRepository;
 import org.jax.snack.upms.biz.repository.SysDictTypeRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 /**
  * 字典数据服务实现.
@@ -55,10 +54,12 @@ public class SysDictDataServiceImpl implements SysDictDataService {
 	private final SysDictDataConverter converter;
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void create(SysDictDataDTO dto) {
-		QueryCondition existsCondition = new QueryCondition();
-		existsCondition.setWhere(Map.of("dictType", Map.of(QueryOperator.EQ.getValue(), dto.getDictType()), "dictValue",
-				Map.of(QueryOperator.EQ.getValue(), dto.getDictValue())));
+		QueryCondition existsCondition = QueryCondition.builder()
+			.eq(SysDictData.Fields.dictType, dto.getDictType())
+			.eq(SysDictData.Fields.dictValue, dto.getDictValue())
+			.build();
 		if (this.repository.existsByDsl(existsCondition)) {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Dictionary Data");
 		}
@@ -68,6 +69,7 @@ public class SysDictDataServiceImpl implements SysDictDataService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void update(Long id, SysDictDataDTO dto) {
 		this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Dictionary Data"));
@@ -79,13 +81,14 @@ public class SysDictDataServiceImpl implements SysDictDataService {
 	}
 
 	@Override
-	public void deleteById(Long id) {
-		this.repository.deleteById(id);
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteByDsl(WhereCondition condition) {
+		this.repository.deleteByDsl(condition);
 	}
 
 	@Override
 	public PageResult<SysDictDataVO> queryByDsl(QueryCondition condition) {
-		if (condition.getSize() != null && condition.getSize() > 0) {
+		if (!ObjectUtils.isEmpty(condition.getSize())) {
 			return this.converter.toPageResult(this.repository.queryPageByDsl(condition));
 		}
 		else {
@@ -95,21 +98,20 @@ public class SysDictDataServiceImpl implements SysDictDataService {
 
 	@Override
 	public List<SysDictDataVO> getByDictType(String dictType) {
-		QueryCondition typeCondition = new QueryCondition();
-		typeCondition.setWhere(Map.of("dictType", Map.of(QueryOperator.EQ.getValue(), dictType), "status",
-				Map.of(QueryOperator.EQ.getValue(), Status.ENABLED.getCode())));
+		QueryCondition typeCondition = QueryCondition.builder()
+			.eq(SysDictType.Fields.dictType, dictType)
+			.eq(SysDictType.Fields.status, Status.ENABLED.getCode())
+			.build();
 		List<SysDictType> types = this.typeRepository.queryListByDsl(typeCondition);
 		if (types.isEmpty()) {
 			return List.of();
 		}
 
-		QueryCondition dataCondition = new QueryCondition();
-		dataCondition.setWhere(Map.of("dictType", Map.of(QueryOperator.EQ.getValue(), dictType), "status",
-				Map.of(QueryOperator.EQ.getValue(), Status.ENABLED.getCode())));
-		OrderByCondition orderBy = new OrderByCondition();
-		orderBy.setField("sortOrder");
-		orderBy.setDirection(SortDirection.ASC.getValue());
-		dataCondition.setOrderBy(List.of(orderBy));
+		QueryCondition dataCondition = QueryCondition.builder()
+			.eq(SysDictData.Fields.dictType, dictType)
+			.eq(SysDictData.Fields.status, Status.ENABLED.getCode())
+			.orderByAsc(SysDictData.Fields.sortOrder)
+			.build();
 
 		List<SysDictData> dataList = this.repository.queryListByDsl(dataCondition);
 		return dataList.stream().map(this.converter::toVO).toList();

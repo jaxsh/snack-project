@@ -22,6 +22,7 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 
 /**
@@ -31,6 +32,7 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
  */
 @Getter
 @Setter
+@FieldNameConstants
 @TableName("sys_org_level_name")
 public class SysOrgLevelName extends BaseEntity implements Serializable {
 
@@ -51,5 +53,12 @@ public class SysOrgLevelName extends BaseEntity implements Serializable {
 	 * 层级名称 (如 集团, 分公司, 部门).
 	 */
 	private String levelName;
+
+	/**
+	 * 字段名常量, 继承父类字段.
+	 */
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

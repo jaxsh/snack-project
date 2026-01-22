@@ -5,12 +5,18 @@ plugins {
 
 dependencies {
 	api project(':snack-module:snack-upms:snack-upms-api')
+	api project(':snack-module:snack-oauth:snack-oauth-api')
 
 	implementation project(':snack-framework:snack-web-spring-boot-starter')
 	implementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')
+	implementation project(':snack-framework:snack-mdc-spring-boot-starter')
 	implementation project(':snack-framework:snack-excel-spring-boot-starter')
 	implementation project(':snack-framework:snack-utils')
+	implementation project(':snack-framework:snack-oauth2-client-spring-boot-starter')
 
+//	implementation 'org.zalando:logbook-spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-quartz'
 	implementation 'org.mapstruct:mapstruct'
+
 	annotationProcessor 'org.mapstruct:mapstruct-processor'
 }

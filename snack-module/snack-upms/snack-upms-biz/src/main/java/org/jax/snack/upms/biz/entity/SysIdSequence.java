@@ -21,8 +21,10 @@ import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 
 /**
  * ID 序列号表.
@@ -33,6 +35,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@FieldNameConstants
+@TableName("sys_id_sequence")
 public class SysIdSequence implements Serializable {
 
 	@Serial

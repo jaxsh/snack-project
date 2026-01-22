@@ -16,14 +16,7 @@
 
 package org.jax.snack.upms.biz.repository.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
-import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.mybatisplus.query.QueryWrapperBuilder;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.upms.biz.entity.SysIdRule;
 import org.jax.snack.upms.biz.mapper.SysIdRuleMapper;
 import org.jax.snack.upms.biz.repository.SysIdRuleRepository;
@@ -36,49 +29,7 @@ import org.springframework.stereotype.Repository;
  * @author Jax Jiang
  */
 @Repository
-@RequiredArgsConstructor
-public class SysIdRuleRepositoryImpl implements SysIdRuleRepository {
-
-	private final SysIdRuleMapper mapper;
-
-	@Override
-	public boolean existsByDsl(QueryCondition condition) {
-		QueryWrapper<SysIdRule> wrapper = QueryWrapperBuilder.build(condition, SysIdRule.class);
-		return this.mapper.exists(wrapper);
-	}
-
-	@Override
-	public void save(SysIdRule entity) {
-		this.mapper.insert(entity);
-	}
-
-	@Override
-	public Optional<SysIdRule> findById(Long id) {
-		return Optional.ofNullable(this.mapper.selectById(id));
-	}
-
-	@Override
-	public void update(SysIdRule entity) {
-		this.mapper.updateById(entity);
-	}
-
-	@Override
-	public void deleteById(Long id) {
-		this.mapper.deleteById(id);
-	}
-
-	@Override
-	public Page<SysIdRule> queryPageByDsl(QueryCondition condition) {
-		QueryWrapper<SysIdRule> wrapper = QueryWrapperBuilder.build(condition, SysIdRule.class);
-		long current = (condition.getCurrent() != null) ? condition.getCurrent() : 1L;
-		Page<SysIdRule> page = new Page<>(current, condition.getSize());
-		return this.mapper.selectPage(page, wrapper);
-	}
-
-	@Override
-	public List<SysIdRule> queryListByDsl(QueryCondition condition) {
-		QueryWrapper<SysIdRule> wrapper = QueryWrapperBuilder.build(condition, SysIdRule.class);
-		return this.mapper.selectList(wrapper);
-	}
+public class SysIdRuleRepositoryImpl extends AbstractRepository<SysIdRule, Long, SysIdRuleMapper>
+		implements SysIdRuleRepository {
 
 }

@@ -2,19 +2,29 @@ spring:
   profiles:
     active: upms,${ENV:dev}
   application:
-    name: upms-server
+    name: snack-upms-server
+  main:
+    allow-bean-definition-overriding: true
   docker:
     compose:
       lifecycle-management: start-and-stop
-      file: compose.yml
+      file: ../../../compose.yml
       skip:
         in-tests: false
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/changelog/root.yaml
 
 server:
   port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      cookie:
+        name: UPMS_SESSION
 
 logging:
   file:
     name: logs/${spring.application.name}.log
+    level:
+      org.springframework.security: DEBUG
+      org.springframework.security.authentication: TRACE
+      org.springframework.security.crypto: DEBUG

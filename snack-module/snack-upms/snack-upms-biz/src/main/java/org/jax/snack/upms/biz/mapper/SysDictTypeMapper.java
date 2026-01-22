@@ -17,7 +17,6 @@
 package org.jax.snack.upms.biz.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 import org.jax.snack.upms.biz.entity.SysDictType;
 
 /**
@@ -27,7 +26,6 @@ import org.jax.snack.upms.biz.entity.SysDictType;
  *
  * @author Jax Jiang
  */
-@Mapper
 public interface SysDictTypeMapper extends BaseMapper<SysDictType> {
 
 }

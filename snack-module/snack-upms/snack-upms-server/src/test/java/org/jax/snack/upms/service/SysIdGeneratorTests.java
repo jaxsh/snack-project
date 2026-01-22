@@ -21,17 +21,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysIdRuleDTO;
 import org.jax.snack.upms.api.dto.SysIdRuleSegmentDTO;
+import org.jax.snack.upms.api.enums.ResetCycle;
+import org.jax.snack.upms.api.enums.SegmentType;
 import org.jax.snack.upms.api.service.SysIdRuleService;
-import org.jax.snack.upms.biz.enums.ResetCycle;
-import org.jax.snack.upms.biz.enums.SegmentType;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,15 +38,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Jax Jiang
  */
-@SpringBootTest
-@Transactional
-class SysIdGeneratorTests {
+class SysIdGeneratorTests extends UpmsIntegrationTests {
 
 	@Autowired
 	private SysIdRuleService sysIdRuleService;
 
 	@Test
-	@DisplayName("测试完整 ID 生成: 前缀 + 日期 + 序列号")
 	void shouldGenerateFullId() {
 		String code = "FULL_ID_TEST";
 		SysIdRuleDTO dto = new SysIdRuleDTO();
@@ -57,7 +52,7 @@ class SysIdGeneratorTests {
 		dto.setResetCycle(ResetCycle.DAILY.name());
 
 		SysIdRuleSegmentDTO seg1 = createFixedSegment("SNACK-");
-		SysIdRuleSegmentDTO seg2 = createDateSegment("yyyyMMdd");
+		SysIdRuleSegmentDTO seg2 = createDateSegment();
 		SysIdRuleSegmentDTO seg3 = createFixedSegment("-");
 		SysIdRuleSegmentDTO seg4 = createSequenceSegment(4);
 
@@ -74,7 +69,6 @@ class SysIdGeneratorTests {
 	}
 
 	@Test
-	@DisplayName("测试参数注入 (Arg)")
 	void shouldInjectArgs() {
 		String code = "ARG_TEST";
 		SysIdRuleDTO dto = new SysIdRuleDTO();
@@ -83,7 +77,7 @@ class SysIdGeneratorTests {
 		dto.setResetCycle(ResetCycle.NEVER.name());
 
 		SysIdRuleSegmentDTO seg1 = createFixedSegment("ORD-");
-		SysIdRuleSegmentDTO seg2 = createArgSegment("shopId");
+		SysIdRuleSegmentDTO seg2 = createArgSegment();
 		SysIdRuleSegmentDTO seg3 = createSequenceSegment(3);
 
 		dto.setSegments(List.of(seg1, seg2, seg3));
@@ -97,7 +91,6 @@ class SysIdGeneratorTests {
 	}
 
 	@Test
-	@DisplayName("测试随机串 (Random)")
 	void shouldGenerateRandom() {
 		String code = "RANDOM_TEST";
 		SysIdRuleDTO dto = new SysIdRuleDTO();
@@ -105,7 +98,7 @@ class SysIdGeneratorTests {
 		dto.setRuleName("随机测试");
 		dto.setResetCycle(ResetCycle.NEVER.name());
 
-		SysIdRuleSegmentDTO seg1 = createRandomSegment(6, "numeric");
+		SysIdRuleSegmentDTO seg1 = createRandomSegment();
 
 		dto.setSegments(List.of(seg1));
 		this.sysIdRuleService.create(dto);
@@ -128,24 +121,24 @@ class SysIdGeneratorTests {
 		return seg;
 	}
 
-	private SysIdRuleSegmentDTO createArgSegment(String key) {
+	private SysIdRuleSegmentDTO createArgSegment() {
 		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
 		seg.setSegmentType(SegmentType.ARG.name());
-		seg.setConfig(Map.of("key", key));
+		seg.setConfig(Map.of("key", "shopId"));
 		return seg;
 	}
 
-	private SysIdRuleSegmentDTO createDateSegment(String pattern) {
+	private SysIdRuleSegmentDTO createDateSegment() {
 		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
 		seg.setSegmentType(SegmentType.DATE.name());
-		seg.setConfig(Map.of("pattern", pattern));
+		seg.setConfig(Map.of("pattern", "yyyyMMdd"));
 		return seg;
 	}
 
-	private SysIdRuleSegmentDTO createRandomSegment(int length, String type) {
+	private SysIdRuleSegmentDTO createRandomSegment() {
 		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
 		seg.setSegmentType(SegmentType.RANDOM.name());
-		seg.setConfig(Map.of("length", length, "type", type));
+		seg.setConfig(Map.of("length", 6, "type", "numeric"));
 		return seg;
 	}
 

@@ -18,13 +18,12 @@ package org.jax.snack.upms.biz.service.impl;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
@@ -44,6 +43,7 @@ import org.jax.snack.upms.biz.repository.SysOrgRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -56,8 +56,6 @@ import org.springframework.util.StringUtils;
 public class SysOrgServiceImpl implements SysOrgService {
 
 	private static final String ANCESTORS_SEPARATOR = ",";
-
-	private static final String ORG_CODE_RULE = "org_code";
 
 	private final SysOrgRepository repository;
 
@@ -72,7 +70,7 @@ public class SysOrgServiceImpl implements SysOrgService {
 	public void create(SysOrgDTO dto) {
 		SysOrg entity = this.converter.toEntity(dto);
 
-		String orgCode = this.idRuleService.generate(ORG_CODE_RULE);
+		String orgCode = this.idRuleService.generate("org_code");
 		entity.setOrgCode(orgCode);
 
 		if (!StringUtils.hasText(dto.getParentCode())) {
@@ -121,7 +119,10 @@ public class SysOrgServiceImpl implements SysOrgService {
 
 		if (Status.DISABLED.getCode().equals(dto.getStatus())) {
 			String ancestorsPrefix = buildAncestorsPrefix(current);
-			this.repository.batchUpdateDescendantsStatus(ancestorsPrefix, Status.DISABLED.getCode());
+			WhereCondition where = WhereCondition.builder().likeRight(SysOrg.Fields.ancestors, ancestorsPrefix).build();
+			SysOrg updateParams = new SysOrg();
+			updateParams.setStatus(Status.DISABLED.getCode());
+			this.repository.updateByDsl(updateParams, where);
 		}
 
 		this.repository.update(entity);
@@ -129,22 +130,24 @@ public class SysOrgServiceImpl implements SysOrgService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteById(Long id) {
-		SysOrg entity = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Organization"));
+	public void deleteByDsl(WhereCondition condition) {
+		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
+		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {
+			String ancestorsPrefix = buildAncestorsPrefix(entity);
+			List<Long> descendantIds = findDescendantIds(ancestorsPrefix);
 
-		String ancestorsPrefix = buildAncestorsPrefix(entity);
-		List<Long> descendantIds = findDescendantIds(ancestorsPrefix);
+			if (!CollectionUtils.isEmpty(descendantIds)) {
+				WhereCondition where = WhereCondition.builder().in(SysOrg.Fields.id, descendantIds).build();
+				this.repository.deleteByDsl(where);
+			}
+		});
 
-		if (!CollectionUtils.isEmpty(descendantIds)) {
-			this.repository.deleteByIds(descendantIds);
-		}
-		this.repository.deleteById(id);
+		this.repository.deleteByDsl(condition);
 	}
 
 	@Override
 	public PageResult<SysOrgVO> queryByDsl(QueryCondition condition) {
-		if (condition.getSize() != null && condition.getSize() > 0) {
+		if (!ObjectUtils.isEmpty(condition.getSize())) {
 			return this.converter.toPageResult(this.repository.queryPageByDsl(condition));
 		}
 		else {
@@ -177,20 +180,17 @@ public class SysOrgServiceImpl implements SysOrgService {
 	}
 
 	private Optional<SysOrg> findByOrgCode(String orgCode) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("orgCode", Map.of(QueryOperator.EQ.getValue(), orgCode)));
+		QueryCondition condition = QueryCondition.builder().eq(SysOrg.Fields.orgCode, orgCode).build();
 		List<SysOrg> result = this.repository.queryListByDsl(condition);
 		return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}
 
 	private List<SysOrg> findAll() {
-		QueryCondition condition = new QueryCondition();
-		return this.repository.queryListByDsl(condition);
+		return this.repository.queryListByDsl(QueryCondition.builder().build());
 	}
 
 	private List<SysOrg> findByAncestorsPrefix(String ancestorsPrefix) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("ancestors", Map.of(QueryOperator.LIKE_RIGHT.getValue(), ancestorsPrefix)));
+		QueryCondition condition = QueryCondition.builder().likeRight(SysOrg.Fields.ancestors, ancestorsPrefix).build();
 		return this.repository.queryListByDsl(condition);
 	}
 
@@ -201,19 +201,19 @@ public class SysOrgServiceImpl implements SysOrgService {
 	private SysOrgVO toVoWithLevelName(SysOrg entity) {
 		SysOrgVO vo = this.converter.toVO(entity);
 
-		String rootOrgCode = getRootOrgCode(entity);
-		if (rootOrgCode != null) {
-			findByOrgCode(rootOrgCode).flatMap((root) -> findLevelName(root.getId(), entity.getLevel()))
-				.ifPresent((levelName) -> vo.setLevelName(levelName.getLevelName()));
-		}
+		Optional.ofNullable(getRootOrgCode(entity))
+			.flatMap(this::findByOrgCode)
+			.flatMap((root) -> findLevelName(root.getId(), entity.getLevel()))
+			.ifPresent((levelName) -> vo.setLevelName(levelName.getLevelName()));
 
 		return vo;
 	}
 
 	private Optional<SysOrgLevelName> findLevelName(Long rootId, Integer level) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("rootId", Map.of(QueryOperator.EQ.getValue(), rootId), "level",
-				Map.of(QueryOperator.EQ.getValue(), level)));
+		QueryCondition condition = QueryCondition.builder()
+			.eq(SysOrgLevelName.Fields.rootId, rootId)
+			.eq(SysOrgLevelName.Fields.level, level)
+			.build();
 		List<SysOrgLevelName> result = this.levelNameRepository.queryListByDsl(condition);
 		return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}

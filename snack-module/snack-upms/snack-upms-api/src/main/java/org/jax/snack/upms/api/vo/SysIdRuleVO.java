@@ -57,6 +57,11 @@ public class SysIdRuleVO {
 	private String resetCycle;
 
 	/**
+	 * 序列号重置周期标签.
+	 */
+	private String resetCycleLabel;
+
+	/**
 	 * 片段列表.
 	 */
 	private List<SysIdRuleSegmentVO> segments;

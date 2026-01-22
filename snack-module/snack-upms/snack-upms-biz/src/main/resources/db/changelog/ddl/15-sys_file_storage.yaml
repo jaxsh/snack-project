@@ -1,0 +1,67 @@
+# sys_file_storage 物理文件存储表
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_file_storage
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_file_storage
+            remarks: 物理文件存储表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: hash
+                  type: varchar(64)
+                  remarks: 文件SHA-256哈希
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_size
+                  type: bigint
+                  remarks: 文件大小 (bytes)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: storage_path
+                  type: varchar(255)
+                  remarks: 物理存储路径
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content_type
+                  type: varchar(100)
+                  remarks: MIME类型
+              - column:
+                  name: extension
+                  type: varchar(20)
+                  remarks: 文件扩展名
+
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - addUniqueConstraint:
+            tableName: sys_file_storage
+            columnNames: hash
+            constraintName: uk_file_storage_hash
+

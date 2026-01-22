@@ -20,25 +20,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.framework.core.api.query.QueryOperator;
 import org.jax.snack.framework.core.api.result.PageResult;
-import org.jax.snack.framework.webtest.MockMvcTestSupport;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
+import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysIdRuleDTO;
 import org.jax.snack.upms.api.dto.SysIdRuleSegmentDTO;
+import org.jax.snack.upms.api.enums.ResetCycle;
+import org.jax.snack.upms.api.enums.SegmentType;
 import org.jax.snack.upms.api.service.SysIdRuleService;
 import org.jax.snack.upms.api.vo.SysIdRuleVO;
-import org.jax.snack.upms.biz.enums.ResetCycle;
-import org.jax.snack.upms.biz.enums.SegmentType;
-import org.junit.jupiter.api.DisplayName;
+import org.jax.snack.upms.biz.entity.SysIdRule;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -49,10 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author Jax Jiang
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
-@Transactional
-class SysIdRuleControllerTests extends MockMvcTestSupport {
+class SysIdRuleControllerTests extends UpmsIntegrationTests {
 
 	private static final String API_ID_RULES = "/api/upms/id-rules";
 
@@ -60,12 +53,13 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 
 	private static final String API_ID_RULES_ID = "/api/upms/id-rules/{id}";
 
+	private static final String API_ID_RULES_IDS = "/api/upms/id-rules/{ids}";
+
 	@Autowired
 	private SysIdRuleService sysIdRuleService;
 
 	private SysIdRuleVO queryByRuleCode(String ruleCode) {
-		QueryCondition condition = new QueryCondition();
-		condition.setWhere(Map.of("ruleCode", Map.of(QueryOperator.EQ.getValue(), ruleCode)));
+		QueryCondition condition = QueryCondition.builder().eq(SysIdRule.Fields.ruleCode, ruleCode).build();
 		PageResult<SysIdRuleVO> result = this.sysIdRuleService.queryByDsl(condition);
 		if (result.getRecords().isEmpty()) {
 			throw new IllegalStateException("Rule not found: " + ruleCode);
@@ -87,19 +81,17 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 		return seg;
 	}
 
-	private SysIdRuleSegmentDTO createArgSegment(String key) {
+	private SysIdRuleSegmentDTO createArgSegment() {
 		SysIdRuleSegmentDTO seg = new SysIdRuleSegmentDTO();
 		seg.setSegmentType(SegmentType.ARG.name());
-		seg.setConfig(Map.of("key", key));
+		seg.setConfig(Map.of("key", "shortName"));
 		return seg;
 	}
 
 	@Nested
-	@DisplayName("规则 CRUD 测试")
 	class CrudTests {
 
 		@Test
-		@DisplayName("创建并查询规则")
 		void shouldCreateAndQuery() throws Exception {
 			SysIdRuleDTO dto = new SysIdRuleDTO();
 			dto.setRuleCode("TEST_ORDER_NO");
@@ -115,8 +107,7 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
-			QueryCondition condition = new QueryCondition();
-			condition.setWhere(Map.of("ruleCode", Map.of(QueryOperator.EQ.getValue(), "TEST_ORDER_NO")));
+			QueryCondition condition = QueryCondition.builder().eq(SysIdRule.Fields.ruleCode, "TEST_ORDER_NO").build();
 
 			postJson(API_ID_RULES_QUERY, condition).andDo(print())
 				.andExpect(status().isOk())
@@ -127,7 +118,6 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 		}
 
 		@Test
-		@DisplayName("更新规则")
 		void shouldUpdateRule() throws Exception {
 			SysIdRuleDTO createDto = new SysIdRuleDTO();
 			createDto.setRuleCode("UPDATE_TEST");
@@ -156,7 +146,6 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 		}
 
 		@Test
-		@DisplayName("按 ID 查询规则")
 		void shouldReturnRuleById() throws Exception {
 			SysIdRuleDTO dto = new SysIdRuleDTO();
 			dto.setRuleCode("GET_BY_ID_TEST");
@@ -177,7 +166,6 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 		}
 
 		@Test
-		@DisplayName("删除规则")
 		void shouldDeleteRule() throws Exception {
 			SysIdRuleDTO dto = new SysIdRuleDTO();
 			dto.setRuleCode("DELETE_TEST");
@@ -190,23 +178,20 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 			postJson(API_ID_RULES, dto).andExpect(status().isOk());
 			Long id = queryByRuleCode("DELETE_TEST").getId();
 
-			deleteJson(API_ID_RULES_ID, id).andDo(print())
+			deleteJson(API_ID_RULES_IDS, id).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
-			QueryCondition condition = new QueryCondition();
-			condition.setWhere(Map.of("ruleCode", Map.of(QueryOperator.EQ.getValue(), "DELETE_TEST")));
+			QueryCondition condition = QueryCondition.builder().eq(SysIdRule.Fields.ruleCode, "DELETE_TEST").build();
 			assertThat(SysIdRuleControllerTests.this.sysIdRuleService.queryByDsl(condition).getRecords()).isEmpty();
 		}
 
 	}
 
 	@Nested
-	@DisplayName("ID 生成测试")
 	class GenerateTests {
 
 		@Test
-		@DisplayName("按 shortName 分组生成独立序号")
 		void shouldGenerateSequenceGroupedByShortName() {
 			SysIdRuleDTO dto = new SysIdRuleDTO();
 			dto.setRuleCode("shortname_test");
@@ -214,7 +199,7 @@ class SysIdRuleControllerTests extends MockMvcTestSupport {
 			dto.setResetCycle(ResetCycle.NEVER.name());
 
 			SysIdRuleSegmentDTO seg1 = createFixedSegment("ORG-");
-			SysIdRuleSegmentDTO seg2 = createArgSegment("shortName");
+			SysIdRuleSegmentDTO seg2 = createArgSegment();
 			SysIdRuleSegmentDTO seg3 = createFixedSegment("-");
 			SysIdRuleSegmentDTO seg4 = createSequenceSegment(5);
 

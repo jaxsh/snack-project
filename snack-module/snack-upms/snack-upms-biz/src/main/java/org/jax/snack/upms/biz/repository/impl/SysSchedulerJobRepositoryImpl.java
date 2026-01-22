@@ -14,49 +14,22 @@
  * limitations under the License.
  */
 
-package org.jax.snack.upms.biz.enums;
+package org.jax.snack.upms.biz.repository.impl;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
+import org.jax.snack.upms.biz.entity.SysSchedulerJob;
+import org.jax.snack.upms.biz.mapper.SysSchedulerJobMapper;
+import org.jax.snack.upms.biz.repository.SysSchedulerJobRepository;
+
+import org.springframework.stereotype.Repository;
 
 /**
- * 片段类型枚举.
+ * 定时任务仓储实现.
  *
  * @author Jax Jiang
  */
-@Getter
-@RequiredArgsConstructor
-public enum SegmentType {
-
-	/**
-	 * 固定字符串.
-	 */
-	FIXED("FIXED"),
-
-	/**
-	 * 日期时间.
-	 */
-	DATE("DATE"),
-
-	/**
-	 * 序列号.
-	 */
-	SEQUENCE("SEQUENCE"),
-
-	/**
-	 * 随机字符串.
-	 */
-	RANDOM("RANDOM"),
-
-	/**
-	 * 动态参数.
-	 */
-	ARG("ARG");
-
-	@EnumValue
-	@JsonValue
-	private final String value;
+@Repository
+public class SysSchedulerJobRepositoryImpl extends AbstractRepository<SysSchedulerJob, Long, SysSchedulerJobMapper>
+		implements SysSchedulerJobRepository {
 
 }

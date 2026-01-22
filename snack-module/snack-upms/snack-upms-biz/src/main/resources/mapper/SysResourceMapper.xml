@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jax.snack.upms.biz.mapper.SysResourceMapper">
+
+    <select id="selectResourcesByUsername" resultType="org.jax.snack.upms.biz.entity.SysResource">
+        SELECT DISTINCT res.*
+        FROM sys_resource res
+                 JOIN sys_role_resource rr ON res.id = rr.resource_id
+                 JOIN sys_user_role ur ON rr.role_code = ur.role_code
+                 JOIN sys_role role ON ur.role_code = role.role_code AND role.status = 1
+        WHERE ur.username = #{username}
+          AND res.status = 1
+    </select>
+
+    <select id="selectResourcesByRoleCode" resultType="org.jax.snack.upms.biz.entity.SysResource">
+        SELECT res.*
+        FROM sys_resource res
+                 JOIN sys_role_resource rr ON res.id = rr.resource_id
+        WHERE rr.role_code = #{roleCode}
+          AND res.status = 1
+    </select>
+
+</mapper>
