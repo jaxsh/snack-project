@@ -85,8 +85,6 @@ public abstract class BaseEntity {
 	 */
 	public static class Fields {
 
-		// Lombok 会自动填充: id, createTime, createBy, updateTime, updateBy
-
 	}
 
 }
