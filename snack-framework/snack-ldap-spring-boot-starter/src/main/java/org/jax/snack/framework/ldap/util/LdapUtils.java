@@ -107,7 +107,6 @@ public final class LdapUtils {
 		}
 
 		long secondsSinceUnixEpoch = zonedDateTime.toEpochSecond();
-		// 将纳秒部分转换为100纳秒单位
 		long hundredNanosOfSecond = zonedDateTime.getNano() / 100;
 
 		long hundredNanosSinceUnixEpoch = (secondsSinceUnixEpoch * HUNDRED_NANOS_PER_SECOND) + hundredNanosOfSecond;
