@@ -16,12 +16,17 @@
 
 package org.jax.snack.oauth.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
 import org.jax.snack.oauth.api.vo.OAuth2UserVO;
 import org.jax.snack.oauth.biz.entity.OAuth2User;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * OAuth2 用户转换器.
@@ -30,5 +35,21 @@ import org.mapstruct.Mapper;
  */
 @Mapper(config = BaseMapStructConfig.class)
 public interface OAuth2UserConverter extends BaseDtoConvert<OAuth2UserDTO, OAuth2User, OAuth2UserVO> {
+
+	@AfterMapping
+	default void afterToVO(OAuth2User entity, @MappingTarget OAuth2UserVO vo) {
+		if (entity.getEnabled() != null) {
+			vo.setEnabledLabel(BaseEnum.getNameByCode(Status.class, entity.getEnabled()));
+		}
+		if (entity.getLocked() != null) {
+			vo.setLockedLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getLocked()));
+		}
+		if (entity.getExpired() != null) {
+			vo.setExpiredLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getExpired()));
+		}
+		if (entity.getInitialPassword() != null) {
+			vo.setInitialPasswordLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getInitialPassword()));
+		}
+	}
 
 }

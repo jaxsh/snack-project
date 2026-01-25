@@ -47,18 +47,18 @@ public class OAuth2RegisteredClient implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 主键 ID.
+	 * 主键ID.
 	 */
 	@TableId(type = IdType.ASSIGN_UUID)
 	private String id;
 
 	/**
-	 * 客户端 ID.
+	 * 客户端ID.
 	 */
 	private String clientId;
 
 	/**
-	 * 客户端 ID 发行时间.
+	 * 客户端ID发行时间.
 	 */
 	private Instant clientIdIssuedAt;
 
@@ -78,27 +78,27 @@ public class OAuth2RegisteredClient implements Serializable {
 	private String clientName;
 
 	/**
-	 * 客户端认证方法 (逗号分隔).
+	 * 客户端认证方法(逗号分隔).
 	 */
 	private String clientAuthenticationMethods;
 
 	/**
-	 * 授权类型 (逗号分隔).
+	 * 授权类型(逗号分隔).
 	 */
 	private String authorizationGrantTypes;
 
 	/**
-	 * 重定向 URI (逗号分隔).
+	 * 重定向URI(逗号分隔).
 	 */
 	private String redirectUris;
 
 	/**
-	 * 退出登录重定向 URI (逗号分隔).
+	 * 退出登录重定向URI(逗号分隔).
 	 */
 	private String postLogoutRedirectUris;
 
 	/**
-	 * 权限范围 (逗号分隔).
+	 * 权限范围(逗号分隔).
 	 */
 	private String scopes;
 
@@ -114,32 +114,24 @@ public class OAuth2RegisteredClient implements Serializable {
 
 	/**
 	 * 创建时间.
-	 * <p>
-	 * 插入时自动填充.
 	 */
 	@TableField(fill = FieldFill.INSERT)
 	private ZonedDateTime createTime;
 
 	/**
 	 * 创建人.
-	 * <p>
-	 * 插入时自动填充.
 	 */
 	@TableField(fill = FieldFill.INSERT)
 	private String createBy;
 
 	/**
 	 * 更新时间.
-	 * <p>
-	 * 插入和更新时自动填充.
 	 */
 	@TableField(fill = FieldFill.INSERT_UPDATE)
 	private ZonedDateTime updateTime;
 
 	/**
 	 * 更新人.
-	 * <p>
-	 * 插入和更新时自动填充.
 	 */
 	@TableField(fill = FieldFill.INSERT_UPDATE)
 	private String updateBy;

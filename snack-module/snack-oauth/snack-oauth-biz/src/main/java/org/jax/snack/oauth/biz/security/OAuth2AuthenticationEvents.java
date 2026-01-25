@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.biz.entity.OAuth2User;
 import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
@@ -117,7 +118,7 @@ public class OAuth2AuthenticationEvents {
 		int lockCount = (user.getLockCount() != null) ? user.getLockCount() + 1 : 1;
 		ZonedDateTime lockUntil = calculateLockUntil(lockCount);
 
-		user.setLocked(true);
+		user.setLocked(YesNoStatus.YES.getCode());
 		user.setLockCount(lockCount);
 		user.setLockUntil(lockUntil);
 
@@ -161,7 +162,7 @@ public class OAuth2AuthenticationEvents {
 		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.username, username).build();
 
 		Map<String, Object> setData = new HashMap<>();
-		setData.put(OAuth2User.Fields.locked, false);
+		setData.put(OAuth2User.Fields.locked, YesNoStatus.NO.getCode());
 		setData.put(OAuth2User.Fields.lockCount, 0);
 		setData.put(OAuth2User.Fields.lockUntil, null);
 		this.userRepository.updateByDsl(setData, where);

@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
@@ -40,10 +42,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncodingContext> {
 
-	private static final String SCOPE_PRE_AUTH_RESET = "pre_auth_reset";
-
-	private static final String ROLE_PASSWORD_CHANGE_REQUIRED = "ROLE_PASSWORD_CHANGE_REQUIRED";
-
 	private static final int RESTRICTED_TOKEN_TTL_MINUTES = 5;
 
 	@Override
@@ -53,7 +51,7 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 		}
 
 		if (requiresPasswordChange(context.getPrincipal())) {
-			context.getClaims().claim("scope", new HashSet<>(Set.of(SCOPE_PRE_AUTH_RESET)));
+			context.getClaims().claim("scope", new HashSet<>(Set.of(OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)));
 			context.getClaims().claim("authorities", Collections.emptyList());
 			context.getClaims().expiresAt(Instant.now().plus(RESTRICTED_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
 		}
@@ -68,7 +66,7 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 		return principal.getAuthorities()
 			.stream()
 			.map(GrantedAuthority::getAuthority)
-			.anyMatch(ROLE_PASSWORD_CHANGE_REQUIRED::equals);
+			.anyMatch((OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)::equals);
 	}
 
 	private boolean isAccessTokenOrIdToken(JwtEncodingContext context) {

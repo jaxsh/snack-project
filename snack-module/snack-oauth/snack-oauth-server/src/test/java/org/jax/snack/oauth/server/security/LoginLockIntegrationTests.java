@@ -19,6 +19,8 @@ package org.jax.snack.oauth.server.security;
 import java.time.ZonedDateTime;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.biz.entity.OAuth2User;
 import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
@@ -66,8 +68,8 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 		OAuth2User user = new OAuth2User();
 		user.setUsername(username);
 		user.setPassword(this.passwordEncoder.encode(password));
-		user.setEnabled(true);
-		user.setLocked(false);
+		user.setEnabled(Status.ENABLED.getCode());
+		user.setLocked(YesNoStatus.NO.getCode());
 		user.setLockCount(0);
 		this.userRepository.save(user);
 		return user;
@@ -125,7 +127,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 				.andExpect(unauthenticated());
 
 			OAuth2User user = findByUsername(username);
-			assertThat(user.getLocked()).isTrue();
+			assertThat(user.getLocked()).isEqualTo(YesNoStatus.YES.getCode());
 			assertThat(user.getLockCount()).isEqualTo(1);
 		}
 
@@ -197,7 +199,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 				.andExpect(authenticated());
 
 			OAuth2User userAfter = findByUsername(username);
-			assertThat(userAfter.getLocked()).isFalse();
+			assertThat(userAfter.getLocked()).isEqualTo(YesNoStatus.NO.getCode());
 			assertThat(userAfter.getLockCount()).isZero();
 			assertThat(userAfter.getUpdateTime()).isEqualTo(originalUpdateTime);
 		}
@@ -207,7 +209,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 			String username = "lockedexpiry_" + System.currentTimeMillis();
 			String password = "lockedpwd";
 			OAuth2User user = createTestUser(username, password);
-			user.setLocked(true);
+			user.setLocked(YesNoStatus.YES.getCode());
 			user.setLockCount(2);
 			user.setLockUntil(ZonedDateTime.now().minusMinutes(1));
 			LoginLockIntegrationTests.this.userRepository.update(user);
@@ -216,7 +218,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 				.andExpect(authenticated());
 
 			user = findByUsername(username);
-			assertThat(user.getLocked()).isFalse();
+			assertThat(user.getLocked()).isEqualTo(YesNoStatus.NO.getCode());
 			assertThat(user.getLockCount()).isZero();
 		}
 
@@ -225,7 +227,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 			String username = "permlocked_" + System.currentTimeMillis();
 			String password = "permpwd";
 			OAuth2User user = createTestUser(username, password);
-			user.setLocked(true);
+			user.setLocked(YesNoStatus.YES.getCode());
 			user.setLockCount(5);
 			user.setLockUntil(null);
 			LoginLockIntegrationTests.this.userRepository.update(user);
@@ -235,7 +237,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 				.andExpect(unauthenticated());
 
 			user = findByUsername(username);
-			assertThat(user.getLocked()).isTrue();
+			assertThat(user.getLocked()).isEqualTo(YesNoStatus.YES.getCode());
 		}
 
 	}
@@ -262,7 +264,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 			assertThat(LoginLockIntegrationTests.this.loginAttemptService.isLocked(username)).isFalse();
 
 			OAuth2User user = findByUsername(username);
-			assertThat(user.getLocked()).isFalse();
+			assertThat(user.getLocked()).isEqualTo(YesNoStatus.NO.getCode());
 			assertThat(user.getLockCount()).isZero();
 
 			LoginLockIntegrationTests.this.mockMvc.perform(formLogin().user(username).password(password))

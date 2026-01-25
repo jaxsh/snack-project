@@ -18,6 +18,8 @@ package org.jax.snack.oauth.server.security;
 
 import java.time.ZonedDateTime;
 
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
 import org.jax.snack.oauth.biz.entity.OAuth2User;
 import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
@@ -68,10 +70,10 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 		OAuth2User user = new OAuth2User();
 		user.setUsername(username);
 		user.setPassword(this.passwordEncoder.encode(password));
-		user.setEnabled(true);
-		user.setLocked(false);
+		user.setEnabled(Status.ENABLED.getCode());
+		user.setLocked(YesNoStatus.NO.getCode());
 		user.setLockCount(0);
-		user.setInitialPassword(initialPassword);
+		user.setInitialPassword(initialPassword ? YesNoStatus.YES.getCode() : YesNoStatus.NO.getCode());
 		user.setLastPasswordResetTime((lastResetTime != null) ? lastResetTime : ZonedDateTime.now());
 		this.userRepository.save(user);
 	}

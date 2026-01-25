@@ -21,6 +21,8 @@ import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
 import org.jax.snack.oauth.api.service.OAuth2UserService;
 import org.jax.snack.oauth.api.vo.OAuth2UserVO;
@@ -62,10 +64,10 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 
 		OAuth2User user = this.converter.toEntity(dto);
 		user.setPassword(this.passwordEncoder.encode(this.securityProperties.getDefaultPassword()));
-		user.setEnabled(true);
-		user.setLocked(false);
-		user.setExpired(false);
-		user.setInitialPassword(true);
+		user.setEnabled(Status.ENABLED.getCode());
+		user.setLocked(YesNoStatus.NO.getCode());
+		user.setExpired(Status.ENABLED.getCode());
+		user.setInitialPassword(YesNoStatus.YES.getCode());
 		user.setLastPasswordResetTime(ZonedDateTime.now());
 
 		this.userRepository.save(user);
@@ -86,9 +88,9 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 
 		if (StringUtils.hasText(dto.getPassword())) {
 			user.setPassword(this.passwordEncoder.encode(dto.getPassword()));
-			user.setInitialPassword(false);
+			user.setInitialPassword(YesNoStatus.NO.getCode());
 			user.setLastPasswordResetTime(ZonedDateTime.now());
-			user.setLocked(false);
+			user.setLocked(YesNoStatus.NO.getCode());
 		}
 
 		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.id, existing.getId()).build();

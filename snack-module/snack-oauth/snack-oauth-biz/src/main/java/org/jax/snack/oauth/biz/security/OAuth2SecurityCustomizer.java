@@ -16,11 +16,16 @@
 
 package org.jax.snack.oauth.biz.security;
 
+import java.util.List;
+
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,6 +39,13 @@ import org.springframework.stereotype.Component;
 @ConditionalOnClass(OAuth2ClientSecurityCustomizer.class)
 public class OAuth2SecurityCustomizer implements OAuth2ClientSecurityCustomizer {
 
+	private final List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies;
+
+	public OAuth2SecurityCustomizer(
+			ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> securityPoliciesProvider) {
+		this.securityPolicies = securityPoliciesProvider.orderedStream().toList();
+	}
+
 	@Override
 	public void customize(HttpSecurity http) {
 	}
@@ -41,7 +53,7 @@ public class OAuth2SecurityCustomizer implements OAuth2ClientSecurityCustomizer 
 	@Override
 	public void configureAuthorization(
 			AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize) {
-		OAuth2SecurityPolicy.configureAuthorization(authorize);
+		OAuth2SecurityPolicy.configureAuthorization(authorize, this.securityPolicies);
 	}
 
 }

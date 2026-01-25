@@ -1,7 +1,8 @@
+# 初始化 OAuth2 用户数据
 databaseChangeLog:
   - changeSet:
-      id: init_oauth2_user_data_final
-      author: Jax Jiang
+      id: insert-oauth2_user
+      author: oauth
       changes:
         - insert:
             tableName: oauth2_user
@@ -23,16 +24,13 @@ databaseChangeLog:
                   value: "admin@snack.org"
               - column:
                   name: enabled
-                  valueBoolean: true
+                  valueNumeric: 1
               - column:
                   name: locked
-                  valueBoolean: false
+                  valueNumeric: 0
               - column:
                   name: expired
-                  valueBoolean: false
+                  valueNumeric: 0
               - column:
                   name: initial_password
-                  valueBoolean: true
-              - column:
-                  name: deleted
-                  valueNumeric: 0
+                  valueNumeric: 1

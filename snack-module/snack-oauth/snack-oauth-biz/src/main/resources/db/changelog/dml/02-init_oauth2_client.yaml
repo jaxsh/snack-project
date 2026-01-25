@@ -2,7 +2,7 @@
 databaseChangeLog:
   - changeSet:
       id: insert-snack-upms-server
-      author: Jax Jiang
+      author: oauth
       comment: "Client ID: snack-upms-server, Secret: secret"
       changes:
         - insert:
@@ -55,7 +55,7 @@ databaseChangeLog:
                   value: system
   - changeSet:
       id: insert-snack-oauth-server
-      author: Jax Jiang
+      author: oauth
       comment: "Client ID: snack-oauth-server, Secret: secret"
       changes:
         - insert:

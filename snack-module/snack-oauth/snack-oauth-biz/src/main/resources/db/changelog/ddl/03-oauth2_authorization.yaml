@@ -1,8 +1,8 @@
-# oauth2_authorization 表结构
+# oauth2_authorization OAuth2 授权表
 databaseChangeLog:
   - changeSet:
       id: create-oauth2_authorization
-      author: Jax Jiang
+      author: oauth
       changes:
         - createTable:
             tableName: oauth2_authorization
@@ -11,14 +11,14 @@ databaseChangeLog:
               - column:
                   name: id
                   type: varchar(100)
-                  remarks: 主键 ID
+                  remarks: 主键ID
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
                   name: registered_client_id
                   type: varchar(100)
-                  remarks: 注册客户端 ID
+                  remarks: 注册客户端ID
                   constraints:
                     nullable: false
               - column:
@@ -88,19 +88,19 @@ databaseChangeLog:
               - column:
                   name: oidc_id_token_value
                   type: blob
-                  remarks: OIDC ID Token 值
+                  remarks: OIDC ID Token值
               - column:
                   name: oidc_id_token_issued_at
                   type: TIMESTAMP
-                  remarks: OIDC ID Token 发行时间
+                  remarks: OIDC ID Token发行时间
               - column:
                   name: oidc_id_token_expires_at
                   type: TIMESTAMP
-                  remarks: OIDC ID Token 过期时间
+                  remarks: OIDC ID Token过期时间
               - column:
                   name: oidc_id_token_metadata
                   type: blob
-                  remarks: OIDC ID Token 元数据
+                  remarks: OIDC ID Token元数据
               - column:
                   name: refresh_token_value
                   type: blob

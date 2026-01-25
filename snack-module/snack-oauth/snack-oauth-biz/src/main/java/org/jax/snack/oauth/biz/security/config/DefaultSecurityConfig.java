@@ -16,16 +16,21 @@
 
 package org.jax.snack.oauth.biz.security.config;
 
+import java.util.List;
+
 import org.jax.snack.oauth.biz.security.OAuth2SecurityPolicy;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -48,14 +53,20 @@ public class DefaultSecurityConfig {
 	 * <p>
 	 * 配置表单登录和基本的授权规则.
 	 * @param http HttpSecurity
+	 * @param securityPoliciesProvider AuthorizationManager provider
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(2)
-	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) {
+	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
+			ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> securityPoliciesProvider) {
+		List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies = securityPoliciesProvider
+			.orderedStream()
+			.toList();
+
 		http.authorizeHttpRequests((authorize) -> {
 			authorize.requestMatchers("/error", "/actuator/health").permitAll();
-			OAuth2SecurityPolicy.configureAuthorization(authorize);
+			OAuth2SecurityPolicy.configureAuthorization(authorize, securityPolicies);
 			authorize.anyRequest().authenticated();
 		})
 			.formLogin(Customizer.withDefaults())

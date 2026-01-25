@@ -16,12 +16,14 @@
 
 package org.jax.snack.oauth.biz.security;
 
-import java.util.Objects;
+import java.util.List;
 
-import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
 /**
  * OAuth2 安全策略.
@@ -32,32 +34,28 @@ import org.springframework.security.core.GrantedAuthority;
  */
 public final class OAuth2SecurityPolicy {
 
-	private static final String SCOPE_PRE_AUTH_RESET = "SCOPE_pre_auth_reset";
-
-	private static final String ROLE_PASSWORD_CHANGE_REQUIRED = "ROLE_PASSWORD_CHANGE_REQUIRED";
-
 	private OAuth2SecurityPolicy() {
 	}
 
 	/**
 	 * 配置授权规则.
 	 * @param authorize 授权匹配注册表
+	 * @param securityPolicies 动态搜寻到的安全策略列表
 	 */
 	public static void configureAuthorization(
-			AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize) {
-		authorize.requestMatchers("/api/oauth2/user/**")
-			.authenticated()
-			.requestMatchers("/api/**")
-			.access((authentication, context) -> {
-				var authorities = Objects.requireNonNull(authentication.get())
-					.getAuthorities()
-					.stream()
-					.map(GrantedAuthority::getAuthority)
-					.toList();
-				boolean requiresChange = authorities.contains(SCOPE_PRE_AUTH_RESET)
-						|| authorities.contains(ROLE_PASSWORD_CHANGE_REQUIRED);
-				return new AuthorizationDecision(!requiresChange);
-			});
+			AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize,
+			List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies) {
+		authorize.requestMatchers("/api/oauth2/user/**").authenticated();
+		authorize.requestMatchers("/api/**").access((authentication, context) -> {
+			for (AuthorizationManager<RequestAuthorizationContext> policy : securityPolicies) {
+				AuthorizationResult result = policy.authorize(authentication, context);
+				if (result != null && !result.isGranted()) {
+					return result;
+				}
+			}
+			return AuthenticatedAuthorizationManager.<RequestAuthorizationContext>authenticated()
+				.authorize(authentication, context);
+		});
 	}
 
 }

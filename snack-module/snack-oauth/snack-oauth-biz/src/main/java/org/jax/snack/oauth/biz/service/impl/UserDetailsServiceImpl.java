@@ -19,12 +19,16 @@ package org.jax.snack.oauth.biz.service.impl;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.biz.entity.OAuth2User;
 import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 import org.jspecify.annotations.NullMarked;
@@ -67,16 +71,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 		boolean accountLocked = isAccountLocked(user);
 
-		if (Boolean.TRUE.equals(user.getLocked())) {
+		if (Objects.equals(user.getLocked(), YesNoStatus.YES.getCode())) {
 			this.loginAttemptService.setLockStatus(username, user.getLockUntil());
 		}
 
 		return User.builder()
 			.username(user.getUsername())
 			.password(user.getPassword())
-			.disabled(!Boolean.TRUE.equals(user.getEnabled()))
+			.disabled(Objects.equals(user.getEnabled(), Status.DISABLED.getCode()))
 			.accountLocked(accountLocked)
-			.accountExpired(Boolean.TRUE.equals(user.getExpired()))
+			.accountExpired(Objects.equals(user.getExpired(), Status.DISABLED.getCode()))
 			.credentialsExpired(false)
 			.authorities(getAuthorities(user))
 			.build();
@@ -90,7 +94,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @return 是否锁定
 	 */
 	private boolean isAccountLocked(OAuth2User user) {
-		if (!Boolean.TRUE.equals(user.getLocked())) {
+		if (!Objects.equals(user.getLocked(), YesNoStatus.YES.getCode())) {
 			return false;
 		}
 
@@ -105,16 +109,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	/**
 	 * 获取用户权限列表.
 	 * <p>
-	 * 初始密码用户或密码过期用户只拥有 ROLE_PASSWORD_CHANGE_REQUIRED 权限.
+	 * 初始密码用户或密码过期用户只拥有 SCOPE_pre_auth_reset 权限.
 	 * @param user 用户实体
 	 * @return 集合
 	 */
 	private Collection<? extends GrantedAuthority> getAuthorities(OAuth2User user) {
 		boolean needsPasswordChange = isInitialPasswordUser(user) || isCredentialsExpired(user);
 		if (needsPasswordChange) {
-			return List.of(new SimpleGrantedAuthority("ROLE_PASSWORD_CHANGE_REQUIRED"));
+			return List.of(new SimpleGrantedAuthority(
+					OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE));
 		}
-		return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+		return List.of(new SimpleGrantedAuthority(OAuth2SecurityConstants.ROLE_USER));
 	}
 
 	/**
@@ -123,7 +128,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @return 是否为初始密码
 	 */
 	private boolean isInitialPasswordUser(OAuth2User user) {
-		return this.securityProperties.isForceChangeInitialPassword() && Boolean.TRUE.equals(user.getInitialPassword());
+		return this.securityProperties.isForceChangeInitialPassword()
+				&& Objects.equals(user.getInitialPassword(), YesNoStatus.YES.getCode());
 	}
 
 	/**

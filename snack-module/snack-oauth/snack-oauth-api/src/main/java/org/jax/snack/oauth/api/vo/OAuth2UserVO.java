@@ -51,9 +51,34 @@ public class OAuth2UserVO {
 	private String email;
 
 	/**
-	 * 是否启用.
+	 * 账户状态(0:禁用, 1:正常).
 	 */
-	private Boolean enabled;
+	private Integer enabled;
+
+	/**
+	 * 账户状态标签.
+	 */
+	private String enabledLabel;
+
+	/**
+	 * 锁定状态(0:正常, 1:锁定).
+	 */
+	private Integer locked;
+
+	/**
+	 * 锁定状态标签.
+	 */
+	private String lockedLabel;
+
+	/**
+	 * 过期状态(0:正常, 1:过期).
+	 */
+	private Integer expired;
+
+	/**
+	 * 过期状态标签.
+	 */
+	private String expiredLabel;
 
 	/**
 	 * 创建时间.
@@ -66,8 +91,13 @@ public class OAuth2UserVO {
 	private ZonedDateTime updateTime;
 
 	/**
-	 * 是否为初始密码.
+	 * 是否为初始密码(0:否, 1:是).
 	 */
-	private Boolean initialPassword;
+	private Integer initialPassword;
+
+	/**
+	 * 是否为初始密码标签.
+	 */
+	private String initialPasswordLabel;
 
 }

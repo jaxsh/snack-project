@@ -20,7 +20,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
@@ -64,29 +63,29 @@ public class OAuth2User extends BaseEntity implements Serializable {
 	private String email;
 
 	/**
-	 * 是否启用.
+	 * 账户状态(0:禁用, 1:正常).
 	 */
-	private Boolean enabled;
+	private Integer enabled;
 
 	/**
-	 * 是否锁定.
+	 * 锁定状态(0:正常, 1:锁定).
 	 */
-	private Boolean locked;
+	private Integer locked;
 
 	/**
-	 * 是否过期.
+	 * 过期状态(0:正常, 1:过期).
 	 */
-	private Boolean expired;
+	private Integer expired;
 
 	/**
-	 * 最后一次密码重置时间.
+	 * 上次改密时间.
 	 */
 	private ZonedDateTime lastPasswordResetTime;
 
 	/**
-	 * 是否为初始密码.
+	 * 是否初始密码(0:否, 1:是).
 	 */
-	private Boolean initialPassword;
+	private Integer initialPassword;
 
 	/**
 	 * 锁定截止时间.
@@ -100,15 +99,6 @@ public class OAuth2User extends BaseEntity implements Serializable {
 	 */
 	private Integer lockCount;
 
-	/**
-	 * 逻辑删除标识.
-	 */
-	@TableLogic
-	private Integer deleted;
-
-	/**
-	 * 字段名常量, 继承父类字段.
-	 */
 	public static final class Fields extends BaseEntity.Fields {
 
 	}

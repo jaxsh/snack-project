@@ -1,7 +1,8 @@
+# oauth2_user OAuth2 用户表
 databaseChangeLog:
   - changeSet:
-      id: init_oauth2_user_table_final
-      author: Jax Jiang
+      id: create-oauth2_user
+      author: oauth
       changes:
         - createTable:
             tableName: oauth2_user
@@ -13,50 +14,50 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
                     nullable: false
-                  remarks: "主键ID"
+                  remarks: 主键ID
               - column:
                   name: username
                   type: varchar(64)
                   constraints:
                     nullable: false
                     unique: true
-                  remarks: "用户名"
+                  remarks: 用户名
               - column:
                   name: password
                   type: varchar(255)
                   constraints:
                     nullable: false
-                  remarks: "密码(BCrypt)"
+                  remarks: 密码
               - column:
                   name: mobile
                   type: varchar(20)
-                  remarks: "手机号"
+                  remarks: 手机号
                   constraints:
                     unique: true
               - column:
                   name: email
                   type: varchar(100)
-                  remarks: "邮箱"
+                  remarks: 邮箱
                   constraints:
                     unique: true
               - column:
                   name: enabled
-                  type: boolean
-                  defaultValueBoolean: true
+                  type: tinyint
+                  defaultValueNumeric: 1
                   constraints:
                     nullable: false
-                  remarks: "账户状态(1:正常,0:禁用)"
+                  remarks: "账户状态(0:禁用, 1:正常)"
               - column:
                   name: locked
-                  type: boolean
-                  defaultValueBoolean: false
+                  type: tinyint
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
-                  remarks: "锁定状态(1:锁定,0:正常)"
+                  remarks: "锁定状态(0:正常, 1:锁定)"
               - column:
                   name: lock_until
                   type: TIMESTAMP
-                  remarks: "锁定截止时间(null表示永久锁定)"
+                  remarks: "锁定截止时间"
               - column:
                   name: lock_count
                   type: int
@@ -66,11 +67,11 @@ databaseChangeLog:
                   remarks: "累计锁定次数"
               - column:
                   name: expired
-                  type: boolean
-                  defaultValueBoolean: false
+                  type: tinyint
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
-                  remarks: "过期状态(1:过期,0:正常)"
+                  remarks: "过期状态(0:正常, 1:过期)"
               - column:
                   name: last_password_reset_time
                   type: TIMESTAMP
@@ -78,29 +79,24 @@ databaseChangeLog:
                   remarks: "上次改密时间"
               - column:
                   name: initial_password
-                  type: boolean
-                  defaultValueBoolean: true
-                  remarks: "是否初始密码(1:是,0:否)"
-              - column:
-                  name: deleted
                   type: tinyint
-                  defaultValueNumeric: 0
-                  remarks: "逻辑删除(1:已删除,0:正常)"
+                  defaultValueNumeric: 1
+                  remarks: "是否初始密码(0:否, 1:是)"
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
               - column:
                   name: create_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
-                  remarks: "创建时间"
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
               - column:
                   name: update_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
-                  remarks: "更新时间"
-              - column:
-                  name: create_by
-                  type: varchar(64)
-                  remarks: "创建人"
-              - column:
-                  name: update_by
-                  type: varchar(64)
-                  remarks: "更新人"
+                  remarks: 更新时间
