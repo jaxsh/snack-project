@@ -17,12 +17,10 @@
 package org.jax.snack.framework.oauth2.client.config;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.jax.snack.framework.oauth2.client.security.AuditLogoutHandler;
+import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.framework.oauth2.client.security.RevokeTokenLogoutHandler;
 import org.jax.snack.framework.oauth2.client.spi.LoginAuditHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
@@ -30,6 +28,7 @@ import org.jax.snack.framework.oauth2.client.spi.OAuth2TokenClient;
 import org.jspecify.annotations.NullMarked;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -44,14 +43,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
@@ -106,18 +102,29 @@ public class OAuth2ClientAutoConfiguration {
 	 * @param properties OAuth2 Client 配置属性
 	 * @param customizers 定制器列表
 	 * @param logoutHandlers 退出处理器列表
+	 * @param defaultMapperProvider 默认权限映射器提供者
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(2)
 	public SecurityFilterChain oauth2ClientSecurityFilterChain(HttpSecurity http, OAuth2ClientProperties properties,
-			ObjectProvider<OAuth2ClientSecurityCustomizer> customizers, ObjectProvider<LogoutHandler> logoutHandlers) {
+			ObjectProvider<OAuth2ClientSecurityCustomizer> customizers, ObjectProvider<LogoutHandler> logoutHandlers,
+			@Qualifier("oidcScopeGrantedAuthoritiesMapper") ObjectProvider<GrantedAuthoritiesMapper> defaultMapperProvider) {
+
+		GrantedAuthoritiesMapper defaultMapper = defaultMapperProvider
+			.getIfAvailable(OidcScopeGrantedAuthoritiesMapper::new);
 
 		CookieCsrfTokenRepository cookieCsrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 		CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
 		csrfTokenRequestAttributeHandler.setCsrfRequestAttributeName(null);
 
 		List<OAuth2ClientSecurityCustomizer> sortedCustomizers = customizers.orderedStream().toList();
+
+		GrantedAuthoritiesMapper authoritiesMapper = sortedCustomizers.stream()
+			.map(OAuth2ClientSecurityCustomizer::authoritiesMapper)
+			.filter(java.util.Objects::nonNull)
+			.findFirst()
+			.orElse(defaultMapper);
 
 		http.authorizeHttpRequests((authorize) -> {
 			for (String path : properties.getPermitAllPaths()) {
@@ -136,7 +143,7 @@ public class OAuth2ClientAutoConfiguration {
 			.cors(Customizer.withDefaults())
 			.formLogin(Customizer.withDefaults())
 			.oauth2Login((oauth2Login) -> {
-				oauth2Login.userInfoEndpoint((userInfo) -> userInfo.userAuthoritiesMapper(defaultAuthoritiesMapper()));
+				oauth2Login.userInfoEndpoint((userInfo) -> userInfo.userAuthoritiesMapper(authoritiesMapper));
 				oauth2Login
 					.successHandler(new SimpleUrlAuthenticationSuccessHandler(properties.getDefaultSuccessUrl()));
 			})
@@ -164,24 +171,13 @@ public class OAuth2ClientAutoConfiguration {
 	}
 
 	/**
-	 * 默认权限映射器.
-	 * <p>
-	 * 从 OIDC authorities 中提取 ID Token 的 scope claim 并映射为权限.
+	 * 默认权限映射器 (OIDC Scope 映射).
 	 * @return GrantedAuthoritiesMapper
 	 */
-	private GrantedAuthoritiesMapper defaultAuthoritiesMapper() {
-		return (authorities) -> {
-			Set<GrantedAuthority> mapped = new HashSet<>(authorities);
-			for (GrantedAuthority authority : authorities) {
-				if (authority instanceof OidcUserAuthority oidcAuth) {
-					Object scope = oidcAuth.getIdToken().getClaim("scope");
-					if (scope instanceof Collection<?> scopes) {
-						scopes.forEach((s) -> mapped.add(new SimpleGrantedAuthority("SCOPE_" + s)));
-					}
-				}
-			}
-			return mapped;
-		};
+	@Bean
+	@ConditionalOnMissingBean
+	public GrantedAuthoritiesMapper oidcScopeGrantedAuthoritiesMapper() {
+		return new OidcScopeGrantedAuthoritiesMapper();
 	}
 
 	/**
