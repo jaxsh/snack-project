@@ -1,3 +1,4 @@
+# lowcode_data_type 数据类型表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_data_type

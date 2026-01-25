@@ -50,8 +50,6 @@ public class DropdownHandler implements SheetWriteHandler {
 
 	private final int headerRowCount;
 
-	private final Map<DropdownConfig, String> nameRefs = new HashMap<>();
-
 	private final Map<DropdownConfig, int[]> dictRanges = new HashMap<>();
 
 	private int nameCounter = 0;
@@ -104,7 +102,6 @@ public class DropdownHandler implements SheetWriteHandler {
 
 			String nameRef = "N_" + this.nameCounter;
 			this.nameCounter++;
-			this.nameRefs.put(config, nameRef);
 
 			Name name = workbook.createName();
 			name.setNameName(nameRef);

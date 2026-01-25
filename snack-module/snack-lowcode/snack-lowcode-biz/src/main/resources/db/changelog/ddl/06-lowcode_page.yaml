@@ -1,3 +1,4 @@
+# lowcode_page 页面配置表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_page

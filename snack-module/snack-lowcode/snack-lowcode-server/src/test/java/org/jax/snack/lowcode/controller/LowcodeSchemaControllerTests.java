@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -61,6 +62,9 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 
 	@Autowired
 	private LowcodeSchemaService schemaService;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
 	private LowcodeSchemaDTO buildDto(String schemaName, String label) {
 		LowcodeSchemaDTO dto = new LowcodeSchemaDTO();
@@ -227,9 +231,6 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 	@Nested
 	class PublishSchema {
 
-		@Autowired
-		private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
-
 		@BeforeEach
 		void setUp() {
 			tearDown();
@@ -238,11 +239,11 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 		@AfterEach
 		void tearDown() {
 			try {
-				this.jdbcTemplate.execute("DROP TABLE IF EXISTS lc_pub_success");
-				this.jdbcTemplate.execute("DROP TABLE IF EXISTS lc_pub_fail_status");
-				this.jdbcTemplate
+				LowcodeSchemaControllerTests.this.jdbcTemplate.execute("DROP TABLE IF EXISTS lc_pub_success");
+				LowcodeSchemaControllerTests.this.jdbcTemplate.execute("DROP TABLE IF EXISTS lc_pub_fail_status");
+				LowcodeSchemaControllerTests.this.jdbcTemplate
 					.execute("DELETE FROM lowcode_schema WHERE schema_name IN ('pub_success', 'pub_fail_status')");
-				this.jdbcTemplate.execute(
+				LowcodeSchemaControllerTests.this.jdbcTemplate.execute(
 						"DELETE FROM lowcode_schema_history WHERE schema_name IN ('pub_success', 'pub_fail_status')");
 			}
 			catch (DataAccessException ignored) {

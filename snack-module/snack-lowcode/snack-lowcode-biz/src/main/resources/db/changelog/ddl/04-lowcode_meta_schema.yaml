@@ -1,3 +1,4 @@
+# lowcode_meta_schema 元数据模板表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_meta_schema

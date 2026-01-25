@@ -1,3 +1,4 @@
+# lowcode_schema_history Schema版本历史表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_schema_history

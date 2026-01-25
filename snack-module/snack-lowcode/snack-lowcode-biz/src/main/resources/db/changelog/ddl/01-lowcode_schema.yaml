@@ -1,3 +1,4 @@
+# lowcode_schema Schema存储表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_schema

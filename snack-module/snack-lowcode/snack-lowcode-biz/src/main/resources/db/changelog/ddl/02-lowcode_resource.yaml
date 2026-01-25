@@ -1,3 +1,4 @@
+# lowcode_resource 资源映射表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_resource
