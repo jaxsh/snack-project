@@ -16,5 +16,6 @@ dependencies {
 		api libs.org.mapstruct.mapstruct
 		api libs.org.mapstruct.mapstruct.processor
 		api libs.com.networknt.json.schema.validator
+		api libs.com.aliyun.dysmsapi20170525
 	}
 }
