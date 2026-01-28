@@ -1,21 +1,22 @@
 plugins {
-    id 'java-platform'
+	id 'java-platform'
 }
 
 javaPlatform {
-    allowDependencies()
+	allowDependencies()
 }
 
 dependencies {
-    api platform(libs.spring.boot.dependencies)
-    api platform(libs.com.baomidou.mybatis.plus.bom)
+	api platform(libs.spring.boot.dependencies)
+	api platform(libs.com.baomidou.mybatis.plus.bom)
 
-    constraints {
-        api libs.org.mockito.mockito.core
+	constraints {
+		api libs.org.mockito.mockito.core
 		api libs.org.zalando.logbook.spring.boot.starter
 		api libs.org.mapstruct.mapstruct
 		api libs.org.mapstruct.mapstruct.processor
 		api libs.com.networknt.json.schema.validator
 		api libs.com.aliyun.dysmsapi20170525
+		api libs.com.github.ulisesbocchio.jasypt.spring.boot.starter
 	}
 }

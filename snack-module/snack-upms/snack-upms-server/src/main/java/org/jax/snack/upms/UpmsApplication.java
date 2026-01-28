@@ -16,6 +16,8 @@
 
 package org.jax.snack.upms;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -25,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Jax Jiang
  */
 @SpringBootApplication
+@EnableEncryptableProperties
 public class UpmsApplication {
 
 	public static void main(String[] args) {
