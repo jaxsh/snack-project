@@ -56,9 +56,14 @@ public class SysSchedulerJobVO {
 	private String jobData;
 
 	/**
-	 * 状态 (0:暂停, 1:运行).
+	 * 状态(0:暂停, 1:运行).
 	 */
 	private Integer status;
+
+	/**
+	 * 状态标签.
+	 */
+	private String statusLabel;
 
 	/**
 	 * 描述.

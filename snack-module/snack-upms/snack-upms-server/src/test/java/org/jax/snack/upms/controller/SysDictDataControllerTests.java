@@ -18,6 +18,7 @@ package org.jax.snack.upms.controller;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
@@ -25,7 +26,6 @@ import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
 import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysDictDataDTO;
 import org.jax.snack.upms.api.dto.SysDictTypeDTO;
-import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.service.SysDictDataService;
 import org.jax.snack.upms.api.service.SysDictTypeService;
 import org.jax.snack.upms.api.vo.SysDictDataVO;

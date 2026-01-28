@@ -25,11 +25,11 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
-import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
@@ -47,6 +47,8 @@ import org.jax.snack.upms.biz.repository.SysUserOrgRepository;
 import org.jax.snack.upms.biz.repository.SysUserRepository;
 import org.jax.snack.upms.biz.repository.SysUserRoleRepository;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -61,6 +63,10 @@ import org.springframework.util.ObjectUtils;
 @Service
 @RequiredArgsConstructor
 public class SysUserServiceImpl implements SysUserService {
+
+	private static final String CACHE_NAME = "upms:user";
+
+	private static final String UNLESS_NULL = "#result == null";
 
 	private final SysUserRepository repository;
 
@@ -81,6 +87,7 @@ public class SysUserServiceImpl implements SysUserService {
 	private final TransactionTemplate transactionTemplate;
 
 	@Override
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysUserDTO dto) {
 		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.username, dto.getUsername()).build();
 		if (this.repository.existsByDsl(condition)) {
@@ -119,6 +126,7 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void update(Long id, SysUserDTO dto) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
@@ -157,6 +165,7 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
 		List<SysUser> users = this.repository.queryListByDsl(queryCondition);
@@ -196,18 +205,29 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
+	@Cacheable(value = CACHE_NAME, key = "'resources:' + #username", unless = UNLESS_NULL)
 	public List<SysResourceVO> getUserResources(String username) {
 		List<SysResource> resources = this.resourceRepository.selectResourcesByUsername(username);
 		return resources.stream().map(this.resourceConverter::toVO).toList();
 	}
 
 	@Override
+	@Cacheable(value = CACHE_NAME, key = "'id:' + #id", unless = UNLESS_NULL)
 	public SysUserVO queryById(Long id) {
 		SysUser user = this.repository.findById(id).orElse(null);
 		return this.converter.toVO(user);
 	}
 
 	@Override
+	@Cacheable(value = CACHE_NAME, key = "'roles:' + #username", unless = UNLESS_NULL)
+	public List<String> getUserRoles(String username) {
+		WhereCondition condition = WhereCondition.builder().eq(SysUserRole.Fields.username, username).build();
+		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
+		return this.userRoleRepository.queryListByDsl(queryCondition).stream().map(SysUserRole::getRoleCode).toList();
+	}
+
+	@Override
+	@Cacheable(value = CACHE_NAME, key = "'info:' + #username", unless = UNLESS_NULL)
 	public SysUserVO getByUsername(String username) {
 		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.username, username).build();
 		List<SysUser> list = this.repository.queryListByDsl(condition);

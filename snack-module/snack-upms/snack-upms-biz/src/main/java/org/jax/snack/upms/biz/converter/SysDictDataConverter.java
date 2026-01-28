@@ -17,11 +17,12 @@
 package org.jax.snack.upms.biz.converter;
 
 import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.upms.api.dto.SysDictDataDTO;
-import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.vo.SysDictDataVO;
 import org.jax.snack.upms.biz.entity.SysDictData;
 import org.mapstruct.AfterMapping;
@@ -39,6 +40,9 @@ public interface SysDictDataConverter extends BaseDtoConvert<SysDictDataDTO, Sys
 
 	@AfterMapping
 	default void afterToVO(SysDictData entity, @MappingTarget SysDictDataVO vo) {
+		if (entity.getIsDefault() != null) {
+			vo.setIsDefaultLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getIsDefault()));
+		}
 		if (entity.getStatus() != null) {
 			vo.setStatusLabel(BaseEnum.getNameByCode(Status.class, entity.getStatus()));
 		}

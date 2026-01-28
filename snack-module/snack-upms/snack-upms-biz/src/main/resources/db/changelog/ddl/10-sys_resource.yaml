@@ -1,4 +1,4 @@
-# sys_resource 资源表结构 (菜单/按钮/接口)
+# sys_resource 资源表
 databaseChangeLog:
   - changeSet:
       id: create-sys_resource
@@ -6,7 +6,7 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: sys_resource
-            remarks: 资源表 (菜单/按钮/接口)
+            remarks: 资源表
             columns:
               - column:
                   name: id
@@ -30,7 +30,7 @@ databaseChangeLog:
               - column:
                   name: type
                   type: tinyint
-                  remarks: 类型(0:菜单, 1:按钮, 2:接口)
+                  remarks: 资源类型(0:菜单, 1:按钮, 2:接口)
                   constraints:
                     nullable: false
               - column:
@@ -48,7 +48,7 @@ databaseChangeLog:
               - column:
                   name: method
                   type: varchar(10)
-                  remarks: HTTP方法(GET/POST)
+                  remarks: HTTP方法(GET:GET, POST:POST)
               - column:
                   name: icon
                   type: varchar(50)
@@ -57,17 +57,17 @@ databaseChangeLog:
                   name: sort_order
                   type: int
                   defaultValueNumeric: 0
-                  remarks: 排序(数值越小越靠前)
+                  remarks: 排序
               - column:
                   name: visible
-                  type: boolean
-                  defaultValueBoolean: true
-                  remarks: 是否可见(仅菜单有效)
+                  type: tinyint(1)
+                  defaultValueNumeric: 1
+                  remarks: "是否可见(0:隐藏, 1:显示)"
               - column:
                   name: status
-                  type: int
+                  type: tinyint
                   defaultValueNumeric: 1
-                  remarks: 状态(1:启用, 0:禁用)
+                  remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: create_by
                   type: varchar(64)

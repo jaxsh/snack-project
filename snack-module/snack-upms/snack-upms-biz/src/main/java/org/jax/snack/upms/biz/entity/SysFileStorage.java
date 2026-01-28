@@ -45,7 +45,7 @@ public class SysFileStorage extends BaseEntity implements Serializable {
 	private String hash;
 
 	/**
-	 * 文件大小 (bytes).
+	 * 文件大小.
 	 */
 	private Long fileSize;
 

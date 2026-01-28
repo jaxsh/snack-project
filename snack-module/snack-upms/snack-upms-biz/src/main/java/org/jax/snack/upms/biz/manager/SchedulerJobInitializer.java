@@ -20,7 +20,7 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jax.snack.upms.api.enums.Status;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.upms.biz.entity.SysSchedulerJob;
 import org.jax.snack.upms.biz.repository.SysSchedulerJobRepository;
 import org.jspecify.annotations.NullMarked;

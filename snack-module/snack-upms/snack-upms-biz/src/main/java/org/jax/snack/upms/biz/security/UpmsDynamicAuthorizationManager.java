@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Component;
  * @author Jax Jiang
  */
 @Slf4j
+@Order(100)
 @Component
 @RequiredArgsConstructor
 public class UpmsDynamicAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
@@ -51,6 +53,11 @@ public class UpmsDynamicAuthorizationManager implements AuthorizationManager<Req
 	public AuthorizationDecision authorize(Supplier<? extends Authentication> authentication,
 			RequestAuthorizationContext context) {
 		HttpServletRequest request = context.getRequest();
+		Authentication auth = authentication.get();
+
+		if (isAdmin(auth)) {
+			return new AuthorizationDecision(true);
+		}
 
 		String requiredPermission = findRequiredPermission(request);
 
@@ -58,8 +65,20 @@ public class UpmsDynamicAuthorizationManager implements AuthorizationManager<Req
 			return new AuthorizationDecision(false);
 		}
 
-		boolean granted = isGranted(authentication.get(), requiredPermission);
+		boolean granted = isGranted(auth, requiredPermission);
 		return new AuthorizationDecision(granted);
+	}
+
+	/**
+	 * 检查用户是否为超级管理员.
+	 * @param authentication 认证信息
+	 * @return 是否为超管
+	 */
+	private boolean isAdmin(Authentication authentication) {
+		return authentication != null && authentication.getAuthorities()
+			.stream()
+			.map(GrantedAuthority::getAuthority)
+			.anyMatch("ROLE_ADMIN"::equals);
 	}
 
 	private String findRequiredPermission(HttpServletRequest request) {

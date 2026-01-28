@@ -16,21 +16,19 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
-import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.upms.api.dto.SysSchedulerJobDTO;
-import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.vo.SysSchedulerJobLogVO;
 import org.jax.snack.upms.api.vo.SysSchedulerJobVO;
 import org.jax.snack.upms.biz.converter.SysSchedulerJobConverter;
+import org.jax.snack.upms.biz.converter.SysSchedulerJobLogConverter;
 import org.jax.snack.upms.biz.entity.SysSchedulerJob;
-import org.jax.snack.upms.biz.entity.SysSchedulerJobLog;
 import org.jax.snack.upms.biz.manager.SchedulerManager;
 import org.jax.snack.upms.biz.repository.SysSchedulerJobLogRepository;
 import org.jax.snack.upms.biz.repository.SysSchedulerJobRepository;
@@ -58,6 +56,8 @@ public class SysSchedulerJobServiceImpl implements SysSchedulerJobService {
 	private final SysSchedulerJobLogRepository logRepository;
 
 	private final SysSchedulerJobConverter converter;
+
+	private final SysSchedulerJobLogConverter logConverter;
 
 	private final SchedulerManager schedulerManager;
 
@@ -162,18 +162,10 @@ public class SysSchedulerJobServiceImpl implements SysSchedulerJobService {
 	@Override
 	public PageResult<SysSchedulerJobLogVO> queryLogsByDsl(QueryCondition condition) {
 		if (!ObjectUtils.isEmpty(condition.getSize())) {
-			List<SysSchedulerJobLog> records = this.logRepository.queryPageByDsl(condition).getRecords();
-			PageResult<SysSchedulerJobLogVO> result = new PageResult<>();
-			result.setRecords(records.stream().map(this.converter::toLogVo).toList());
-			result.setTotal(this.logRepository.queryPageByDsl(condition).getTotal());
-			return result;
+			return this.logConverter.toPageResult(this.logRepository.queryPageByDsl(condition));
 		}
 		else {
-			List<SysSchedulerJobLog> records = this.logRepository.queryListByDsl(condition);
-			PageResult<SysSchedulerJobLogVO> result = new PageResult<>();
-			result.setRecords(records.stream().map(this.converter::toLogVo).toList());
-			result.setTotal(records.size());
-			return result;
+			return this.logConverter.toPageResult(this.logRepository.queryListByDsl(condition));
 		}
 	}
 

@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 资源/菜单管理 Controller 集成测试.
+ * 资源管理 Controller 集成测试.
  *
  * @author Jax Jiang
  */

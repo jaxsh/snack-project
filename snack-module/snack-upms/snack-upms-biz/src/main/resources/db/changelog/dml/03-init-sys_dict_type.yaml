@@ -1,0 +1,33 @@
+# 初始化字典类型数据
+databaseChangeLog:
+  - changeSet:
+      id: insert-sys_dict_type-init
+      author: upms
+      changes:
+        - insert:
+            tableName: sys_dict_type
+            columns:
+              - column:
+                  name: dict_name
+                  value: 状态
+              - column:
+                  name: dict_type
+                  value: sys_status
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: sort_order
+                  valueNumeric: 0
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP

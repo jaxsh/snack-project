@@ -1,4 +1,4 @@
-# sys_dict_type 表结构
+# sys_dict_type 字典类型表
 databaseChangeLog:
   - changeSet:
       id: create-sys_dict_type
@@ -30,24 +30,17 @@ databaseChangeLog:
               - column:
                   name: status
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
                   remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: sort_order
                   type: int
-                  defaultValueNumeric: '0'
+                  defaultValueNumeric: 0
                   remarks: 排序
               - column:
                   name: remark
                   type: varchar(500)
                   remarks: 备注
-              - column:
-                  name: deleted
-                  type: tinyint
-                  defaultValueNumeric: '0'
-                  remarks: 是否删除(0:否, 1:是)
-                  constraints:
-                    nullable: false
               - column:
                   name: create_by
                   type: varchar(64)
@@ -76,11 +69,3 @@ databaseChangeLog:
             columns:
               - column:
                   name: status
-        - createIndex:
-            tableName: sys_dict_type
-            indexName: idx_status_deleted
-            columns:
-              - column:
-                  name: status
-              - column:
-                  name: deleted

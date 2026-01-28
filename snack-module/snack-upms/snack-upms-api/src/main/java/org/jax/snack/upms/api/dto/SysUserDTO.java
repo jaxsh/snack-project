@@ -62,7 +62,7 @@ public class SysUserDTO {
 	private String avatar;
 
 	/**
-	 * 性别 (0:未知, 1:男, 2:女).
+	 * 性别(0:未知, 1:男, 2:女).
 	 */
 	@Min(0)
 	@Max(2)

@@ -40,7 +40,7 @@ public class SysOrg extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 业务编码 (唯一, 格式 ORG-简称-序号).
+	 * 业务编码(唯一).
 	 */
 	private String orgCode;
 
@@ -50,22 +50,22 @@ public class SysOrg extends BaseEntity implements Serializable {
 	private String orgName;
 
 	/**
-	 * 简称/缩写 (英文或拼音, 用于 orgCode 前缀).
+	 * 简称/缩写.
 	 */
 	private String shortName;
 
 	/**
-	 * 父节点编码 (根节点为空).
+	 * 父节点编码.
 	 */
 	private String parentCode;
 
 	/**
-	 * 层级深度 (根节点为0).
+	 * 层级深度.
 	 */
 	private Integer level;
 
 	/**
-	 * 祖先路径 (存 orgCode, 如 ORG-HQ-001,ORG-SH-002).
+	 * 祖先路径.
 	 */
 	private String ancestors;
 
@@ -105,7 +105,7 @@ public class SysOrg extends BaseEntity implements Serializable {
 	private Integer sortOrder;
 
 	/**
-	 * 状态.
+	 * 状态(0:禁用, 1:启用).
 	 */
 	private Integer status;
 

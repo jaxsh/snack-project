@@ -1,4 +1,4 @@
-# sys_id_rule 表结构
+# sys_id_rule ID 规则表
 databaseChangeLog:
   - changeSet:
       id: create-sys_id_rule
@@ -6,7 +6,7 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: sys_id_rule
-            remarks: ID 规则表
+            remarks: ID规则表
             columns:
               - column:
                   name: id
@@ -18,7 +18,7 @@ databaseChangeLog:
               - column:
                   name: rule_code
                   type: varchar(64)
-                  remarks: 规则编码 (唯一标识)
+                  remarks: 规则编码(唯一)
                   constraints:
                     nullable: false
               - column:
@@ -30,7 +30,7 @@ databaseChangeLog:
               - column:
                   name: segments
                   type: json
-                  remarks: 分段规则配置(JSON Array)
+                  remarks: 分段规则配置
                   constraints:
                     nullable: false
               - column:
@@ -41,14 +41,7 @@ databaseChangeLog:
                   name: reset_cycle
                   type: varchar(20)
                   defaultValue: 'NEVER'
-                  remarks: 序列号重置周期(NEVER/DAILY/MONTHLY/YEARLY)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: deleted
-                  type: tinyint
-                  defaultValueNumeric: '0'
-                  remarks: 是否删除(0:否, 1:是)
+                  remarks: 序列号重置周期(NEVER:不重置, DAILY:每天, MONTHLY:每月, YEARLY:每年)
                   constraints:
                     nullable: false
               - column:
@@ -73,9 +66,3 @@ databaseChangeLog:
             tableName: sys_id_rule
             columnNames: rule_code
             constraintName: uk_rule_code
-        - createIndex:
-            tableName: sys_id_rule
-            indexName: idx_id_rule_deleted
-            columns:
-              - column:
-                  name: deleted

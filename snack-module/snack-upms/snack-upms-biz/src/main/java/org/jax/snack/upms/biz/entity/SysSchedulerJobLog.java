@@ -42,17 +42,17 @@ public class SysSchedulerJobLog extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 关联任务 ID.
+	 * 关联任务ID.
 	 */
 	private Long jobId;
 
 	/**
-	 * 任务名称 (冗余存储).
+	 * 任务名称.
 	 */
 	private String jobName;
 
 	/**
-	 * 执行时长 (ms).
+	 * 执行时长.
 	 */
 	private Long duration;
 

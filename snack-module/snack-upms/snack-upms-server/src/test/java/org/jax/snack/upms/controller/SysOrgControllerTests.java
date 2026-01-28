@@ -22,6 +22,7 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
@@ -94,7 +95,7 @@ class SysOrgControllerTests extends UpmsIntegrationTests {
 		SysOrgDTO dto = new SysOrgDTO();
 		dto.setOrgName("测试机构");
 		dto.setParentCode(parentCode);
-		dto.setStatus(1);
+		dto.setStatus(Status.ENABLED.getCode());
 		return dto;
 	}
 
@@ -345,17 +346,17 @@ class SysOrgControllerTests extends UpmsIntegrationTests {
 
 			SysOrgControllerTests.this.sysOrgService.create(buildDto(parentVo.getOrgCode()));
 			SysOrgVO childBefore = queryAll().stream().filter((v) -> v.getLevel() == 1).findFirst().orElseThrow();
-			assertThat(childBefore.getStatus()).isEqualTo(1);
+			assertThat(childBefore.getStatus()).isEqualTo(Status.ENABLED.getCode());
 
 			SysOrgDTO updateDto = new SysOrgDTO();
-			updateDto.setStatus(0);
+			updateDto.setStatus(Status.DISABLED.getCode());
 
 			putJson(API_ORGS_ID, updateDto, parentVo.getId()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
 			SysOrgVO childAfter = queryAll().stream().filter((v) -> v.getLevel() == 1).findFirst().orElseThrow();
-			assertThat(childAfter.getStatus()).isEqualTo(0);
+			assertThat(childAfter.getStatus()).isEqualTo(Status.DISABLED.getCode());
 		}
 
 		@Test

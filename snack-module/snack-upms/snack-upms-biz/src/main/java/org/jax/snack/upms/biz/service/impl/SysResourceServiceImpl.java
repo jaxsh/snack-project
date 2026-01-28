@@ -27,12 +27,12 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.utils.tree.TreeBuilder;
 import org.jax.snack.framework.utils.tree.TreeNode;
 import org.jax.snack.upms.api.dto.SysResourceDTO;
-import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.service.SysResourceService;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.biz.converter.SysResourceConverter;
@@ -41,6 +41,7 @@ import org.jax.snack.upms.biz.entity.SysRoleResource;
 import org.jax.snack.upms.biz.repository.SysResourceRepository;
 import org.jax.snack.upms.biz.repository.SysRoleResourceRepository;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -62,6 +63,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = "upms:user", allEntries = true)
 	public void create(SysResourceDTO dto) {
 		QueryCondition existsCondition = QueryCondition.builder()
 			.eq(SysResource.Fields.name, dto.getName())
@@ -82,6 +84,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = "upms:user", allEntries = true)
 	public void update(Long id, SysResourceDTO dto) {
 		this.repository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Resource"));
 
@@ -93,7 +96,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 		updateEntity.setId(id);
 		this.repository.update(updateEntity);
 
-		if (Status.DISABLED.getCode().equals(dto.getStatus())) {
+		if (Objects.equals(Status.DISABLED.getCode(), dto.getStatus())) {
 			Set<Long> descendantIds = getDescendantIds(id);
 			if (!descendantIds.isEmpty()) {
 				WhereCondition where = WhereCondition.builder()
@@ -108,6 +111,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = "upms:user", allEntries = true)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
 		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {

@@ -24,6 +24,7 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -126,7 +127,7 @@ public class FileCleanupJob implements Job {
 						if (!StringUtils.hasText(content)) {
 							continue;
 						}
-						java.util.regex.Matcher matcher = pattern.matcher(content);
+						Matcher matcher = pattern.matcher(content);
 						while (matcher.find()) {
 							String fullMatch = matcher.group(2);
 							String storagePath = fullMatch.substring(prefix.length() + 1);

@@ -61,12 +61,17 @@ public class SysDictDataVO {
 	private String listClass;
 
 	/**
-	 * 是否默认.
+	 * 是否默认(0:否, 1:是).
 	 */
-	private Boolean isDefault;
+	private Integer isDefault;
 
 	/**
-	 * 状态.
+	 * 是否默认标签.
+	 */
+	private String isDefaultLabel;
+
+	/**
+	 * 状态(0:禁用, 1:启用).
 	 */
 	private Integer status;
 

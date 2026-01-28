@@ -61,7 +61,7 @@ public class SysRoleDTO implements Serializable {
 	private String roleDesc;
 
 	/**
-	 * 状态 (1:启用, 0:禁用).
+	 * 状态(0:禁用, 1:启用).
 	 */
 	private Integer status;
 

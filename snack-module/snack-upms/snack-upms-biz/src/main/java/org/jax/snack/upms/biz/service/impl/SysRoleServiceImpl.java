@@ -37,6 +37,7 @@ import org.jax.snack.upms.biz.repository.SysRoleRepository;
 import org.jax.snack.upms.biz.repository.SysRoleResourceRepository;
 import org.jax.snack.upms.biz.repository.SysUserRoleRepository;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -61,6 +62,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = "upms:user", allEntries = true)
 	public void create(SysRoleDTO dto) {
 		QueryCondition condition = QueryCondition.builder().eq(SysRole.Fields.roleCode, dto.getRoleCode()).build();
 		if (this.repository.existsByDsl(condition)) {
@@ -83,6 +85,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = "upms:user", allEntries = true)
 	public void update(Long id, SysRoleDTO dto) {
 		SysRole current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Role"));
@@ -111,6 +114,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = "upms:user", allEntries = true)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
 		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {

@@ -73,6 +73,13 @@ public interface SysUserService {
 	SysUserVO queryById(Long id);
 
 	/**
+	 * 获取用户拥有的角色编码集合.
+	 * @param username 用户名
+	 * @return 角色编码列表
+	 */
+	List<String> getUserRoles(String username);
+
+	/**
 	 * 根据用户名获取用户信息.
 	 * @param username 用户名
 	 * @return 用户信息 VO

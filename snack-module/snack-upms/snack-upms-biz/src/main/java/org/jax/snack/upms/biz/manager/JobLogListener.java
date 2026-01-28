@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.enums.SuccessStatus;
 import org.jax.snack.upms.biz.entity.SysSchedulerJob;
 import org.jax.snack.upms.biz.entity.SysSchedulerJobLog;
 import org.jax.snack.upms.biz.repository.SysSchedulerJobLogRepository;
@@ -77,7 +78,7 @@ public class JobLogListener implements JobListener {
 			.findFirst()
 			.ifPresent((job) -> logRecord.setJobId(job.getId()));
 
-		logRecord.setStatus(0);
+		logRecord.setStatus(SuccessStatus.FAIL.getCode());
 
 		this.logRepository.save(logRecord);
 		context.put(KEY_LOG_ID, logRecord.getId());
@@ -106,12 +107,12 @@ public class JobLogListener implements JobListener {
 			}
 
 			if (jobException != null) {
-				logRecord.setStatus(0);
+				logRecord.setStatus(SuccessStatus.FAIL.getCode());
 				logRecord.setErrorMessage(getStackTrace(jobException));
 				log.error("Job execution failed: {}", logRecord.getJobName(), jobException);
 			}
 			else {
-				logRecord.setStatus(1);
+				logRecord.setStatus(SuccessStatus.SUCCESS.getCode());
 			}
 
 			this.logRepository.update(logRecord);

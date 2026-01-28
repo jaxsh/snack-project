@@ -18,13 +18,13 @@ package org.jax.snack.upms.controller;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
 import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysDictTypeDTO;
-import org.jax.snack.upms.api.enums.Status;
 import org.jax.snack.upms.api.service.SysDictTypeService;
 import org.jax.snack.upms.api.vo.SysDictTypeVO;
 import org.jax.snack.upms.biz.entity.SysDictType;
@@ -222,7 +222,7 @@ class SysDictTypeControllerTests extends UpmsIntegrationTests {
 
 			SysDictTypeVO updated = queryById(id);
 			assertThat(updated.getDictName()).isEqualTo("修改后的名称");
-			assertThat(updated.getStatus()).isEqualTo(0);
+			assertThat(updated.getStatus()).isEqualTo(Status.DISABLED.getCode());
 			assertThat(updated.getRemark()).isEqualTo("已修改");
 		}
 

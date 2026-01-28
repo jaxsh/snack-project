@@ -50,7 +50,7 @@ public class SysDictType extends BaseEntity implements Serializable {
 	private String dictType;
 
 	/**
-	 * 状态.
+	 * 状态(0:禁用, 1:启用).
 	 */
 	private Integer status;
 

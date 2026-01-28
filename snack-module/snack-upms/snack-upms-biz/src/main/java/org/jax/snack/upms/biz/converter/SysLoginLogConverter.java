@@ -16,11 +16,15 @@
 
 package org.jax.snack.upms.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
+import org.jax.snack.upms.api.enums.LoginAction;
 import org.jax.snack.upms.api.vo.SysLoginLogVO;
 import org.jax.snack.upms.biz.entity.SysLoginLog;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * 登录日志对象转换器.
@@ -29,5 +33,12 @@ import org.mapstruct.Mapper;
  */
 @Mapper(config = BaseMapStructConfig.class)
 public interface SysLoginLogConverter extends BasePageConvert<SysLoginLog, SysLoginLogVO> {
+
+	@AfterMapping
+	default void afterToVO(SysLoginLog entity, @MappingTarget SysLoginLogVO vo) {
+		if (entity.getAction() != null) {
+			vo.setActionLabel(BaseEnum.getNameByCode(LoginAction.class, entity.getAction()));
+		}
+	}
 
 }

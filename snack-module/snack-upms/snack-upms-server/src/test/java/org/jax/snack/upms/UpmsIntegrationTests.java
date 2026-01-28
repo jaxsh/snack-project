@@ -16,6 +16,7 @@
 
 package org.jax.snack.upms;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jax.snack.framework.webtest.MockMvcTestSupport;
@@ -24,7 +25,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,15 +46,29 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(properties = { "spring.profiles.active=upms,oauth" })
 @AutoConfigureMockMvc
 @Transactional
+@Import(UpmsIntegrationTests.CacheTestConfiguration.class)
 public abstract class UpmsIntegrationTests extends MockMvcTestSupport {
 
 	@MockitoBean
-	private UpmsSecurityMetadataManager metadataManager;
+	protected UpmsSecurityMetadataManager metadataManager;
 
 	@BeforeEach
-	void setUpPermissionRules() {
+	protected void setUpPermissionRules() {
 		Mockito.when(this.metadataManager.getPermissionRules())
 			.thenReturn(Map.of(AnyRequestMatcher.INSTANCE, "test:permission"));
+	}
+
+	@TestConfiguration
+	static class CacheTestConfiguration {
+
+		@Bean
+		CacheManager cacheManager() {
+			SimpleCacheManager cacheManager = new SimpleCacheManager();
+			cacheManager
+				.setCaches(List.of(new ConcurrentMapCache("upms:user"), new ConcurrentMapCache("registered_clients")));
+			return cacheManager;
+		}
+
 	}
 
 }

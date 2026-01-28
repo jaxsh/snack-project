@@ -53,9 +53,14 @@ public class SysResourceVO implements Serializable {
 	private String name;
 
 	/**
-	 * 类型 (0:菜单, 1:按钮, 2:接口).
+	 * 类型(0:菜单, 1:按钮, 2:接口).
 	 */
 	private Integer type;
+
+	/**
+	 * 类型标签.
+	 */
+	private String typeLabel;
 
 	/**
 	 * 权限标识.
@@ -73,9 +78,14 @@ public class SysResourceVO implements Serializable {
 	private String component;
 
 	/**
-	 * HTTP方法 (GET/POST).
+	 * HTTP方法(GET, POST, etc).
 	 */
 	private String method;
+
+	/**
+	 * HTTP方法标签.
+	 */
+	private String methodLabel;
 
 	/**
 	 * 图标.
@@ -88,14 +98,24 @@ public class SysResourceVO implements Serializable {
 	private Integer sortOrder;
 
 	/**
-	 * 是否可见.
+	 * 是否可见(0:隐藏, 1:显示).
 	 */
-	private Boolean visible;
+	private Integer visible;
 
 	/**
-	 * 状态 (1:启用, 0:禁用).
+	 * 是否可见标签.
+	 */
+	private String visibleLabel;
+
+	/**
+	 * 状态(0:禁用, 1:启用).
 	 */
 	private Integer status;
+
+	/**
+	 * 状态标签.
+	 */
+	private String statusLabel;
 
 	/**
 	 * 创建时间.

@@ -16,13 +16,20 @@
 
 package org.jax.snack.upms.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.upms.api.dto.SysResourceDTO;
+import org.jax.snack.upms.api.enums.HttpMethod;
+import org.jax.snack.upms.api.enums.ResourceType;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.biz.entity.SysResource;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * 资源对象转换器.
@@ -32,5 +39,21 @@ import org.mapstruct.Mapper;
 @Mapper(config = BaseMapStructConfig.class)
 public interface SysResourceConverter extends BaseDtoConvert<SysResourceDTO, SysResource, SysResourceVO>,
 		BasePageConvert<SysResource, SysResourceVO> {
+
+	@AfterMapping
+	default void afterToVO(SysResource entity, @MappingTarget SysResourceVO vo) {
+		if (entity.getType() != null) {
+			vo.setTypeLabel(BaseEnum.getNameByCode(ResourceType.class, entity.getType()));
+		}
+		if (entity.getMethod() != null) {
+			vo.setMethodLabel(BaseEnum.getNameByCode(HttpMethod.class, entity.getMethod()));
+		}
+		if (entity.getVisible() != null) {
+			vo.setVisibleLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getVisible()));
+		}
+		if (entity.getStatus() != null) {
+			vo.setStatusLabel(BaseEnum.getNameByCode(Status.class, entity.getStatus()));
+		}
+	}
 
 }

@@ -21,41 +21,35 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
- * 状态枚举 (启用/禁用).
+ * 资源类型枚举.
  *
  * @author Jax Jiang
  */
 @Getter
 @RequiredArgsConstructor
-public enum Status implements BaseEnum<Integer> {
+public enum ResourceType implements BaseEnum<Integer> {
 
 	/**
-	 * 禁用.
+	 * 菜单.
 	 */
-	DISABLED(0, "禁用"),
+	MENU(0, "菜单"),
 
 	/**
-	 * 启用.
+	 * 按钮.
 	 */
-	ENABLED(1, "启用");
+	BUTTON(1, "按钮"),
 
 	/**
-	 * 状态值.
+	 * 接口.
 	 */
+	API(2, "接口");
+
 	private final Integer code;
 
-	/**
-	 * 状态名称.
-	 */
 	private final String name;
 
-	/**
-	 * 根据 code 获取枚举实例.
-	 * @param code 状态值
-	 * @return Status 实例
-	 */
-	public static Status of(Integer code) {
-		return BaseEnum.fromCode(Status.class, code);
+	public static ResourceType of(Integer code) {
+		return BaseEnum.fromCode(ResourceType.class, code);
 	}
 
 }

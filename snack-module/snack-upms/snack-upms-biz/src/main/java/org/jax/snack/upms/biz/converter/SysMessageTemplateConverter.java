@@ -17,6 +17,7 @@
 package org.jax.snack.upms.biz.converter;
 
 import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
@@ -44,6 +45,9 @@ public interface SysMessageTemplateConverter
 	default void afterToVO(SysMessageTemplate entity, @MappingTarget SysMessageTemplateVO vo) {
 		if (StringUtils.hasText(entity.getTemplateType())) {
 			vo.setTemplateTypeLabel(BaseEnum.getNameByCode(MessageTemplateType.class, entity.getTemplateType()));
+		}
+		if (entity.getStatus() != null) {
+			vo.setStatusLabel(BaseEnum.getNameByCode(Status.class, entity.getStatus()));
 		}
 	}
 

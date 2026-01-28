@@ -40,7 +40,7 @@ public class SysSchedulerJob extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 任务名称 (唯一).
+	 * 任务名称.
 	 */
 	private String jobName;
 
@@ -55,13 +55,12 @@ public class SysSchedulerJob extends BaseEntity implements Serializable {
 	private String cronExpression;
 
 	/**
-	 * 任务参数 (JSON).
+	 * 任务参数.
 	 */
 	private String jobData;
 
 	/**
-	 * 状态 (0:禁用/暂停, 1:启用/运行).
-	 * @see org.jax.snack.upms.api.enums.Status
+	 * 状态(0:暂停, 1:运行).
 	 */
 	private Integer status;
 

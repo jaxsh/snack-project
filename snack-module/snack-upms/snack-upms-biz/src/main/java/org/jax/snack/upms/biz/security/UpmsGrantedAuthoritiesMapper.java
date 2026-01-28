@@ -19,15 +19,17 @@ package org.jax.snack.upms.biz.security;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jspecify.annotations.NullMarked;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -45,18 +47,33 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UpmsGrantedAuthoritiesMapper implements GrantedAuthoritiesMapper {
 
 	private final SysUserService sysUserService;
 
+	private final GrantedAuthoritiesMapper delegate;
+
+	public UpmsGrantedAuthoritiesMapper(SysUserService sysUserService,
+			ObjectProvider<OidcScopeGrantedAuthoritiesMapper> delegateProvider) {
+		this.sysUserService = sysUserService;
+		this.delegate = delegateProvider.getIfAvailable(OidcScopeGrantedAuthoritiesMapper::new);
+	}
+
 	@NullMarked
 	@Override
 	public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
-		Set<GrantedAuthority> mapped = new HashSet<>(authorities);
+		Collection<? extends GrantedAuthority> baseAuthorities = this.delegate.mapAuthorities(authorities);
+		Set<GrantedAuthority> mapped = new HashSet<>(baseAuthorities);
 
 		String username = extractUsername(authorities);
 		if (username != null) {
+			List<String> roles = this.sysUserService.getUserRoles(username);
+			for (String roleCode : roles) {
+				if (StringUtils.hasText(roleCode)) {
+					mapped.add(new SimpleGrantedAuthority("ROLE_" + roleCode.toUpperCase(Locale.ROOT)));
+				}
+			}
+
 			List<SysResourceVO> resources = this.sysUserService.getUserResources(username);
 			for (SysResourceVO resource : resources) {
 				if (StringUtils.hasText(resource.getPermission())) {

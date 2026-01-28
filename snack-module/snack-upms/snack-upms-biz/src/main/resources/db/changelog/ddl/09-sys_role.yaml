@@ -1,4 +1,4 @@
-# sys_role 角色表结构
+# sys_role 角色表
 databaseChangeLog:
   - changeSet:
       id: create-sys_role
@@ -24,7 +24,7 @@ databaseChangeLog:
               - column:
                   name: role_code
                   type: varchar(50)
-                  remarks: 角色编码 (业务主键)
+                  remarks: 角色编码(唯一)
                   constraints:
                     nullable: false
               - column:
@@ -33,9 +33,9 @@ databaseChangeLog:
                   remarks: 角色描述
               - column:
                   name: status
-                  type: int
+                  type: tinyint
                   defaultValueNumeric: 1
-                  remarks: 状态(1:启用, 0:禁用)
+                  remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: create_by
                   type: varchar(64)

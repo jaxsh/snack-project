@@ -1,4 +1,4 @@
-# sys_org 表结构
+# sys_org 组织机构表
 databaseChangeLog:
   - changeSet:
       id: create-sys_org
@@ -18,7 +18,7 @@ databaseChangeLog:
               - column:
                   name: org_code
                   type: varchar(64)
-                  remarks: 业务编码 (唯一, 格式 ORG-简称-序号)
+                  remarks: 业务编码(唯一)
                   constraints:
                     nullable: false
               - column:
@@ -34,18 +34,18 @@ databaseChangeLog:
               - column:
                   name: parent_code
                   type: varchar(64)
-                  remarks: 父节点编码 (根节点为空)
+                  remarks: 父节点编码
               - column:
                   name: level
                   type: tinyint
-                  defaultValueNumeric: '0'
-                  remarks: 层级深度 (根节点为0)
+                  defaultValueNumeric: 0
+                  remarks: 层级深度
                   constraints:
                     nullable: false
               - column:
                   name: ancestors
                   type: varchar(500)
-                  remarks: 祖先路径 (存 orgCode, 如 ORG-HQ-001,ORG-SH-002)
+                  remarks: 祖先路径
               - column:
                   name: province
                   type: varchar(50)
@@ -73,12 +73,12 @@ databaseChangeLog:
               - column:
                   name: sort_order
                   type: int
-                  defaultValueNumeric: '0'
+                  defaultValueNumeric: 0
                   remarks: 排序
               - column:
                   name: status
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
                   remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: create_by

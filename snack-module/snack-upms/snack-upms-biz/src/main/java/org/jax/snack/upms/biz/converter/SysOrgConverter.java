@@ -16,13 +16,17 @@
 
 package org.jax.snack.upms.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
 import org.jax.snack.upms.api.vo.SysOrgVO;
 import org.jax.snack.upms.biz.entity.SysOrg;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * 组织机构对象转换器.
@@ -32,5 +36,12 @@ import org.mapstruct.Mapper;
 @Mapper(config = BaseMapStructConfig.class)
 public interface SysOrgConverter
 		extends BaseDtoConvert<SysOrgDTO, SysOrg, SysOrgVO>, BasePageConvert<SysOrg, SysOrgVO> {
+
+	@AfterMapping
+	default void afterToVO(SysOrg entity, @MappingTarget SysOrgVO vo) {
+		if (entity.getStatus() != null) {
+			vo.setStatusLabel(BaseEnum.getNameByCode(Status.class, entity.getStatus()));
+		}
+	}
 
 }

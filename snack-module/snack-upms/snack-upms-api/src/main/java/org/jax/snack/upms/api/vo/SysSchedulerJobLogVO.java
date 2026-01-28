@@ -46,14 +46,14 @@ public class SysSchedulerJobLogVO {
 	private String jobName;
 
 	/**
-	 * 执行开始时间.
+	 * 创建时间.
 	 */
-	private ZonedDateTime startTime;
+	private ZonedDateTime createTime;
 
 	/**
-	 * 执行结束时间.
+	 * 更新时间.
 	 */
-	private ZonedDateTime endTime;
+	private ZonedDateTime updateTime;
 
 	/**
 	 * 执行时长 (ms).

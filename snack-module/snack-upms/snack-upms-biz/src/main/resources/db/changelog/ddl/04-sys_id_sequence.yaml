@@ -1,4 +1,4 @@
-# sys_id_sequence 表结构
+# sys_id_sequence ID 序列号表
 databaseChangeLog:
   - changeSet:
       id: create-sys_id_sequence
@@ -6,7 +6,7 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: sys_id_sequence
-            remarks: ID 序列号表
+            remarks: ID序列号表
             columns:
               - column:
                   name: id
@@ -24,13 +24,13 @@ databaseChangeLog:
               - column:
                   name: cycle_key
                   type: varchar(50)
-                  remarks: 周期标识(如20231223/202312/GLOBAL)
+                  remarks: 周期标识
                   constraints:
                     nullable: false
               - column:
                   name: current_value
                   type: bigint
-                  defaultValueNumeric: '0'
+                  defaultValueNumeric: 0
                   remarks: 当前序列值
                   constraints:
                     nullable: false

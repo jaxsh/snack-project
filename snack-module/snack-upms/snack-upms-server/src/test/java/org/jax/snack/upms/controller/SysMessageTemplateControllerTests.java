@@ -19,6 +19,7 @@ package org.jax.snack.upms.controller;
 import java.util.Map;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
 import org.jax.snack.upms.UpmsIntegrationTests;
@@ -66,7 +67,7 @@ class SysMessageTemplateControllerTests extends UpmsIntegrationTests {
 		dto.setTemplateType(type);
 		dto.setContent("Test Content");
 		dto.setTemplateConfig(Map.of("provider", "aliyun"));
-		dto.setStatus("0");
+		dto.setStatus(Status.DISABLED.getCode());
 		return dto;
 	}
 

@@ -54,7 +54,7 @@ public class SysMessageTemplateDTO implements Serializable {
 	private String templateName;
 
 	/**
-	 * 模版类型.
+	 * 模版类型(MAIL:邮件, SMS:短信, SITE:站内信).
 	 */
 	@NotBlank
 	private String templateType;
@@ -75,9 +75,9 @@ public class SysMessageTemplateDTO implements Serializable {
 	private Map<String, Object> templateConfig;
 
 	/**
-	 * 状态.
+	 * 状态(0:禁用, 1:启用).
 	 */
-	private String status;
+	private Integer status;
 
 	/**
 	 * 备注.

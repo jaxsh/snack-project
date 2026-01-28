@@ -1,4 +1,4 @@
-# sys_dict_data 表结构
+# sys_dict_data 数据字典表
 databaseChangeLog:
   - changeSet:
       id: create-sys_dict_data
@@ -24,13 +24,13 @@ databaseChangeLog:
               - column:
                   name: dict_label
                   type: varchar(100)
-                  remarks: 字典标签 (用于前端显示)
+                  remarks: 字典标签
                   constraints:
                     nullable: false
               - column:
                   name: dict_value
                   type: varchar(100)
-                  remarks: 字典值 (用于后端存储)
+                  remarks: 字典值
                   constraints:
                     nullable: false
               - column:
@@ -44,29 +44,22 @@ databaseChangeLog:
               - column:
                   name: is_default
                   type: tinyint
-                  defaultValueNumeric: '0'
+                  defaultValueNumeric: 0
                   remarks: 是否默认(0:否, 1:是)
               - column:
                   name: status
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
                   remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: sort_order
                   type: int
-                  defaultValueNumeric: '0'
+                  defaultValueNumeric: 0
                   remarks: 排序
               - column:
                   name: remark
                   type: varchar(500)
                   remarks: 备注
-              - column:
-                  name: deleted
-                  type: tinyint
-                  defaultValueNumeric: '0'
-                  remarks: 是否删除(0:否, 1:是)
-                  constraints:
-                    nullable: false
               - column:
                   name: create_by
                   type: varchar(64)
@@ -104,8 +97,6 @@ databaseChangeLog:
               - column:
                   name: status
               - column:
-                  name: deleted
-              - column:
                   name: sort_order
         - createIndex:
             tableName: sys_dict_data
@@ -115,5 +106,3 @@ databaseChangeLog:
                   name: dict_type
               - column:
                   name: is_default
-              - column:
-                  name: deleted

@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
- * 消息模版类型枚举.
+ * 消息模板类型枚举.
  *
  * @author Jax Jiang
  */
@@ -30,35 +30,24 @@ import org.jax.snack.framework.core.enums.BaseEnum;
 public enum MessageTemplateType implements BaseEnum<String> {
 
 	/**
-	 * 短信.
-	 */
-	SMS("SMS", "短信"),
-
-	/**
 	 * 邮件.
 	 */
 	MAIL("MAIL", "邮件"),
+
+	/**
+	 * 短信.
+	 */
+	SMS("SMS", "短信"),
 
 	/**
 	 * 站内信.
 	 */
 	SITE("SITE", "站内信");
 
-	/**
-	 * 类型编码.
-	 */
 	private final String code;
 
-	/**
-	 * 类型名称.
-	 */
 	private final String name;
 
-	/**
-	 * 根据 code 获取枚举实例.
-	 * @param code 类型编码
-	 * @return MessageTemplateType 实例
-	 */
 	public static MessageTemplateType of(String code) {
 		return BaseEnum.fromCode(MessageTemplateType.class, code);
 	}

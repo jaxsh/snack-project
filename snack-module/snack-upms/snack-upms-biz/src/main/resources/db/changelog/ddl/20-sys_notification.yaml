@@ -1,0 +1,65 @@
+# sys_notification 站内信表
+databaseChangeLog:
+  - changeSet:
+      id: create-sys_notification
+      author: upms
+      changes:
+        - createTable:
+            tableName: sys_notification
+            remarks: 站内信表
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(64)
+                  remarks: 用户名
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  remarks: 标题
+              - column:
+                  name: content
+                  type: text
+                  remarks: 内容
+
+              - column:
+                  name: read_flag
+                  type: tinyint
+                  defaultValueNumeric: 0
+                  remarks: 阅读标记(0:未读, 1:已读)
+              - column:
+                  name: read_time
+                  type: TIMESTAMP
+                  remarks: 阅读时间
+              - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
+                  name: create_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
+              - column:
+                  name: update_by
+                  type: varchar(64)
+                  remarks: 更新人
+              - column:
+                  name: update_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 更新时间
+        - createIndex:
+            tableName: sys_notification
+            indexName: idx_notification_username
+            columns:
+              - column:
+                  name: username

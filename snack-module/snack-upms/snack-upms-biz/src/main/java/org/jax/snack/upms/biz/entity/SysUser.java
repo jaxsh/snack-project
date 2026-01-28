@@ -56,12 +56,12 @@ public class SysUser extends BaseEntity implements Serializable {
 	private String nickname;
 
 	/**
-	 * 头像 URL.
+	 * 头像URL.
 	 */
 	private String avatar;
 
 	/**
-	 * 性别 (0:未知, 1:男, 2:女).
+	 * 性别(0:未知, 1:男, 2:女).
 	 */
 	private Integer gender;
 

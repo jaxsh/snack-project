@@ -49,7 +49,7 @@ public class SysDictTypeDTO {
 	private String dictType;
 
 	/**
-	 * 状态.
+	 * 状态(0:禁用, 1:启用).
 	 */
 	@NotNull(groups = Create.class)
 	private Integer status;

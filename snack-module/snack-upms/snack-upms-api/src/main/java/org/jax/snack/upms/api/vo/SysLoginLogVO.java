@@ -46,9 +46,14 @@ public class SysLoginLogVO implements Serializable {
 	private String username;
 
 	/**
-	 * 事件类型.
+	 * 事件类型(LOGIN_SUCCESS:登录成功, LOGIN_FAILURE:登录失败, LOGOUT:退出登录).
 	 */
 	private String action;
+
+	/**
+	 * 事件类型标签.
+	 */
+	private String actionLabel;
 
 	/**
 	 * 客户端IP地址.

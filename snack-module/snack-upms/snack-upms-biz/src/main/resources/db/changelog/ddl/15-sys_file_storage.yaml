@@ -24,7 +24,7 @@ databaseChangeLog:
               - column:
                   name: file_size
                   type: bigint
-                  remarks: 文件大小 (bytes)
+                  remarks: 文件大小
                   constraints:
                     nullable: false
               - column:

@@ -16,16 +16,17 @@
 
 package org.jax.snack.upms.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.upms.api.dto.SysSchedulerJobDTO;
-import org.jax.snack.upms.api.vo.SysSchedulerJobLogVO;
+import org.jax.snack.upms.api.enums.JobStatus;
 import org.jax.snack.upms.api.vo.SysSchedulerJobVO;
 import org.jax.snack.upms.biz.entity.SysSchedulerJob;
-import org.jax.snack.upms.biz.entity.SysSchedulerJobLog;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 /**
  * 定时任务对象转换器.
@@ -37,13 +38,11 @@ public interface SysSchedulerJobConverter
 		extends BaseDtoConvert<SysSchedulerJobDTO, SysSchedulerJob, SysSchedulerJobVO>,
 		BasePageConvert<SysSchedulerJob, SysSchedulerJobVO> {
 
-	/**
-	 * 日志 Entity 转 VO.
-	 * @param entity 日志实体
-	 * @return VO
-	 */
-	@Mapping(source = "createTime", target = "startTime")
-	@Mapping(source = "updateTime", target = "endTime")
-	SysSchedulerJobLogVO toLogVo(SysSchedulerJobLog entity);
+	@AfterMapping
+	default void afterToVO(SysSchedulerJob entity, @MappingTarget SysSchedulerJobVO vo) {
+		if (entity.getStatus() != null) {
+			vo.setStatusLabel(BaseEnum.getNameByCode(JobStatus.class, entity.getStatus()));
+		}
+	}
 
 }

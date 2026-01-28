@@ -1,3 +1,4 @@
+# sys_message_template 消息模版表
 databaseChangeLog:
   - changeSet:
       id: create-sys_message_template
@@ -29,7 +30,7 @@ databaseChangeLog:
               - column:
                   name: template_type
                   type: varchar(20)
-                  remarks: 模版类型(SMS,MAIL,SITE)
+                  remarks: 模板类型(MAIL:邮件, SMS:短信, SITE:站内信)
                   constraints:
                     nullable: false
               - column:
@@ -46,9 +47,9 @@ databaseChangeLog:
                   remarks: 渠道配置
               - column:
                   name: status
-                  type: char(1)
-                  defaultValue: '0'
-                  remarks: 状态(0:正常,1:停用)
+                  type: tinyint
+                  defaultValueNumeric: 1
+                  remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: remark
                   type: varchar(500)
@@ -71,12 +72,7 @@ databaseChangeLog:
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
                   remarks: 更新时间
-              - column:
-                  name: del_flag
-                  type: char(1)
-                  defaultValue: '0'
-                  remarks: 删除标记
         - addUniqueConstraint:
             tableName: sys_message_template
-            columnNames: template_code
-            constraintName: uk_msg_tmpl_code
+            columnNames: template_code, template_type
+            constraintName: uk_msg_tmpl_code_type

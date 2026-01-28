@@ -11,6 +11,7 @@ dependencies {
 	implementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')
 	implementation project(':snack-framework:snack-mdc-spring-boot-starter')
 	implementation project(':snack-framework:snack-excel-spring-boot-starter')
+	implementation project(':snack-framework:snack-message-spring-boot-starter')
 	implementation project(':snack-framework:snack-utils')
 	implementation project(':snack-framework:snack-oauth2-client-spring-boot-starter')
 

@@ -1,4 +1,4 @@
-# sys_user 用户表结构
+# sys_user 用户表
 databaseChangeLog:
   - changeSet:
       id: create-sys_user
@@ -32,11 +32,11 @@ databaseChangeLog:
               - column:
                   name: avatar
                   type: varchar(255)
-                  remarks: 头像 URL
+                  remarks: 头像URL
               - column:
                   name: gender
                   type: tinyint
-                  defaultValueNumeric: '0'
+                  defaultValueNumeric: 0
                   remarks: 性别(0:未知, 1:男, 2:女)
               - column:
                   name: birthday

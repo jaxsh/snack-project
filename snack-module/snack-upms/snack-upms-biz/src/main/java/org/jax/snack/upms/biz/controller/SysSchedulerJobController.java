@@ -16,6 +16,8 @@
 
 package org.jax.snack.upms.biz.controller;
 
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
@@ -100,7 +102,7 @@ public class SysSchedulerJobController {
 	 * @param ids 定时任务 ID 列表.
 	 */
 	@DeleteMapping("/{ids}")
-	public void delete(@PathVariable java.util.List<Long> ids) throws SchedulerException {
+	public void delete(@PathVariable List<Long> ids) throws SchedulerException {
 		WhereCondition condition = WhereCondition.builder().in(SysSchedulerJob.Fields.id, ids).build();
 		this.schedulerJobService.deleteByDsl(condition);
 	}

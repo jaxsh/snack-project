@@ -44,7 +44,7 @@ public class SysIdRule extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 规则编码 (唯一标识).
+	 * 规则编码(唯一).
 	 */
 	private String ruleCode;
 
@@ -65,7 +65,7 @@ public class SysIdRule extends BaseEntity implements Serializable {
 	private String description;
 
 	/**
-	 * 序列号重置周期.
+	 * 序列号重置周期(NEVER:不重置, DAILY:每天, MONTHLY:每月, YEARLY:每年).
 	 */
 	private String resetCycle;
 

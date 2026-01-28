@@ -53,7 +53,7 @@ public class SysMessageTemplate extends BaseEntity implements Serializable {
 	private String templateName;
 
 	/**
-	 * 模版类型 (SMS, MAIL, SITE).
+	 * 模板类型(MAIL:邮件, SMS:短信, SITE:站内信).
 	 */
 	private String templateType;
 
@@ -74,19 +74,14 @@ public class SysMessageTemplate extends BaseEntity implements Serializable {
 	private Map<String, Object> templateConfig;
 
 	/**
-	 * 状态 (0:正常, 1:停用).
+	 * 状态(0:禁用, 1:启用).
 	 */
-	private String status;
+	private Integer status;
 
 	/**
 	 * 备注.
 	 */
 	private String remark;
-
-	/**
-	 * 删除标记 (0:正常, 1:删除).
-	 */
-	private String delFlag;
 
 	/**
 	 * 字段名常量, 继承父类字段.

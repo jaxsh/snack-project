@@ -46,9 +46,14 @@ public class SysDictTypeVO {
 	private String dictType;
 
 	/**
-	 * 状态.
+	 * 状态(0:禁用, 1:启用).
 	 */
 	private Integer status;
+
+	/**
+	 * 状态标签.
+	 */
+	private String statusLabel;
 
 	/**
 	 * 排序.

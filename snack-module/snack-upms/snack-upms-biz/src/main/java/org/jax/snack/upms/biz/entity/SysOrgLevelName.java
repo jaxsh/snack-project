@@ -45,12 +45,12 @@ public class SysOrgLevelName extends BaseEntity implements Serializable {
 	private Long rootId;
 
 	/**
-	 * 层级编号 (0, 1, 2...).
+	 * 层级编号.
 	 */
 	private Integer level;
 
 	/**
-	 * 层级名称 (如 集团, 分公司, 部门).
+	 * 层级名称.
 	 */
 	private String levelName;
 

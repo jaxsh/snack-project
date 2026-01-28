@@ -16,6 +16,8 @@
 
 package org.jax.snack.upms.biz.controller;
 
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
@@ -94,7 +96,7 @@ public class SysMessageTemplateController {
 	 * @param ids ID 列表
 	 */
 	@DeleteMapping("/{ids}")
-	public void removeById(@PathVariable java.util.List<Long> ids) {
+	public void removeById(@PathVariable List<Long> ids) {
 		WhereCondition condition = WhereCondition.builder().in(SysMessageTemplate.Fields.id, ids).build();
 		this.sysMessageTemplateService.deleteByDsl(condition);
 	}

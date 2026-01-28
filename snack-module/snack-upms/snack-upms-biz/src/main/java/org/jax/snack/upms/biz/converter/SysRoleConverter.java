@@ -16,13 +16,17 @@
 
 package org.jax.snack.upms.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.upms.api.dto.SysRoleDTO;
 import org.jax.snack.upms.api.vo.SysRoleVO;
 import org.jax.snack.upms.biz.entity.SysRole;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * 角色对象转换器.
@@ -32,5 +36,12 @@ import org.mapstruct.Mapper;
 @Mapper(config = BaseMapStructConfig.class)
 public interface SysRoleConverter
 		extends BaseDtoConvert<SysRoleDTO, SysRole, SysRoleVO>, BasePageConvert<SysRole, SysRoleVO> {
+
+	@AfterMapping
+	default void afterToVO(SysRole entity, @MappingTarget SysRoleVO vo) {
+		if (entity.getStatus() != null) {
+			vo.setStatusLabel(BaseEnum.getNameByCode(Status.class, entity.getStatus()));
+		}
+	}
 
 }

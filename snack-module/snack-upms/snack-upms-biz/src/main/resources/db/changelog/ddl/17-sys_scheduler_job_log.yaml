@@ -1,4 +1,4 @@
-# sys_scheduler_job_log 表结构
+# sys_scheduler_job_log 定时任务执行日志表
 databaseChangeLog:
   - changeSet:
       id: create-sys_scheduler_job_log
@@ -18,19 +18,19 @@ databaseChangeLog:
               - column:
                   name: job_id
                   type: bigint
-                  remarks: 关联任务 ID
+                  remarks: 关联任务ID
                   constraints:
                     nullable: false
               - column:
                   name: job_name
                   type: varchar(100)
-                  remarks: 任务名称 (冗余存储)
+                  remarks: 任务名称
                   constraints:
                     nullable: false
               - column:
                   name: duration
                   type: bigint
-                  remarks: 执行时长 (ms)
+                  remarks: 执行时长
               - column:
                   name: status
                   type: tinyint

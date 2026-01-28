@@ -1,4 +1,4 @@
-# sys_org_level_name 表结构
+# sys_org_level_name 组织层级名称配置表
 databaseChangeLog:
   - changeSet:
       id: create-sys_org_level_name
@@ -24,13 +24,13 @@ databaseChangeLog:
               - column:
                   name: level
                   type: tinyint
-                  remarks: 层级编号 (0, 1, 2...)
+                  remarks: 层级编号
                   constraints:
                     nullable: false
               - column:
                   name: level_name
                   type: varchar(50)
-                  remarks: 层级名称 (如 集团, 分公司, 部门)
+                  remarks: 层级名称
                   constraints:
                     nullable: false
               - column:
