@@ -14,60 +14,32 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.api.vo;
+package org.jax.snack.lowcode.biz.repository;
 
-import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
+import org.jax.snack.lowcode.biz.entity.LowcodeBusinessFlow;
 
 /**
- * 页面配置 VO.
+ * 业务流程仓储接口.
  *
  * @author Jax Jiang
  */
-@Getter
-@Setter
-public class LowcodePageVO {
+public interface LowcodeBusinessFlowRepository extends BaseRepository<LowcodeBusinessFlow, Long> {
 
 	/**
-	 * 主键ID.
+	 * 根据流程编码查询.
+	 * @param flowCode 流程编码
+	 * @return 业务流程
 	 */
-	private Long id;
+	Optional<LowcodeBusinessFlow> findByFlowCode(String flowCode);
 
 	/**
-	 * 关联模型ID.
+	 * 查询所有启用的业务流程.
+	 * @return 业务流程列表
 	 */
-	private Long schemaId;
-
-	/**
-	 * 页面类型(create:新增, edit:编辑, list:列表, detail:详情).
-	 */
-	private String pageType;
-
-	/**
-	 * 页面类型标签.
-	 */
-	private String pageTypeLabel;
-
-	/**
-	 * 页面名称.
-	 */
-	private String pageName;
-
-	/**
-	 * UI Schema JSON.
-	 */
-	private String pageSchema;
-
-	/**
-	 * 创建时间.
-	 */
-	private ZonedDateTime createTime;
-
-	/**
-	 * 更新时间.
-	 */
-	private ZonedDateTime updateTime;
+	List<LowcodeBusinessFlow> findAllEnabled();
 
 }

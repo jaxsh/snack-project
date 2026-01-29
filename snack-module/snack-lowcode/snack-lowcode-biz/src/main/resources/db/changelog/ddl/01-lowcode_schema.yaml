@@ -1,4 +1,4 @@
-# lowcode_schema Schema存储表
+# lowcode_schema 模型定义存储表
 databaseChangeLog:
   - changeSet:
       id: create-lowcode_schema
@@ -6,7 +6,7 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: lowcode_schema
-            remarks: Schema存储表
+            remarks: 模型定义存储表
             columns:
               - column:
                   name: id
@@ -18,17 +18,17 @@ databaseChangeLog:
               - column:
                   name: schema_name
                   type: varchar(128)
-                  remarks: Schema名称
+                  remarks: 模型名称
                   constraints:
                     nullable: false
               - column:
                   name: resource_path
                   type: varchar(128)
-                  remarks: RESTful API路径 (kebab-case)
+                  remarks: 接口路径
               - column:
                   name: schema_json
                   type: clob
-                  remarks: JSON Schema定义
+                  remarks: JSON模型定义
                   constraints:
                     nullable: false
               - column:
@@ -48,35 +48,29 @@ databaseChangeLog:
               - column:
                   name: status
                   type: tinyint
-                  defaultValueNumeric: '0'
-                  remarks: 状态 (0=草稿, 1=已发布)
+                  defaultValueNumeric: 0
+                  remarks: 状态(0:草稿, 1:已发布)
               - column:
-                  name: deleted
-                  type: tinyint
-                  defaultValueNumeric: '0'
-                  constraints:
-                    nullable: false
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
               - column:
                   name: create_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
+                  remarks: 创建时间
               - column:
-                  name: create_by
+                  name: update_by
                   type: varchar(64)
+                  remarks: 更新人
               - column:
                   name: update_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-              - column:
-                  name: update_by
-                  type: varchar(64)
+                  remarks: 更新时间
         - addUniqueConstraint:
             tableName: lowcode_schema
-            columnNames: schema_name, status, deleted
+            columnNames: schema_name, status
             constraintName: uk_schema_name_status
         - createIndex:
             tableName: lowcode_schema

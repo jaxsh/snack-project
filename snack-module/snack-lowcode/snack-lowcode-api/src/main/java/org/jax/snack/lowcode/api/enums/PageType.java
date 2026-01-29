@@ -14,60 +14,47 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.api.vo;
-
-import java.time.ZonedDateTime;
+package org.jax.snack.lowcode.api.enums;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
- * 页面配置 VO.
+ * 页面类型枚举.
  *
  * @author Jax Jiang
  */
 @Getter
-@Setter
-public class LowcodePageVO {
+@RequiredArgsConstructor
+public enum PageType implements BaseEnum<String> {
 
 	/**
-	 * 主键ID.
+	 * 创建.
 	 */
-	private Long id;
+	CREATE("create", "新增"),
 
 	/**
-	 * 关联模型ID.
+	 * 编辑.
 	 */
-	private Long schemaId;
+	EDIT("edit", "编辑"),
 
 	/**
-	 * 页面类型(create:新增, edit:编辑, list:列表, detail:详情).
+	 * 列表.
 	 */
-	private String pageType;
+	LIST("list", "列表"),
 
 	/**
-	 * 页面类型标签.
+	 * 详情.
 	 */
-	private String pageTypeLabel;
+	DETAIL("detail", "详情");
 
-	/**
-	 * 页面名称.
-	 */
-	private String pageName;
+	private final String code;
 
-	/**
-	 * UI Schema JSON.
-	 */
-	private String pageSchema;
+	private final String name;
 
-	/**
-	 * 创建时间.
-	 */
-	private ZonedDateTime createTime;
-
-	/**
-	 * 更新时间.
-	 */
-	private ZonedDateTime updateTime;
+	public static PageType of(String code) {
+		return BaseEnum.fromCode(PageType.class, code);
+	}
 
 }

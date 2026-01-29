@@ -16,40 +16,52 @@
 
 package org.jax.snack.lowcode.biz.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
-import tools.jackson.databind.JsonNode;
 
 /**
- * 模型版本历史实体.
+ * 流程链路定义实体.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
 @ToString
-@TableName(value = "lowcode_schema_history", autoResultMap = true)
-public class LowcodeSchemaHistory extends BaseEntity {
+@FieldNameConstants
+@TableName("lowcode_flow_chain")
+public class LowcodeFlowChain extends BaseEntity {
 
 	/**
-	 * 模型名称.
+	 * 关联业务流程ID.
 	 */
-	private String schemaName;
+	private Long flowId;
 
 	/**
-	 * JSON模型定义.
+	 * 链路执行表达式(LiteFlow EL).
 	 */
-	@TableField(typeHandler = Jackson3TypeHandler.class)
-	private JsonNode schemaJson;
+	private String chainEl;
 
 	/**
-	 * 变更摘要.
+	 * 链路可视化配置JSON.
 	 */
-	private String changeSummary;
+	private String chainJson;
+
+	/**
+	 * 执行模式(SYNC:同步, ASYNC:异步).
+	 */
+	private String executeMode;
+
+	/**
+	 * 版本号.
+	 */
+	private Integer version;
+
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

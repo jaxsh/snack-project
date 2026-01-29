@@ -1,12 +1,12 @@
-# lowcode_schema_history 模型版本历史表
+# lowcode_flow_chain 流程执行链定义表
 databaseChangeLog:
   - changeSet:
-      id: create-lowcode_schema_history
+      id: create-lowcode_flow_chain
       author: lowcode
       changes:
         - createTable:
-            tableName: lowcode_schema_history
-            remarks: 模型版本历史表
+            tableName: lowcode_flow_chain
+            remarks: 流程执行链定义表
             columns:
               - column:
                   name: id
@@ -16,21 +16,31 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: schema_name
-                  type: varchar(100)
-                  remarks: 模型名称
+                  name: flow_id
+                  type: bigint
+                  remarks: 关联业务流程
                   constraints:
                     nullable: false
               - column:
-                  name: schema_json
+                  name: chain_el
                   type: clob
-                  remarks: 历史模型定义JSON
+                  remarks: 流程执行表达式
                   constraints:
                     nullable: false
               - column:
-                  name: change_summary
-                  type: varchar(500)
-                  remarks: 变更摘要
+                  name: chain_json
+                  type: clob
+                  remarks: 可视化配置JSON
+              - column:
+                  name: execute_mode
+                  type: varchar(10)
+                  defaultValue: SYNC
+                  remarks: 执行模式(SYNC:同步, ASYNC:异步)
+              - column:
+                  name: version
+                  type: int
+                  defaultValueNumeric: 1
+                  remarks: 版本号
               - column:
                   name: create_by
                   type: varchar(64)
@@ -50,11 +60,8 @@ databaseChangeLog:
                   defaultValueComputed: CURRENT_TIMESTAMP
                   remarks: 更新时间
         - createIndex:
-            tableName: lowcode_schema_history
-            indexName: idx_schema_name_create_time
+            tableName: lowcode_flow_chain
+            indexName: idx_flow_chain_flow_id
             columns:
               - column:
-                  name: schema_name
-              - column:
-                  name: create_time
-                  descending: true
+                  name: flow_id

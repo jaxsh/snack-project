@@ -39,17 +39,17 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 public class LowcodeDataType extends BaseEntity {
 
 	/**
-	 * 逻辑类型(前端) (string, int, decimal...).
+	 * 逻辑类型(kebab-case, 如 email, phone).
 	 */
 	private String logicType;
 
 	/**
-	 * 数据库类型 (varchar, int, decimal...).
+	 * 数据库类型.
 	 */
 	private String dbType;
 
 	/**
-	 * JSON Schema 类型 (string, integer, number, boolean).
+	 * JSON Schema 类型.
 	 */
 	private String jsonSchemaType;
 
@@ -59,14 +59,14 @@ public class LowcodeDataType extends BaseEntity {
 	private String label;
 
 	/**
-	 * 是否需要长度参数.
+	 * 是否需要长度参数(0:否, 1:是).
 	 */
-	private Boolean needLength;
+	private Integer needLength;
 
 	/**
-	 * 是否需要精度参数.
+	 * 是否需要精度参数(0:否, 1:是).
 	 */
-	private Boolean needScale;
+	private Integer needScale;
 
 	/**
 	 * 默认长度.
@@ -84,9 +84,9 @@ public class LowcodeDataType extends BaseEntity {
 	private Integer sortOrder;
 
 	/**
-	 * 是否启用.
+	 * 状态(0:禁用, 1:启用).
 	 */
-	private Boolean enabled;
+	private Integer enabled;
 
 	/**
 	 * 字段名常量, 继承父类字段.

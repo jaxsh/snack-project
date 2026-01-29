@@ -1,12 +1,12 @@
-# lowcode_data_type 数据类型表
+# lowcode_flow_step 流程步骤配置表
 databaseChangeLog:
   - changeSet:
-      id: create-lowcode_data_type
+      id: create-lowcode_flow_step
       author: lowcode
       changes:
         - createTable:
-            tableName: lowcode_data_type
-            remarks: 数据类型表
+            tableName: lowcode_flow_step
+            remarks: 流程步骤配置表
             columns:
               - column:
                   name: id
@@ -14,52 +14,48 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    nullable: false
               - column:
-                  name: logic_type
-                  type: varchar(32)
-                  remarks: 逻辑类型
+                  name: chain_id
+                  type: bigint
+                  remarks: 关联流程链路
                   constraints:
                     nullable: false
               - column:
-                  name: db_type
-                  type: varchar(32)
-                  remarks: 数据库类型
+                  name: step_id
+                  type: varchar(100)
+                  remarks: 步骤ID
                   constraints:
                     nullable: false
               - column:
-                  name: json_schema_type
-                  type: varchar(16)
-                  remarks: JSON模型类型
+                  name: component_type
+                  type: varchar(50)
+                  remarks: 组件类型(CRUD:增删改查, MESSAGE:消息, HTTP:网络请求, SCRIPT:脚本, CONDITION:条件, ITERATOR:循环)
                   constraints:
                     nullable: false
               - column:
-                  name: label
-                  type: varchar(64)
-                  remarks: 显示名称
-                  constraints:
-                    nullable: false
+                  name: step_name
+                  type: varchar(200)
+                  remarks: 步骤名称
               - column:
-                  name: need_length
-                  type: tinyint
-                  defaultValueNumeric: 0
+                  name: config_json
+                  type: clob
+                  remarks: 组件配置JSON
               - column:
-                  name: need_scale
-                  type: tinyint
-                  defaultValueNumeric: 0
-              - column:
-                  name: default_length
-                  type: int
-              - column:
-                  name: default_scale
-                  type: int
+                  name: execute_mode
+                  type: varchar(10)
+                  defaultValue: SYNC
+                  remarks: 执行模式(SYNC:同步, ASYNC:异步)
               - column:
                   name: sort_order
                   type: int
                   defaultValueNumeric: 0
+                  remarks: 排序
               - column:
                   name: enabled
                   type: tinyint
                   defaultValueNumeric: 1
+                  remarks: 状态(0:禁用, 1:启用)
               - column:
                   name: create_by
                   type: varchar(64)
@@ -78,7 +74,9 @@ databaseChangeLog:
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
                   remarks: 更新时间
-        - addUniqueConstraint:
-            tableName: lowcode_data_type
-            columnNames: logic_type
-            constraintName: uk_logic_type
+        - createIndex:
+            tableName: lowcode_flow_step
+            indexName: idx_flow_step_chain_id
+            columns:
+              - column:
+                  name: chain_id

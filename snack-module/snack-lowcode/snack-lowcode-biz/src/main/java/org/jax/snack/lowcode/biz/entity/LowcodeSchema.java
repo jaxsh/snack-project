@@ -27,7 +27,7 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Schema 元数据实体.
+ * 模型定义实体.
  *
  * @author Jax Jiang
  */
@@ -39,17 +39,17 @@ import tools.jackson.databind.JsonNode;
 public class LowcodeSchema extends BaseEntity {
 
 	/**
-	 * Schema 名称 (唯一标识).
+	 * 模型名称.
 	 */
 	private String schemaName;
 
 	/**
-	 * RESTful API 路径 (kebab-case, e.g. sys-employee).
+	 * 接口路径.
 	 */
 	private String resourcePath;
 
 	/**
-	 * JSON Schema 定义.
+	 * JSON模型定义.
 	 */
 	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private JsonNode schemaJson;
@@ -70,7 +70,7 @@ public class LowcodeSchema extends BaseEntity {
 	private String category;
 
 	/**
-	 * 状态.
+	 * 状态(0:草稿, 1:已发布).
 	 */
 	private Integer status;
 

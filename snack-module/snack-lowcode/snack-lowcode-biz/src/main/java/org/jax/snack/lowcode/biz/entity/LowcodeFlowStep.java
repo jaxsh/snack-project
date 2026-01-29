@@ -16,40 +16,67 @@
 
 package org.jax.snack.lowcode.biz.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
-import tools.jackson.databind.JsonNode;
 
 /**
- * 模型版本历史实体.
+ * 流程步骤配置实体.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
 @ToString
-@TableName(value = "lowcode_schema_history", autoResultMap = true)
-public class LowcodeSchemaHistory extends BaseEntity {
+@FieldNameConstants
+@TableName("lowcode_flow_step")
+public class LowcodeFlowStep extends BaseEntity {
 
 	/**
-	 * 模型名称.
+	 * 关联流程链路.
 	 */
-	private String schemaName;
+	private Long chainId;
 
 	/**
-	 * JSON模型定义.
+	 * 步骤ID.
 	 */
-	@TableField(typeHandler = Jackson3TypeHandler.class)
-	private JsonNode schemaJson;
+	private String stepId;
 
 	/**
-	 * 变更摘要.
+	 * 组件类型(CRUD:增删改查, MESSAGE:消息, HTTP:网络请求, SCRIPT:脚本, CONDITION:条件, ITERATOR:循环).
 	 */
-	private String changeSummary;
+	private String componentType;
+
+	/**
+	 * 步骤名称.
+	 */
+	private String stepName;
+
+	/**
+	 * 组件配置JSON.
+	 */
+	private String configJson;
+
+	/**
+	 * 执行模式(SYNC:同步, ASYNC:异步).
+	 */
+	private String executeMode;
+
+	/**
+	 * 排序.
+	 */
+	private Integer sortOrder;
+
+	/**
+	 * 是否启用(0:禁用, 1:启用).
+	 */
+	private Integer enabled;
+
+	public static final class Fields extends BaseEntity.Fields {
+
+	}
 
 }

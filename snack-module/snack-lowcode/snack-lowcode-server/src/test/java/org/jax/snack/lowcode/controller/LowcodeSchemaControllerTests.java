@@ -26,6 +26,7 @@ import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
 import org.jax.snack.lowcode.LowcodeIntegrationTests;
 import org.jax.snack.lowcode.api.dto.LowcodeSchemaDTO;
+import org.jax.snack.lowcode.api.enums.SchemaStatus;
 import org.jax.snack.lowcode.api.service.LowcodeSchemaService;
 import org.jax.snack.lowcode.api.vo.LowcodeSchemaVO;
 import org.jax.snack.lowcode.biz.entity.LowcodeSchema;
@@ -96,7 +97,7 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 	private LowcodeSchemaVO queryPublishedBySchemaName(String schemaName) {
 		QueryCondition condition = QueryCondition.builder()
 			.eq(LowcodeSchema.Fields.schemaName, schemaName)
-			.eq(LowcodeSchema.Fields.status, 1)
+			.eq(LowcodeSchema.Fields.status, SchemaStatus.PUBLISHED.getCode())
 			.build();
 		PageResult<LowcodeSchemaVO> result = this.schemaService.queryByDsl(condition);
 		if (result.getRecords().isEmpty()) {
@@ -261,7 +262,7 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
 			LowcodeSchemaVO published = queryPublishedBySchemaName(schemaName);
-			assertThat(published.getStatus()).isEqualTo(1);
+			assertThat(published.getStatus()).isEqualTo(SchemaStatus.PUBLISHED.getCode());
 		}
 
 		@Test

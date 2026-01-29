@@ -9,6 +9,7 @@ org-mockito = '5.18.0'
 org-zalando-logbook = '3.12.3'
 com-aliyun-dysmsapi = "4.4.0"
 com-github-ulisesbocchio-jasypt = '4.0.4'
+com-yomahub-liteflow = '2.13.0'
 
 [libraries]
 spring-boot-dependencies = { module = 'org.springframework.boot:spring-boot-dependencies', version.ref = 'org-springframework-boot' }
@@ -20,6 +21,7 @@ org-mapstruct-mapstruct-processor = { module = 'org.mapstruct:mapstruct-processo
 com-networknt-json-schema-validator = { module = 'com.networknt:json-schema-validator', version.ref = 'com-networknt-json-schema-validator' }
 com-aliyun-dysmsapi20170525 = { module = 'com.aliyun:dysmsapi20170525', version.ref = 'com-aliyun-dysmsapi' }
 com-github-ulisesbocchio-jasypt-spring-boot-starter = { module = 'com.github.ulisesbocchio:jasypt-spring-boot-starter', version.ref = 'com-github-ulisesbocchio-jasypt' }
+com-yomahub-liteflow-spring-boot-starter = { module = 'com.yomahub:liteflow-spring-boot-starter', version.ref = 'com-yomahub-liteflow' }
 
 
 # buildSrc dependencies

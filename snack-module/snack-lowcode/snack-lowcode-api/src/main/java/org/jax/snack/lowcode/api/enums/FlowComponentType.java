@@ -14,60 +14,57 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.api.vo;
-
-import java.time.ZonedDateTime;
+package org.jax.snack.lowcode.api.enums;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
- * 页面配置 VO.
+ * 流程组件类型枚举.
  *
  * @author Jax Jiang
  */
 @Getter
-@Setter
-public class LowcodePageVO {
+@RequiredArgsConstructor
+public enum FlowComponentType implements BaseEnum<String> {
 
 	/**
-	 * 主键ID.
+	 * 增删改查.
 	 */
-	private Long id;
+	CRUD("CRUD", "增删改查"),
 
 	/**
-	 * 关联模型ID.
+	 * 消息.
 	 */
-	private Long schemaId;
+	MESSAGE("MESSAGE", "消息"),
 
 	/**
-	 * 页面类型(create:新增, edit:编辑, list:列表, detail:详情).
+	 * 网络请求.
 	 */
-	private String pageType;
+	HTTP("HTTP", "网络请求"),
 
 	/**
-	 * 页面类型标签.
+	 * 脚本.
 	 */
-	private String pageTypeLabel;
+	SCRIPT("SCRIPT", "脚本"),
 
 	/**
-	 * 页面名称.
+	 * 条件.
 	 */
-	private String pageName;
+	CONDITION("CONDITION", "条件"),
 
 	/**
-	 * UI Schema JSON.
+	 * 循环.
 	 */
-	private String pageSchema;
+	ITERATOR("ITERATOR", "循环");
 
-	/**
-	 * 创建时间.
-	 */
-	private ZonedDateTime createTime;
+	private final String code;
 
-	/**
-	 * 更新时间.
-	 */
-	private ZonedDateTime updateTime;
+	private final String name;
+
+	public static FlowComponentType of(String code) {
+		return BaseEnum.fromCode(FlowComponentType.class, code);
+	}
 
 }

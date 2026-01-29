@@ -1,30 +1,65 @@
+# 初始化低代码元数据模版
 databaseChangeLog:
   - changeSet:
-      id: insert-entity-template
+      id: insert-lowcode_meta_schema-entity-template
       author: lowcode
       changes:
         - insert:
             tableName: lowcode_meta_schema
             columns:
-              - column: { name: meta_type, value: entity }
-              - column: { name: version, value: '1.0' }
-              - column: { name: description, value: 实体定义模板 }
+              - column:
+                  name: meta_type
+                  value: entity
+              - column:
+                  name: version
+                  value: "1.0"
+              - column:
+                  name: description
+                  value: 实体定义模板
               - column:
                   name: schema_json
                   valueClobFile: ../data/entity-template.json
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
 
   - changeSet:
-      id: insert-field-template
+      id: insert-lowcode_meta_schema-field-template
       author: lowcode
       changes:
         - insert:
             tableName: lowcode_meta_schema
             columns:
-              - column: { name: meta_type, value: field }
-              - column: { name: version, value: '1.0' }
-              - column: { name: description, value: 字段定义模板 }
+              - column:
+                  name: meta_type
+                  value: field
+              - column:
+                  name: version
+                  value: "1.0"
+              - column:
+                  name: description
+                  value: 字段定义模板
               - column:
                   name: schema_json
                   valueClobFile: ../data/field-template.json
-
-
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP

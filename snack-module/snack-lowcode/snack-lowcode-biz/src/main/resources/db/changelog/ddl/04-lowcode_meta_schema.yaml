@@ -27,26 +27,30 @@ databaseChangeLog:
               - column:
                   name: schema_json
                   type: clob
-                  remarks: 模板Schema
+                  remarks: 模板模型定义
                   constraints:
                     nullable: false
               - column:
                   name: description
                   type: varchar(255)
               - column:
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
+              - column:
                   name: create_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
               - column:
-                  name: create_by
+                  name: update_by
                   type: varchar(64)
+                  remarks: 更新人
               - column:
                   name: update_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
-              - column:
-                  name: update_by
-                  type: varchar(64)
+                  remarks: 更新时间
         - addUniqueConstraint:
             tableName: lowcode_meta_schema
             columnNames: meta_type

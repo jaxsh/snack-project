@@ -16,10 +16,15 @@
 
 package org.jax.snack.lowcode.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.lowcode.api.vo.LowcodeDataTypeVO;
 import org.jax.snack.lowcode.biz.entity.LowcodeDataType;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * DataType 对象转换器.
@@ -27,7 +32,6 @@ import org.mapstruct.Mapper;
  * @author Jax Jiang
  */
 @Mapper(config = BaseMapStructConfig.class)
-@FunctionalInterface
 public interface LowcodeDataTypeConverter {
 
 	/**
@@ -36,5 +40,18 @@ public interface LowcodeDataTypeConverter {
 	 * @return VO
 	 */
 	LowcodeDataTypeVO toVo(LowcodeDataType entity);
+
+	@AfterMapping
+	default void afterToVO(LowcodeDataType entity, @MappingTarget LowcodeDataTypeVO vo) {
+		if (entity.getNeedLength() != null) {
+			vo.setNeedLengthLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getNeedLength()));
+		}
+		if (entity.getNeedScale() != null) {
+			vo.setNeedScaleLabel(BaseEnum.getNameByCode(YesNoStatus.class, entity.getNeedScale()));
+		}
+		if (entity.getEnabled() != null) {
+			vo.setEnabledLabel(BaseEnum.getNameByCode(Status.class, entity.getEnabled()));
+		}
+	}
 
 }

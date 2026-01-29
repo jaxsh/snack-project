@@ -16,7 +16,6 @@
 
 package org.jax.snack.lowcode.biz.entity;
 
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +34,7 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 public class LowcodeResource extends BaseEntity {
 
 	/**
-	 * API 资源路径.
+	 * 接口路径.
 	 */
 	private String resourcePath;
 
@@ -45,7 +44,7 @@ public class LowcodeResource extends BaseEntity {
 	private String resourceType;
 
 	/**
-	 * 关联的 Schema ID.
+	 * 关联模型ID.
 	 */
 	private Long schemaId;
 
@@ -78,11 +77,5 @@ public class LowcodeResource extends BaseEntity {
 	 * 启用导入.
 	 */
 	private Boolean enableImport;
-
-	/**
-	 * 逻辑删除标记.
-	 */
-	@TableLogic
-	private Integer deleted;
 
 }

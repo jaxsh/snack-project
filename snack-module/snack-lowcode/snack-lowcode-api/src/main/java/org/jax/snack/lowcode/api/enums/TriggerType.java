@@ -14,60 +14,42 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.api.vo;
-
-import java.time.ZonedDateTime;
+package org.jax.snack.lowcode.api.enums;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
- * 页面配置 VO.
+ * 业务流触发类型枚举.
  *
  * @author Jax Jiang
  */
 @Getter
-@Setter
-public class LowcodePageVO {
+@RequiredArgsConstructor
+public enum TriggerType implements BaseEnum<String> {
 
 	/**
-	 * 主键ID.
+	 * 接口触发.
 	 */
-	private Long id;
+	API("API", "接口触发"),
 
 	/**
-	 * 关联模型ID.
+	 * 定时触发.
 	 */
-	private Long schemaId;
+	TIMER("TIMER", "定时触发"),
 
 	/**
-	 * 页面类型(create:新增, edit:编辑, list:列表, detail:详情).
+	 * 事件触发.
 	 */
-	private String pageType;
+	EVENT("EVENT", "事件触发");
 
-	/**
-	 * 页面类型标签.
-	 */
-	private String pageTypeLabel;
+	private final String code;
 
-	/**
-	 * 页面名称.
-	 */
-	private String pageName;
+	private final String name;
 
-	/**
-	 * UI Schema JSON.
-	 */
-	private String pageSchema;
-
-	/**
-	 * 创建时间.
-	 */
-	private ZonedDateTime createTime;
-
-	/**
-	 * 更新时间.
-	 */
-	private ZonedDateTime updateTime;
+	public static TriggerType of(String code) {
+		return BaseEnum.fromCode(TriggerType.class, code);
+	}
 
 }

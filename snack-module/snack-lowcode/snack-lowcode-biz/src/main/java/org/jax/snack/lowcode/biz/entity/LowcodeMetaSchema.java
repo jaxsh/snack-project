@@ -29,7 +29,7 @@ import tools.jackson.databind.JsonNode;
 /**
  * 元数据模板实体.
  * <p>
- * 存储实体/字段的定义模板 (JSON Schema 格式).
+ * 存储实体/字段的定义模板.
  * </p>
  *
  * @author Jax Jiang
@@ -42,7 +42,7 @@ import tools.jackson.databind.JsonNode;
 public class LowcodeMetaSchema extends BaseEntity {
 
 	/**
-	 * 模板类型 (entity, field).
+	 * 模板类型(ENTITY:模型, FIELD:字段).
 	 */
 	private String metaType;
 
@@ -51,9 +51,6 @@ public class LowcodeMetaSchema extends BaseEntity {
 	 */
 	private String version;
 
-	/**
-	 * 模板 Schema (JSON Schema 格式).
-	 */
 	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private JsonNode schemaJson;
 

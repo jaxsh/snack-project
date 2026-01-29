@@ -18,7 +18,7 @@ databaseChangeLog:
               - column:
                   name: resource_path
                   type: varchar(255)
-                  remarks: API路径
+                  remarks: 接口路径
                   constraints:
                     nullable: false
               - column:
@@ -29,56 +29,54 @@ databaseChangeLog:
               - column:
                   name: schema_id
                   type: bigint
-                  remarks: Schema ID
+                  remarks: 模型ID
                   constraints:
                     nullable: false
               - column:
                   name: enable_list
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
               - column:
                   name: enable_create
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
               - column:
                   name: enable_update
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
               - column:
                   name: enable_delete
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
               - column:
                   name: enable_export
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
               - column:
                   name: enable_import
                   type: tinyint
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: 1
               - column:
-                  name: deleted
-                  type: tinyint
-                  defaultValueNumeric: '0'
-                  constraints:
-                    nullable: false
+                  name: create_by
+                  type: varchar(64)
+                  remarks: 创建人
               - column:
                   name: create_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: 创建时间
               - column:
-                  name: create_by
+                  name: update_by
                   type: varchar(64)
+                  remarks: 更新人
               - column:
                   name: update_time
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
-              - column:
-                  name: update_by
-                  type: varchar(64)
+                  remarks: 更新时间
         - addUniqueConstraint:
             tableName: lowcode_resource
-            columnNames: resource_path, deleted
+            columnNames: resource_path
             constraintName: uk_resource_path
         - addForeignKeyConstraint:
             baseTableName: lowcode_resource

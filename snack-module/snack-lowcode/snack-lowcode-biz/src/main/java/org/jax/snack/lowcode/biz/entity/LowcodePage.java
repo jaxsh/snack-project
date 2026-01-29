@@ -16,7 +16,6 @@
 
 package org.jax.snack.lowcode.biz.entity;
 
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +26,7 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 /**
  * 页面配置实体.
  * <p>
- * 存储 UI Schema，与数据模型分离.
+ * 存储界面模型，与数据模型分离.
  * </p>
  *
  * @author Jax Jiang
@@ -45,7 +44,7 @@ public class LowcodePage extends BaseEntity {
 	private Long schemaId;
 
 	/**
-	 * 页面类型 (create, update, list, detail).
+	 * 页面类型(create:新增, update:编辑, list:列表, detail:详情).
 	 */
 	private String pageType;
 
@@ -55,15 +54,9 @@ public class LowcodePage extends BaseEntity {
 	private String pageName;
 
 	/**
-	 * UI Schema JSON.
+	 * 界面模型JSON.
 	 */
 	private String pageSchema;
-
-	/**
-	 * 逻辑删除.
-	 */
-	@TableLogic
-	private Boolean deleted;
 
 	/**
 	 * 字段名常量, 继承父类字段.

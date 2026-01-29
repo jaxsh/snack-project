@@ -16,11 +16,15 @@
 
 package org.jax.snack.lowcode.biz.converter;
 
+import org.jax.snack.framework.core.enums.BaseEnum;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
 import org.jax.snack.lowcode.api.dto.SavePageRequest;
+import org.jax.snack.lowcode.api.enums.PageType;
 import org.jax.snack.lowcode.api.vo.LowcodePageVO;
 import org.jax.snack.lowcode.biz.entity.LowcodePage;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 /**
  * Page 对象转换器.
@@ -43,5 +47,12 @@ public interface LowcodePageConverter {
 	 * @return 实体
 	 */
 	LowcodePage toEntity(SavePageRequest dto);
+
+	@AfterMapping
+	default void afterToVo(LowcodePage entity, @MappingTarget LowcodePageVO vo) {
+		if (entity.getPageType() != null) {
+			vo.setPageTypeLabel(BaseEnum.getNameByCode(PageType.class, entity.getPageType()));
+		}
+	}
 
 }

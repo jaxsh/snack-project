@@ -54,14 +54,24 @@ public class LowcodeDataTypeVO {
 	private String label;
 
 	/**
-	 * 是否需要长度参数.
+	 * 是否需要长度参数(0:否, 1:是).
 	 */
-	private Boolean needLength;
+	private Integer needLength;
 
 	/**
-	 * 是否需要精度参数.
+	 * 是否需要长度参数标签.
 	 */
-	private Boolean needScale;
+	private String needLengthLabel;
+
+	/**
+	 * 是否需要精度参数(0:否, 1:是).
+	 */
+	private Integer needScale;
+
+	/**
+	 * 是否需要精度参数标签.
+	 */
+	private String needScaleLabel;
 
 	/**
 	 * 默认长度.
@@ -79,8 +89,13 @@ public class LowcodeDataTypeVO {
 	private Integer sortOrder;
 
 	/**
-	 * 是否启用.
+	 * 状态(0:禁用, 1:启用).
 	 */
-	private Boolean enabled;
+	private Integer enabled;
+
+	/**
+	 * 状态标签.
+	 */
+	private String enabledLabel;
 
 }

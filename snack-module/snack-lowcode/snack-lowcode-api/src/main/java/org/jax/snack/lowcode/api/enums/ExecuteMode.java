@@ -14,60 +14,37 @@
  * limitations under the License.
  */
 
-package org.jax.snack.lowcode.api.vo;
-
-import java.time.ZonedDateTime;
+package org.jax.snack.lowcode.api.enums;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.core.enums.BaseEnum;
 
 /**
- * 页面配置 VO.
+ * 流程执行模式枚举.
  *
  * @author Jax Jiang
  */
 @Getter
-@Setter
-public class LowcodePageVO {
+@RequiredArgsConstructor
+public enum ExecuteMode implements BaseEnum<String> {
 
 	/**
-	 * 主键ID.
+	 * 同步.
 	 */
-	private Long id;
+	SYNC("SYNC", "同步"),
 
 	/**
-	 * 关联模型ID.
+	 * 异步.
 	 */
-	private Long schemaId;
+	ASYNC("ASYNC", "异步");
 
-	/**
-	 * 页面类型(create:新增, edit:编辑, list:列表, detail:详情).
-	 */
-	private String pageType;
+	private final String code;
 
-	/**
-	 * 页面类型标签.
-	 */
-	private String pageTypeLabel;
+	private final String name;
 
-	/**
-	 * 页面名称.
-	 */
-	private String pageName;
-
-	/**
-	 * UI Schema JSON.
-	 */
-	private String pageSchema;
-
-	/**
-	 * 创建时间.
-	 */
-	private ZonedDateTime createTime;
-
-	/**
-	 * 更新时间.
-	 */
-	private ZonedDateTime updateTime;
+	public static ExecuteMode of(String code) {
+		return BaseEnum.fromCode(ExecuteMode.class, code);
+	}
 
 }
