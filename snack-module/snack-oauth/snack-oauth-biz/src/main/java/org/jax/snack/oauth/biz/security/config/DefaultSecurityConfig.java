@@ -31,6 +31,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -53,16 +54,19 @@ public class DefaultSecurityConfig {
 	 * <p>
 	 * 配置表单登录和基本的授权规则.
 	 * @param http HttpSecurity
+	 * @param securityProperties SecurityProperties
 	 * @param securityPoliciesProvider AuthorizationManager provider
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(2)
-	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
+	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SecurityProperties securityProperties,
 			ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> securityPoliciesProvider) {
 		List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies = securityPoliciesProvider
 			.orderedStream()
 			.toList();
+
+		String loginPage = securityProperties.getLoginPage();
 
 		http.authorizeHttpRequests((authorize) -> {
 			authorize.requestMatchers("/error", "/actuator/health").permitAll();
@@ -70,6 +74,8 @@ public class DefaultSecurityConfig {
 			authorize.anyRequest().authenticated();
 		})
 			.formLogin(Customizer.withDefaults())
+			.exceptionHandling((exceptions) -> exceptions
+				.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage)))
 			.csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));

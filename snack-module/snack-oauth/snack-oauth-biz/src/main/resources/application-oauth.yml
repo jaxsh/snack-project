@@ -13,3 +13,7 @@ snack:
             private-key: classpath:keys/jwt-private.pem
             public-key: classpath:keys/jwt-public.pem
             active: true
+  security:
+    policy:
+      login-page: http://localhost:8000/user/login
+

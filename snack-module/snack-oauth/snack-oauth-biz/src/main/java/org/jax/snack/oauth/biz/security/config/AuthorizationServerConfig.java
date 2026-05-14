@@ -61,19 +61,23 @@ public class AuthorizationServerConfig {
 	/**
 	 * 授权服务器安全过滤链.
 	 * @param http HttpSecurity
+	 * @param securityProperties SecurityProperties
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(1)
-	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) {
+	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+			SecurityProperties securityProperties) {
 		OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
+
+		String loginPage = securityProperties.getLoginPage();
 
 		http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
 			.with(authorizationServerConfigurer,
 					(authorizationServer) -> authorizationServer.oidc(Customizer.withDefaults()))
 			.authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated())
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
-					new LoginUrlAuthenticationEntryPoint("/login"), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
+					new LoginUrlAuthenticationEntryPoint(loginPage), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
 			.oauth2ResourceServer((resourceServer) -> resourceServer.jwt(Customizer.withDefaults()));
 
 		return http.build();

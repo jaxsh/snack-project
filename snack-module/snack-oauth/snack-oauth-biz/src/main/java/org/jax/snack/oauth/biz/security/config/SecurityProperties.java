@@ -60,16 +60,17 @@ public class SecurityProperties {
 
 	/**
 	 * 是否强制首次登录修改密码.
-	 * <p>
-	 * 默认: true.
 	 */
 	private boolean forceChangeInitialPassword = true;
 
 	/**
 	 * 新用户默认密码.
-	 * <p>
-	 * 默认: Snack@123.
 	 */
 	private String defaultPassword = "Snack@123";
+
+	/**
+	 * 外部登录页面地址.
+	 */
+	private String loginPage = "/login";
 
 }
