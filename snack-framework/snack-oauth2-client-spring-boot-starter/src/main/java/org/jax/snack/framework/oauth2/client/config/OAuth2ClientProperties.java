@@ -99,4 +99,9 @@ public class OAuth2ClientProperties {
 	 */
 	private List<String> permitAllPaths = List.of("/error", "/actuator/health");
 
+	/**
+	 * 外部登录页面地址.
+	 */
+	private String loginPage = "/login";
+
 }
