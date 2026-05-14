@@ -24,7 +24,3 @@ server:
 logging:
   file:
     name: logs/${spring.application.name}.log
-    level:
-      org.springframework.security: DEBUG
-      org.springframework.security.authentication: TRACE
-      org.springframework.security.crypto: DEBUG
