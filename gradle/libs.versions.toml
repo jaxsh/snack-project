@@ -1,5 +1,5 @@
 [versions]
-org-springframework-boot = '4.0.0'
+org-springframework-boot = '4.0.6'
 io-spring-javaformat = '0.0.45'
 net-sourceforge-pmd = '7.18.0'
 com-baomidou-mybatis-plus = '3.5.16'
