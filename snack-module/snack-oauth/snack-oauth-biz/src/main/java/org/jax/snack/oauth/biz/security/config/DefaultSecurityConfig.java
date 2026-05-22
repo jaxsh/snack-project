@@ -21,7 +21,6 @@ import java.util.List;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityPolicy;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
-import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -87,16 +86,6 @@ public class DefaultSecurityConfig {
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
 
 		return http.build();
-	}
-
-	@Bean
-	public JsonAuthenticationSuccessHandler jsonAuthenticationSuccessHandler(JsonMapper jsonMapper) {
-		return new JsonAuthenticationSuccessHandler(jsonMapper);
-	}
-
-	@Bean
-	public JsonAuthenticationFailureHandler jsonAuthenticationFailureHandler(JsonMapper jsonMapper) {
-		return new JsonAuthenticationFailureHandler(jsonMapper);
 	}
 
 }
