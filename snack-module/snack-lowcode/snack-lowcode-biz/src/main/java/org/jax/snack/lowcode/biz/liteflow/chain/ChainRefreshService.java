@@ -51,11 +51,13 @@ public class ChainRefreshService {
 	 * @param flowCode 流程编码
 	 */
 	public void refresh(String flowCode) {
-		this.businessFlowRepository.findByFlowCode(flowCode).flatMap(flow -> this.flowChainRepository.findByFlowId(flow.getId())).ifPresent((LowcodeFlowChain chain) -> {
-			String chainId = buildChainId(flowCode);
-			registerChain(chainId, chain.getChainEl());
-			log.info("Refreshed chain: {}", chainId);
-		});
+		this.businessFlowRepository.findByFlowCode(flowCode)
+			.flatMap((flow) -> this.flowChainRepository.findByFlowId(flow.getId()))
+			.ifPresent((LowcodeFlowChain chain) -> {
+				String chainId = buildChainId(flowCode);
+				registerChain(chainId, chain.getChainEl());
+				log.info("Refreshed chain: {}", chainId);
+			});
 	}
 
 	/**
