@@ -3,6 +3,8 @@ spring:
     type: caffeine
     caffeine:
       spec: expireAfterWrite=10m,maximumSize=10000
+  messages:
+    basename: i18n/messages,org.springframework.security.messages
 
 snack:
   oauth:

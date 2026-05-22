@@ -19,6 +19,9 @@ package org.jax.snack.oauth.biz.security.config;
 import java.util.List;
 
 import org.jax.snack.oauth.biz.security.OAuth2SecurityPolicy;
+import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
+import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -56,12 +59,15 @@ public class DefaultSecurityConfig {
 	 * @param http HttpSecurity
 	 * @param securityProperties SecurityProperties
 	 * @param securityPoliciesProvider AuthorizationManager provider
+	 * @param successHandler successHandler
+	 * @param failureHandler failureHandler
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(2)
 	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SecurityProperties securityProperties,
-			ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> securityPoliciesProvider) {
+			ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> securityPoliciesProvider,
+			JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler) {
 		List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies = securityPoliciesProvider
 			.orderedStream()
 			.toList();
@@ -73,7 +79,7 @@ public class DefaultSecurityConfig {
 			OAuth2SecurityPolicy.configureAuthorization(authorize, securityPolicies);
 			authorize.anyRequest().authenticated();
 		})
-			.formLogin(Customizer.withDefaults())
+			.formLogin((form) -> form.successHandler(successHandler).failureHandler(failureHandler))
 			.exceptionHandling((exceptions) -> exceptions
 				.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage)))
 			.csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -81,6 +87,16 @@ public class DefaultSecurityConfig {
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
 
 		return http.build();
+	}
+
+	@Bean
+	public JsonAuthenticationSuccessHandler jsonAuthenticationSuccessHandler(JsonMapper jsonMapper) {
+		return new JsonAuthenticationSuccessHandler(jsonMapper);
+	}
+
+	@Bean
+	public JsonAuthenticationFailureHandler jsonAuthenticationFailureHandler(JsonMapper jsonMapper) {
+		return new JsonAuthenticationFailureHandler(jsonMapper);
 	}
 
 }
