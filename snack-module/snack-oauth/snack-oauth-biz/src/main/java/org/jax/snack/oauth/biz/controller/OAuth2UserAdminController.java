@@ -35,8 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * OAuth2 用户管理控制器 (管理员).
- * <p>
- * TODO: 需要权限控制, 等待 RBAC 完善后添加.
  *
  * @author Jax Jiang
  */
