@@ -139,7 +139,8 @@ public class OAuth2ClientAutoConfiguration {
 		})
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
 			.csrf((csrf) -> csrf.csrfTokenRepository(cookieCsrfTokenRepository)
-				.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler))
+				.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+				.ignoringRequestMatchers("/login", "/logout"))
 			.cors(Customizer.withDefaults())
 			.formLogin(Customizer.withDefaults())
 			.oauth2Login((oauth2Login) -> {
