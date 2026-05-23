@@ -42,6 +42,11 @@ public class ErrorCode {
 	public static final String PARAM_INVALID = "1002";
 
 	/**
+	 * 资源不存在. 表示请求的 HTTP 资源路径未找到.
+	 */
+	public static final String NOT_FOUND = "1003";
+
+	/**
 	 * 数据已存在. 表示试图创建重复的数据.
 	 */
 	public static final String DATA_ALREADY_EXISTS = "2000";
