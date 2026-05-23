@@ -19,6 +19,7 @@ package org.jax.snack.framework.web.config;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.jax.snack.framework.web.advice.GlobalExceptionAdvice;
 import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
+import org.jax.snack.framework.web.advice.HttpExceptionAdvice;
 import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
 import org.jax.snack.framework.web.i18n.TimeZoneInterceptor;
 import tools.jackson.databind.json.JsonMapper;
@@ -55,6 +56,16 @@ public class WebAutoConfiguration implements WebMvcConfigurer {
 	@Bean
 	public GlobalExceptionAdvice exceptionAdvice(MessageSource messageSource) {
 		return new GlobalExceptionAdvice(messageSource);
+	}
+
+	/**
+	 * HTTP 层异常处理器. 处理 404/405/415 等 DispatcherServlet 级别的 HTTP 异常.
+	 * @param messageSource 消息源, 用于国际化
+	 * @return HTTP 层异常处理器实例
+	 */
+	@Bean
+	public HttpExceptionAdvice httpExceptionAdvice(MessageSource messageSource) {
+		return new HttpExceptionAdvice(messageSource);
 	}
 
 	/**
