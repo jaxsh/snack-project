@@ -21,6 +21,7 @@ import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
+import org.jax.snack.framework.core.enums.BaseEnum;
 import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
@@ -67,7 +68,7 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 		user.setPassword(this.passwordEncoder.encode(this.securityProperties.getDefaultPassword()));
 		user.setEnabled(Status.ENABLED.getCode());
 		user.setLocked(YesNoStatus.NO.getCode());
-		user.setExpired(Status.ENABLED.getCode());
+		user.setExpired(YesNoStatus.NO.getCode());
 		user.setInitialPassword(YesNoStatus.YES.getCode());
 		user.setLastPasswordResetTime(ZonedDateTime.now());
 
@@ -92,6 +93,7 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 			user.setInitialPassword(YesNoStatus.NO.getCode());
 			user.setLastPasswordResetTime(ZonedDateTime.now());
 			user.setLocked(YesNoStatus.NO.getCode());
+			user.setExpired(YesNoStatus.NO.getCode());
 		}
 
 		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.id, existing.getId()).build();
@@ -105,7 +107,13 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 			.stream()
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
-		return this.converter.toVO(user);
+
+		OAuth2UserVO vo = this.converter.toVO(user);
+		boolean credentialsExpired = this.securityProperties.isCredentialsExpired(user.getLastPasswordResetTime());
+		int expiredCode = credentialsExpired ? YesNoStatus.YES.getCode() : YesNoStatus.NO.getCode();
+		vo.setExpired(expiredCode);
+		vo.setExpiredLabel(BaseEnum.getNameByCode(YesNoStatus.class, expiredCode));
+		return vo;
 	}
 
 	@Override

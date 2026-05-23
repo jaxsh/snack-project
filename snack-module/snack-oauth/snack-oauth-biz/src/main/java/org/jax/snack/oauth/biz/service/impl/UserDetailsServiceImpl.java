@@ -80,7 +80,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			.password(user.getPassword())
 			.disabled(Objects.equals(user.getEnabled(), Status.DISABLED.getCode()))
 			.accountLocked(accountLocked)
-			.accountExpired(Objects.equals(user.getExpired(), Status.DISABLED.getCode()))
+			.accountExpired(Objects.equals(user.getExpired(), YesNoStatus.YES.getCode()))
 			.credentialsExpired(false)
 			.authorities(getAuthorities(user))
 			.build();
@@ -138,12 +138,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @return 是否过期
 	 */
 	private boolean isCredentialsExpired(OAuth2User user) {
-		int passwordExpirationDays = this.securityProperties.getPasswordExpirationDays();
-		if (passwordExpirationDays > 0 && user.getLastPasswordResetTime() != null) {
-			ZonedDateTime deadline = user.getLastPasswordResetTime().plusDays(passwordExpirationDays);
-			return ZonedDateTime.now().isAfter(deadline);
-		}
-		return false;
+		return this.securityProperties.isCredentialsExpired(user.getLastPasswordResetTime());
 	}
 
 }

@@ -16,6 +16,7 @@
 
 package org.jax.snack.oauth.biz.security.config;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import lombok.Getter;
@@ -72,5 +73,17 @@ public class SecurityProperties {
 	 * 外部登录页面地址.
 	 */
 	private String loginPage = "/login";
+
+	/**
+	 * 判断凭证是否已过期.
+	 * @param lastPasswordResetTime 最近一次密码重置时间
+	 * @return 是否过期
+	 */
+	public boolean isCredentialsExpired(ZonedDateTime lastPasswordResetTime) {
+		if (getPasswordExpirationDays() <= 0 || lastPasswordResetTime == null) {
+			return false;
+		}
+		return ZonedDateTime.now().isAfter(lastPasswordResetTime.plusDays(getPasswordExpirationDays()));
+	}
 
 }
