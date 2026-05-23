@@ -23,6 +23,8 @@ import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
+import org.jax.snack.framework.core.exception.BusinessException;
+import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
 import org.jax.snack.oauth.api.service.OAuth2UserService;
 import org.jax.snack.oauth.api.vo.OAuth2UserVO;
@@ -31,7 +33,6 @@ import org.jax.snack.oauth.biz.entity.OAuth2User;
 import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,7 +82,7 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 		OAuth2User existing = this.userRepository.queryListByDsl(condition)
 			.stream()
 			.findFirst()
-			.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
 
 		OAuth2User user = this.converter.toEntity(dto);
 		user.setId(existing.getId());
@@ -103,7 +104,7 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 		OAuth2User user = this.userRepository.queryListByDsl(condition)
 			.stream()
 			.findFirst()
-			.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
 		return this.converter.toVO(user);
 	}
 
