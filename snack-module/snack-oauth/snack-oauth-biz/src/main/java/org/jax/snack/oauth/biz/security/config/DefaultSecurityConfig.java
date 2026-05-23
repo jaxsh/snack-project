@@ -19,6 +19,7 @@ package org.jax.snack.oauth.biz.security.config;
 import java.util.List;
 
 import org.jax.snack.oauth.biz.security.OAuth2SecurityPolicy;
+import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
 
@@ -60,13 +61,15 @@ public class DefaultSecurityConfig {
 	 * @param securityPoliciesProvider AuthorizationManager provider
 	 * @param successHandler successHandler
 	 * @param failureHandler failureHandler
+	 * @param accessDeniedHandler accessDeniedHandler
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(2)
 	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SecurityProperties securityProperties,
 			ObjectProvider<AuthorizationManager<RequestAuthorizationContext>> securityPoliciesProvider,
-			JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler) {
+			JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler,
+			BizAccessDeniedHandler accessDeniedHandler) {
 		List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies = securityPoliciesProvider
 			.orderedStream()
 			.toList();
@@ -79,8 +82,9 @@ public class DefaultSecurityConfig {
 			authorize.anyRequest().authenticated();
 		})
 			.formLogin((form) -> form.successHandler(successHandler).failureHandler(failureHandler))
-			.exceptionHandling((exceptions) -> exceptions
-				.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage)))
+			.exceptionHandling(
+					(exceptions) -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage))
+						.accessDeniedHandler(accessDeniedHandler))
 			.csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));

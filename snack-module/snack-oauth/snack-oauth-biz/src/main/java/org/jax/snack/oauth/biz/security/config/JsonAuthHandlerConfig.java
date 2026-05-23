@@ -18,6 +18,7 @@ package org.jax.snack.oauth.biz.security.config;
 
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
+import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
 import tools.jackson.databind.json.JsonMapper;
@@ -50,6 +51,12 @@ public class JsonAuthHandlerConfig {
 		return new JsonAuthenticationFailureHandler(jsonMapper);
 	}
 
+	@Bean
+	@ConditionalOnMissingBean
+	public BizAccessDeniedHandler bizAccessDeniedHandler(JsonMapper jsonMapper) {
+		return new BizAccessDeniedHandler(jsonMapper);
+	}
+
 	/**
 	 * 仅当 oauth2-client-starter 在 classpath 时才注册 {@link OAuthFormLoginCustomizer}.
 	 */
@@ -60,8 +67,9 @@ public class JsonAuthHandlerConfig {
 		@Bean
 		@ConditionalOnMissingBean
 		OAuthFormLoginCustomizer oAuthFormLoginCustomizer(OAuth2ClientProperties clientProperties,
-				JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler) {
-			return new OAuthFormLoginCustomizer(clientProperties, successHandler, failureHandler);
+				JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler,
+				BizAccessDeniedHandler accessDeniedHandler) {
+			return new OAuthFormLoginCustomizer(clientProperties, successHandler, failureHandler, accessDeniedHandler);
 		}
 
 	}

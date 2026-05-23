@@ -19,6 +19,7 @@ package org.jax.snack.oauth.biz.security.config;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
+import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
 
@@ -42,12 +43,15 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 
 	private final JsonAuthenticationFailureHandler failureHandler;
 
+	private final BizAccessDeniedHandler accessDeniedHandler;
+
 	@Override
 	public void customize(HttpSecurity http) {
 		http.formLogin((form) -> form.successHandler(this.successHandler).failureHandler(this.failureHandler));
 		String oauthEntryPoint = "/oauth2/authorization/" + this.clientProperties.getDefaultRegistrationId();
 		http.exceptionHandling(
-				(ex) -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint)));
+				(ex) -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint))
+					.accessDeniedHandler(this.accessDeniedHandler));
 	}
 
 	@Override
