@@ -104,6 +104,10 @@ public class SysUserController {
 		this.service.deleteByDsl(condition);
 	}
 
+	/**
+	 * 获取当前用户信息.
+	 * @return 用户 VO
+	 */
 	@GetMapping("/info")
 	public SysUserVO info() {
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
