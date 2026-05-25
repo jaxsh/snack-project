@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jax.snack.framework.oauth2.client.security.AuditLogoutHandler;
+import org.jax.snack.framework.oauth2.client.security.JsonLogoutSuccessHandler;
 import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.framework.oauth2.client.security.RevokeTokenLogoutHandler;
 import org.jax.snack.framework.oauth2.client.spi.LoginAuditHandler;
@@ -40,7 +41,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -51,7 +51,6 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -161,11 +160,12 @@ public class OAuth2ClientAutoConfiguration {
 		logoutHandlers.orderedStream().forEach(allLogoutHandlers::add);
 		allLogoutHandlers.add(defaultLogoutHandler(cookieCsrfTokenRepository));
 
+		String loginUrl = "/oauth2/authorization/" + properties.getDefaultRegistrationId();
 		http.logout((logout) -> {
 			for (LogoutHandler handler : allLogoutHandlers) {
 				logout.addLogoutHandler(handler);
 			}
-			logout.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK));
+			logout.logoutSuccessHandler(new JsonLogoutSuccessHandler(loginUrl));
 		});
 
 		return http.build();
