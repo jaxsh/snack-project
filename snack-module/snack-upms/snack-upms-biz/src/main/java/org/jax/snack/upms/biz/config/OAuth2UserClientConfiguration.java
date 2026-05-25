@@ -17,14 +17,13 @@
 package org.jax.snack.upms.biz.config;
 
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
-import org.jax.snack.framework.oauth2.client.security.TokenRelayClientHttpRequestInterceptor;
 import org.jax.snack.upms.biz.client.OAuth2UserClient;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -46,13 +45,12 @@ public class OAuth2UserClientConfiguration {
 			throw new IllegalArgumentException("OAuth2 server URL must be configured");
 		}
 
-		String registrationId = properties.getDefaultRegistrationId();
-		ClientHttpRequestInterceptor interceptor = new TokenRelayClientHttpRequestInterceptor(manager, registrationId);
+		OAuth2ClientHttpRequestInterceptor interceptor = new OAuth2ClientHttpRequestInterceptor(manager);
+		interceptor.setClientRegistrationIdResolver((request) -> "snack-upms-service");
 		RestClient restClient = builder.baseUrl(baseUrl).requestInterceptor(interceptor).build();
-		RestClientAdapter adapter = RestClientAdapter.create(restClient);
-		HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
-
-		return factory.createClient(OAuth2UserClient.class);
+		return HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClient))
+			.build()
+			.createClient(OAuth2UserClient.class);
 	}
 
 }

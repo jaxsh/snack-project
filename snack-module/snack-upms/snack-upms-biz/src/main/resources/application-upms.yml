@@ -28,6 +28,12 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope: openid,profile
+          snack-upms-service:
+            provider: snack-oauth
+            client-id: snack-upms-service
+            client-secret: secret
+            authorization-grant-type: client_credentials
+            scope: upms
         provider:
           snack-oauth:
             authorization-uri: ${snack.oauth2.client.server-url}/oauth2/authorize
