@@ -1,1 +1,2 @@
 org.jax.snack.oauth.biz.config.OAuthModuleConfig
+org.jax.snack.oauth.biz.config.OAuthFormLoginAutoConfiguration

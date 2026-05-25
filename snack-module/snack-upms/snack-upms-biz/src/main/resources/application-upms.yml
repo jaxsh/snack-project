@@ -2,6 +2,10 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 snack:
   mvc:
     validation:

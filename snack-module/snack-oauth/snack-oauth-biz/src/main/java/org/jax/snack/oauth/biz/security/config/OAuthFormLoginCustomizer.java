@@ -20,8 +20,10 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
+import org.jax.snack.oauth.biz.security.handler.BizAuthenticationEntryPoint;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.core.Ordered;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,7 +32,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 /**
  * 表单登录定制器.
  * <p>
- * 挂载 JSON 认证处理器，并将未认证请求的入口点重定向到 OAuth2 授权端点.
+ * 挂载 JSON 认证处理器，并按路径分派未认证入口点：/api/** 返回 401 JSON，其他路径重定向至 OAuth2 授权端点.
  *
  * @author Jax Jiang
  */
@@ -45,13 +47,17 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 
 	private final BizAccessDeniedHandler accessDeniedHandler;
 
+	private final JsonMapper jsonMapper;
+
 	@Override
 	public void customize(HttpSecurity http) {
 		http.formLogin((form) -> form.successHandler(this.successHandler).failureHandler(this.failureHandler));
 		String oauthEntryPoint = "/oauth2/authorization/" + this.clientProperties.getDefaultRegistrationId();
-		http.exceptionHandling(
-				(ex) -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint))
-					.accessDeniedHandler(this.accessDeniedHandler));
+		http.exceptionHandling((ex) -> ex
+			.defaultAuthenticationEntryPointFor(new BizAuthenticationEntryPoint(this.jsonMapper, oauthEntryPoint),
+					(request) -> request.getRequestURI().startsWith("/api/"))
+			.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint))
+			.accessDeniedHandler(this.accessDeniedHandler));
 	}
 
 	@Override

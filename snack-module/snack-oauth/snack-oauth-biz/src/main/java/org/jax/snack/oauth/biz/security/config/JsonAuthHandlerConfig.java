@@ -68,8 +68,9 @@ public class JsonAuthHandlerConfig {
 		@ConditionalOnMissingBean
 		OAuthFormLoginCustomizer oAuthFormLoginCustomizer(OAuth2ClientProperties clientProperties,
 				JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler,
-				BizAccessDeniedHandler accessDeniedHandler) {
-			return new OAuthFormLoginCustomizer(clientProperties, successHandler, failureHandler, accessDeniedHandler);
+				BizAccessDeniedHandler accessDeniedHandler, JsonMapper jsonMapper) {
+			return new OAuthFormLoginCustomizer(clientProperties, successHandler, failureHandler, accessDeniedHandler,
+					jsonMapper);
 		}
 
 	}
