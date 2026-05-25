@@ -54,6 +54,59 @@ databaseChangeLog:
                   name: update_by
                   value: system
   - changeSet:
+      id: insert-snack-upms-service
+      author: oauth
+      comment: "Client ID: snack-upms-service, Secret: secret — service account for UPMS->OAuth internal calls"
+      changes:
+        - insert:
+            tableName: oauth2_registered_client
+            columns:
+              - column:
+                  name: id
+                  value: a1b2c3d4-5e6f-7a8b-9c0d-e1f2a3b4c5d6
+              - column:
+                  name: client_id
+                  value: snack-upms-service
+              - column:
+                  name: client_id_issued_at
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: client_secret
+                  value: "{bcrypt}$2a$10$Z9nU7NHnwhrn6v/eHplun.4Z2Z40EF0bcJna1he0kGfBmiyjTH4qm"
+              - column:
+                  name: client_name
+                  value: SNACK UPMS Service Account
+              - column:
+                  name: client_authentication_methods
+                  value: client_secret_basic
+              - column:
+                  name: authorization_grant_types
+                  value: client_credentials
+              - column:
+                  name: redirect_uris
+                  value: ""
+              - column:
+                  name: scopes
+                  value: upms
+              - column:
+                  name: client_settings
+                  value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":false}'
+              - column:
+                  name: token_settings
+                  value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.token.reuse-refresh-tokens":false,"settings.token.x509-certificate-bound-access-tokens":false,"settings.token.id-token-signature-algorithm":["org.springframework.security.oauth2.jose.jws.SignatureAlgorithm","RS256"],"settings.token.access-token-time-to-live":["java.time.Duration","PT5M"],"settings.token.access-token-format":{"@class":"org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat","value":"self-contained"},"settings.token.refresh-token-time-to-live":["java.time.Duration","PT1H"],"settings.token.authorization-code-time-to-live":["java.time.Duration","PT5M"],"settings.token.device-code-time-to-live":["java.time.Duration","PT5M"]}'
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: update_by
+                  value: system
+  - changeSet:
       id: insert-snack-oauth-server
       author: oauth
       comment: "Client ID: snack-oauth-server, Secret: secret"
