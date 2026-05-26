@@ -22,10 +22,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
@@ -39,10 +48,14 @@ import org.springframework.stereotype.Component;
  *
  * @author Jax Jiang
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncodingContext> {
 
 	private static final int RESTRICTED_TOKEN_TTL_MINUTES = 5;
+
+	private final UserDetailsService userDetailsService;
 
 	@Override
 	public void customize(JwtEncodingContext context) {
@@ -50,10 +63,36 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 			return;
 		}
 
+		if (AuthorizationGrantType.REFRESH_TOKEN.equals(context.getAuthorizationGrantType())) {
+			validateUserStateForRefresh(context.getPrincipal().getName());
+			return;
+		}
+
 		if (requiresPasswordChange(context.getPrincipal())) {
 			context.getClaims().claim("scope", new HashSet<>(Set.of(OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)));
 			context.getClaims().claim("authorities", Collections.emptyList());
 			context.getClaims().expiresAt(Instant.now().plus(RESTRICTED_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
+		}
+	}
+
+	private void validateUserStateForRefresh(String username) {
+		UserDetails freshUser;
+		try {
+			freshUser = this.userDetailsService.loadUserByUsername(username);
+		}
+		catch (UsernameNotFoundException ex) {
+			log.warn("User not found during token refresh: {}", username);
+			throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.ACCESS_DENIED));
+		}
+		boolean invalidState = !freshUser.isEnabled() || !freshUser.isAccountNonLocked()
+				|| !freshUser.isAccountNonExpired();
+		boolean passwordExpired = freshUser.getAuthorities()
+			.stream()
+			.anyMatch((a) -> a.getAuthority()
+				.equals(OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE));
+		if (invalidState || passwordExpired) {
+			log.debug("User {} is in invalid state during token refresh, denying", username);
+			throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.ACCESS_DENIED));
 		}
 	}
 

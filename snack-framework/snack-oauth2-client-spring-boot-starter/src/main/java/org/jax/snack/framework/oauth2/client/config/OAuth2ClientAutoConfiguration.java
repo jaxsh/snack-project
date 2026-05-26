@@ -23,6 +23,7 @@ import org.jax.snack.framework.oauth2.client.security.AuditLogoutHandler;
 import org.jax.snack.framework.oauth2.client.security.JsonLogoutSuccessHandler;
 import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.framework.oauth2.client.security.RevokeTokenLogoutHandler;
+import org.jax.snack.framework.oauth2.client.security.SessionStateCheckFilter;
 import org.jax.snack.framework.oauth2.client.spi.LoginAuditHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2TokenClient;
@@ -53,6 +54,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfLogoutHandler;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -102,13 +104,15 @@ public class OAuth2ClientAutoConfiguration {
 	 * @param customizers 定制器列表
 	 * @param logoutHandlers 退出处理器列表
 	 * @param defaultMapperProvider 默认权限映射器提供者
+	 * @param authorizedClientManager OAuth2 授权客户端管理器
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(2)
 	public SecurityFilterChain oauth2ClientSecurityFilterChain(HttpSecurity http, OAuth2ClientProperties properties,
 			ObjectProvider<OAuth2ClientSecurityCustomizer> customizers, ObjectProvider<LogoutHandler> logoutHandlers,
-			@Qualifier("oidcScopeGrantedAuthoritiesMapper") ObjectProvider<GrantedAuthoritiesMapper> defaultMapperProvider) {
+			@Qualifier("oidcScopeGrantedAuthoritiesMapper") ObjectProvider<GrantedAuthoritiesMapper> defaultMapperProvider,
+			OAuth2AuthorizedClientManager authorizedClientManager) {
 
 		GrantedAuthoritiesMapper defaultMapper = defaultMapperProvider
 			.getIfAvailable(OidcScopeGrantedAuthoritiesMapper::new);
@@ -167,6 +171,9 @@ public class OAuth2ClientAutoConfiguration {
 			}
 			logout.logoutSuccessHandler(new JsonLogoutSuccessHandler(loginUrl));
 		});
+
+		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId()),
+				SecurityContextHolderFilter.class);
 
 		return http.build();
 	}

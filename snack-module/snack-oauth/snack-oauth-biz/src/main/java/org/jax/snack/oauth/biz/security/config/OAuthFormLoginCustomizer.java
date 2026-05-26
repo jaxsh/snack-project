@@ -56,7 +56,8 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 		http.exceptionHandling((ex) -> ex
 			.defaultAuthenticationEntryPointFor(new BizAuthenticationEntryPoint(this.jsonMapper, oauthEntryPoint),
 					(request) -> request.getRequestURI().startsWith("/api/"))
-			.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint))
+			.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint),
+					(request) -> true)
 			.accessDeniedHandler(this.accessDeniedHandler));
 	}
 
