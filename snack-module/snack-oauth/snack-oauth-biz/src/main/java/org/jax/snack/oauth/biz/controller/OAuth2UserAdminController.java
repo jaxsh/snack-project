@@ -83,4 +83,13 @@ public class OAuth2UserAdminController {
 		this.userService.delete(username);
 	}
 
+	/**
+	 * 吊销用户的所有 session.
+	 * @param username 用户名
+	 */
+	@DeleteMapping("/{username}/sessions")
+	public void deleteSessions(@PathVariable String username) {
+		this.userService.revokeUserSessions(username);
+	}
+
 }

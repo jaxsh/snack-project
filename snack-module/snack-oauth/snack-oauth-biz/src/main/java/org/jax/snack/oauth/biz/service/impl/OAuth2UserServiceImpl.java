@@ -17,6 +17,9 @@
 package org.jax.snack.oauth.biz.service.impl;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
@@ -34,6 +37,7 @@ import org.jax.snack.oauth.biz.entity.OAuth2User;
 import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +59,8 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 	private final SecurityProperties securityProperties;
 
 	private final OAuth2UserConverter converter;
+
+	private final JdbcTemplate jdbcTemplate;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -85,19 +91,44 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
 
-		OAuth2User user = this.converter.toEntity(dto);
-		user.setId(existing.getId());
+		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.id, existing.getId()).build();
 
-		if (StringUtils.hasText(dto.getPassword())) {
-			user.setPassword(this.passwordEncoder.encode(dto.getPassword()));
-			user.setInitialPassword(YesNoStatus.NO.getCode());
-			user.setLastPasswordResetTime(ZonedDateTime.now());
-			user.setLocked(YesNoStatus.NO.getCode());
-			user.setExpired(YesNoStatus.NO.getCode());
+		// 解锁分支：lockUntil=null 需要 Map 方式（与 OAuth2AuthenticationEvents.resetLockStatus
+		// 相同模式）
+		if (Objects.equals(dto.getLocked(), YesNoStatus.NO.getCode())) {
+			Map<String, Object> setData = new HashMap<>();
+			setData.put(OAuth2User.Fields.locked, YesNoStatus.NO.getCode());
+			setData.put(OAuth2User.Fields.lockCount, 0);
+			setData.put(OAuth2User.Fields.lockUntil, null);
+			this.userRepository.updateByDsl(setData, where);
+		}
+		else {
+			OAuth2User user = this.converter.toEntity(dto);
+			user.setId(existing.getId());
+
+			if (StringUtils.hasText(dto.getPassword())) {
+				user.setPassword(this.passwordEncoder.encode(dto.getPassword()));
+				user.setLastPasswordResetTime(ZonedDateTime.now());
+				user.setLocked(YesNoStatus.NO.getCode());
+				user.setExpired(YesNoStatus.NO.getCode());
+				// initialPassword 未显式设置时清零（兼容用户自行改密的场景）
+				if (dto.getInitialPassword() == null) {
+					user.setInitialPassword(YesNoStatus.NO.getCode());
+				}
+			}
+
+			this.userRepository.updateByDsl(user, where);
 		}
 
-		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.id, existing.getId()).build();
-		this.userRepository.updateByDsl(user, where);
+		// 改密副作用：吊销所有 session（多设备踢人）
+		if (StringUtils.hasText(dto.getPassword())) {
+			revokeUserSessions(username);
+		}
+
+		// 禁用副作用：吊销所有 session
+		if (Objects.equals(dto.getEnabled(), Status.DISABLED.getCode())) {
+			revokeUserSessions(username);
+		}
 	}
 
 	@Override
@@ -121,6 +152,11 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 	public void delete(String username) {
 		WhereCondition condition = WhereCondition.builder().eq(OAuth2User.Fields.username, username).build();
 		this.userRepository.deleteByDsl(condition);
+	}
+
+	@Override
+	public void revokeUserSessions(String username) {
+		this.jdbcTemplate.update("DELETE FROM oauth2_authorization WHERE principal_name = ?", username);
 	}
 
 }

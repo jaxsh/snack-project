@@ -52,4 +52,10 @@ public interface OAuth2UserService {
 	 */
 	void delete(String username);
 
+	/**
+	 * 吊销用户的所有 session.
+	 * @param username 用户名
+	 */
+	void revokeUserSessions(String username);
+
 }

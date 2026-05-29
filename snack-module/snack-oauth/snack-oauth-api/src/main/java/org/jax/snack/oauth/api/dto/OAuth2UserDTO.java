@@ -60,4 +60,19 @@ public class OAuth2UserDTO {
 	@Email
 	private String email;
 
+	/**
+	 * 账户状态(0:禁用, 1:启用).
+	 */
+	private Integer enabled;
+
+	/**
+	 * 是否锁定(0:否, 1:是).
+	 */
+	private Integer locked;
+
+	/**
+	 * 是否初始密码(0:否, 1:是).
+	 */
+	private Integer initialPassword;
+
 }
