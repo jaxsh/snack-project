@@ -35,6 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -122,6 +123,34 @@ public class SysUserController {
 	public List<SysResourceVO> getResources() {
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
 		return this.service.getUserResources(username);
+	}
+
+	/**
+	 * 解锁用户.
+	 * @param id 用户 ID
+	 */
+	@PatchMapping("/{id}/unlock")
+	public void unlock(@PathVariable Long id) {
+		this.service.unlock(id);
+	}
+
+	/**
+	 * 重置用户密码.
+	 * @param id 用户 ID
+	 * @param dto 包含新密码的 DTO
+	 */
+	@PostMapping("/{id}/reset-password")
+	public void resetPassword(@PathVariable Long id, @Validated @RequestBody SysUserDTO dto) {
+		this.service.resetPassword(id, dto.getPassword());
+	}
+
+	/**
+	 * 强制下线用户.
+	 * @param id 用户 ID
+	 */
+	@DeleteMapping("/{id}/sessions")
+	public void deleteSessions(@PathVariable Long id) {
+		this.service.deleteSessions(id);
 	}
 
 }

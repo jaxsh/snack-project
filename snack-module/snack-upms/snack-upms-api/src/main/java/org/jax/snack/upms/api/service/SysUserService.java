@@ -86,4 +86,23 @@ public interface SysUserService {
 	 */
 	SysUserVO getByUsername(String username);
 
+	/**
+	 * 解锁用户.
+	 * @param id 用户 ID
+	 */
+	void unlock(Long id);
+
+	/**
+	 * 重置用户密码（管理员操作，强制用户下次登录改密）.
+	 * @param id 用户 ID
+	 * @param newPassword 新密码
+	 */
+	void resetPassword(Long id, String newPassword);
+
+	/**
+	 * 强制下线用户（吊销所有 session）.
+	 * @param id 用户 ID
+	 */
+	void deleteSessions(Long id);
+
 }

@@ -76,6 +76,21 @@ public class SysUser extends BaseEntity implements Serializable {
 	private String remark;
 
 	/**
+	 * 账户状态(0:禁用, 1:启用).
+	 */
+	private Integer status;
+
+	/**
+	 * 手机号.
+	 */
+	private String mobile;
+
+	/**
+	 * 邮箱.
+	 */
+	private String email;
+
+	/**
 	 * 字段名常量, 继承父类字段.
 	 */
 	public static final class Fields extends BaseEntity.Fields {

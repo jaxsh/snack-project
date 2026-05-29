@@ -17,6 +17,7 @@
 package org.jax.snack.upms.biz.converter;
 
 import org.jax.snack.framework.core.enums.BaseEnum;
+import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
@@ -41,6 +42,9 @@ public interface SysUserConverter
 	default void afterToVO(SysUser entity, @MappingTarget SysUserVO vo) {
 		if (entity.getGender() != null) {
 			vo.setGenderLabel(BaseEnum.getNameByCode(UserGender.class, entity.getGender()));
+		}
+		if (entity.getStatus() != null) {
+			vo.setStatusLabel(BaseEnum.getNameByCode(Status.class, entity.getStatus()));
 		}
 	}
 

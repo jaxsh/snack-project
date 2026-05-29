@@ -65,4 +65,11 @@ public interface OAuth2UserClient {
 	@DeleteExchange("/{username}")
 	void delete(@PathVariable String username);
 
+	/**
+	 * 吊销用户的所有 session.
+	 * @param username 用户名
+	 */
+	@DeleteExchange("/{username}/sessions")
+	void deleteSession(@PathVariable String username);
+
 }

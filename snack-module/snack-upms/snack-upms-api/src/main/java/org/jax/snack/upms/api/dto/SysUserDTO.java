@@ -19,9 +19,11 @@ package org.jax.snack.upms.api.dto;
 import java.time.LocalDate;
 import java.util.Set;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -88,5 +90,30 @@ public class SysUserDTO {
 	 * 关联组织编码集合.
 	 */
 	private Set<String> orgCodes;
+
+	/**
+	 * 账户状态(0:禁用, 1:启用).
+	 */
+	@Min(0)
+	@Max(1)
+	private Integer status;
+
+	/**
+	 * 手机号.
+	 */
+	@Pattern(regexp = "^1[3-9]\\d{9}$")
+	private String mobile;
+
+	/**
+	 * 邮箱.
+	 */
+	@Email
+	private String email;
+
+	/**
+	 * 新密码（仅用于重置密码操作）.
+	 */
+	@Size(min = 6, max = 255)
+	private String password;
 
 }

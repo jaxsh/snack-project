@@ -17,6 +17,7 @@
 package org.jax.snack.upms.biz.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
@@ -68,6 +70,8 @@ public class SysUserServiceImpl implements SysUserService {
 
 	private static final String UNLESS_NULL = "#result == null";
 
+	private static final String USER_ENTITY = "User";
+
 	private final SysUserRepository repository;
 
 	private final SysUserRoleRepository userRoleRepository;
@@ -95,6 +99,8 @@ public class SysUserServiceImpl implements SysUserService {
 		}
 		OAuth2UserDTO oauthUserDto = new OAuth2UserDTO();
 		oauthUserDto.setUsername(dto.getUsername());
+		oauthUserDto.setMobile(dto.getMobile());
+		oauthUserDto.setEmail(dto.getEmail());
 		this.oAuth2UserClient.create(oauthUserDto);
 
 		this.transactionTemplate.executeWithoutResult((status) -> {
@@ -129,7 +135,7 @@ public class SysUserServiceImpl implements SysUserService {
 	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void update(Long id, SysUserDTO dto) {
 		SysUser current = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 
 		SysUser entity = this.converter.toEntity(dto);
 		entity.setId(id);
@@ -162,6 +168,24 @@ public class SysUserServiceImpl implements SysUserService {
 				this.userOrgRepository.saveBatch(relations);
 			}
 		});
+
+		OAuth2UserDTO oAuthPatch = new OAuth2UserDTO();
+		boolean needSync = false;
+		if (dto.getStatus() != null && !Objects.equals(dto.getStatus(), current.getStatus())) {
+			oAuthPatch.setEnabled(dto.getStatus());
+			needSync = true;
+		}
+		if (dto.getMobile() != null && !Objects.equals(dto.getMobile(), current.getMobile())) {
+			oAuthPatch.setMobile(dto.getMobile());
+			needSync = true;
+		}
+		if (dto.getEmail() != null && !Objects.equals(dto.getEmail(), current.getEmail())) {
+			oAuthPatch.setEmail(dto.getEmail());
+			needSync = true;
+		}
+		if (needSync) {
+			this.oAuth2UserClient.update(current.getUsername(), oAuthPatch);
+		}
 	}
 
 	@Override
@@ -235,6 +259,33 @@ public class SysUserServiceImpl implements SysUserService {
 			return null;
 		}
 		return this.converter.toVO(list.get(0));
+	}
+
+	@Override
+	public void unlock(Long id) {
+		SysUser current = this.repository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+		OAuth2UserDTO dto = new OAuth2UserDTO();
+		dto.setLocked(YesNoStatus.NO.getCode());
+		this.oAuth2UserClient.update(current.getUsername(), dto);
+	}
+
+	@Override
+	public void resetPassword(Long id, String newPassword) {
+		SysUser current = this.repository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+		OAuth2UserDTO dto = new OAuth2UserDTO();
+		dto.setPassword(newPassword);
+		dto.setInitialPassword(YesNoStatus.YES.getCode());
+		this.oAuth2UserClient.update(current.getUsername(), dto);
+	}
+
+	@Override
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
+	public void deleteSessions(Long id) {
+		SysUser current = this.repository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+		this.oAuth2UserClient.deleteSession(current.getUsername());
 	}
 
 	private void validateRoleStatus(Set<String> roleCodes) {

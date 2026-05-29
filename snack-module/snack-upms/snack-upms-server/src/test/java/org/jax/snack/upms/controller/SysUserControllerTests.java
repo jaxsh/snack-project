@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
@@ -38,6 +39,7 @@ import org.jax.snack.upms.biz.client.OAuth2UserClient;
 import org.jax.snack.upms.biz.entity.SysUser;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -221,6 +226,73 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			assertThat(updated.getGenderLabel()).isEqualTo("女");
 		}
 
+		@Test
+		void shouldSyncStatusWhenDisableUser() throws Exception {
+			String username = "user_disable";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Disable"));
+			SysUserVO created = queryByUsername(username);
+
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			Mockito.doNothing()
+				.when(SysUserControllerTests.this.oAuth2UserClient)
+				.update(eq(username), captor.capture());
+
+			SysUserDTO updateDto = new SysUserDTO();
+			updateDto.setStatus(0);
+
+			putJson(API_USERS_ID, updateDto, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).update(eq(username), any());
+			assertThat(captor.getValue().getEnabled()).isEqualTo(0);
+		}
+
+		@Test
+		void shouldNotSyncWhenNoRelevantFieldChanged() throws Exception {
+			String username = "user_no_sync";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "NoSync"));
+			SysUserVO created = queryByUsername(username);
+
+			SysUserDTO updateDto = new SysUserDTO();
+			updateDto.setNickname("NoSyncNick");
+
+			putJson(API_USERS_ID, updateDto, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient, Mockito.never()).update(any(), any());
+		}
+
+		@Test
+		void shouldSyncMobileEmailWhenUpdated() throws Exception {
+			String username = "user_sync_contact";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Contact"));
+			SysUserVO created = queryByUsername(username);
+
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			Mockito.doNothing()
+				.when(SysUserControllerTests.this.oAuth2UserClient)
+				.update(eq(username), captor.capture());
+
+			SysUserDTO updateDto = new SysUserDTO();
+			updateDto.setMobile("13800000001");
+			updateDto.setEmail("test@example.com");
+
+			putJson(API_USERS_ID, updateDto, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).update(eq(username), any());
+			assertThat(captor.getValue().getMobile()).isEqualTo("13800000001");
+			assertThat(captor.getValue().getEmail()).isEqualTo("test@example.com");
+		}
+
 	}
 
 	@Nested
@@ -263,6 +335,94 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 				.andExpectAll(ApiResponseMatchers.isSuccess())
 				.andExpect(jsonPath("$.data.username").value(username))
 				.andExpect(jsonPath("$.data.realName").value("Administrator"));
+		}
+
+	}
+
+	@Nested
+	class UnlockUser {
+
+		@Test
+		void shouldCallOauthUpdateWithLockedFalse() throws Exception {
+			String username = "user_unlock";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Unlock"));
+			SysUserVO created = queryByUsername(username);
+
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			Mockito.doNothing()
+				.when(SysUserControllerTests.this.oAuth2UserClient)
+				.update(eq(username), captor.capture());
+
+			SysUserControllerTests.this.mockMvc
+				.perform(patch("/api/upms/users/{id}/unlock", created.getId()).with(defaultJwt()).with(csrf()))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).update(eq(username), any());
+			assertThat(captor.getValue().getLocked()).isEqualTo(YesNoStatus.NO.getCode());
+		}
+
+		@Test
+		void shouldReturnErrorWhenUserNotFound() throws Exception {
+			SysUserControllerTests.this.mockMvc
+				.perform(patch("/api/upms/users/{id}/unlock", 99999L).with(defaultJwt()).with(csrf()))
+				.andDo(print())
+				.andExpect(status().isInternalServerError())
+				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
+		}
+
+	}
+
+	@Nested
+	class ResetPassword {
+
+		@Test
+		void shouldCallOauthUpdateWithPasswordAndInitialFlag() throws Exception {
+			String username = "user_reset_pw";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "ResetPw"));
+			SysUserVO created = queryByUsername(username);
+
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			Mockito.doNothing()
+				.when(SysUserControllerTests.this.oAuth2UserClient)
+				.update(eq(username), captor.capture());
+
+			SysUserDTO dto = new SysUserDTO();
+			dto.setPassword("NewPass@123");
+
+			postJson("/api/upms/users/{id}/reset-password", dto, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).update(eq(username), any());
+			assertThat(captor.getValue().getPassword()).isNotBlank();
+			assertThat(captor.getValue().getInitialPassword()).isEqualTo(YesNoStatus.YES.getCode());
+		}
+
+	}
+
+	@Nested
+	class DeleteUserSessions {
+
+		@Test
+		void shouldCallOauthDeleteSession() throws Exception {
+			String username = "user_del_session";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "DelSession"));
+			SysUserVO created = queryByUsername(username);
+
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).deleteSession(username);
+
+			deleteJson("/api/upms/users/{id}/sessions", created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).deleteSession(username);
 		}
 
 	}

@@ -86,4 +86,24 @@ public class SysUserVO {
 	 */
 	private ZonedDateTime updateTime;
 
+	/**
+	 * 账户状态(0:禁用, 1:启用).
+	 */
+	private Integer status;
+
+	/**
+	 * 账户状态标签.
+	 */
+	private String statusLabel;
+
+	/**
+	 * 手机号.
+	 */
+	private String mobile;
+
+	/**
+	 * 邮箱.
+	 */
+	private String email;
+
 }
