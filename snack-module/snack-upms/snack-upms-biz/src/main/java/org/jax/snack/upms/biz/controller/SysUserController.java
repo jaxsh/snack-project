@@ -148,9 +148,9 @@ public class SysUserController {
 	 * 强制下线用户.
 	 * @param id 用户 ID
 	 */
-	@DeleteMapping("/{id}/sessions")
-	public void deleteSessions(@PathVariable Long id) {
-		this.service.deleteSessions(id);
+	@DeleteMapping("/{id}/tokens")
+	public void revokeTokens(@PathVariable Long id) {
+		this.service.revokeTokens(id);
 	}
 
 }

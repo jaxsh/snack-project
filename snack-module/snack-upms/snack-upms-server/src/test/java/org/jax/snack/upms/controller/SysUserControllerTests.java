@@ -233,8 +233,8 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Disable"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -274,8 +274,8 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Contact"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -291,6 +291,31 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).update(eq(username), any());
 			assertThat(captor.getValue().getMobile()).isEqualTo("13800000001");
 			assertThat(captor.getValue().getEmail()).isEqualTo("test@example.com");
+		}
+
+		@Test
+		void shouldSyncExpireDateWhenUpdated() throws Exception {
+			String username = "user_sync_expire";
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
+			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Expire"));
+			SysUserVO created = queryByUsername(username);
+
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
+			Mockito.doNothing()
+				.when(SysUserControllerTests.this.oAuth2UserClient)
+				.update(eq(username), captor.capture());
+
+			LocalDate futureDate = LocalDate.now().plusDays(30);
+			SysUserDTO updateDto = new SysUserDTO();
+			updateDto.setExpireDate(futureDate);
+
+			putJson(API_USERS_ID, updateDto, created.getId()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).update(eq(username), any());
+			assertThat(captor.getValue().getExpireDate()).isEqualTo(futureDate);
 		}
 
 	}
@@ -349,8 +374,8 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Unlock"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -386,8 +411,8 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "ResetPw"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuth2UserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuth2UserDTO.class);
+			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
+				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -416,13 +441,13 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "DelSession"));
 			SysUserVO created = queryByUsername(username);
 
-			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).deleteSession(username);
+			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).revokeTokens(username);
 
-			deleteJson("/api/upms/users/{id}/sessions", created.getId()).andDo(print())
+			deleteJson("/api/upms/users/{id}/tokens", created.getId()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
-			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).deleteSession(username);
+			Mockito.verify(SysUserControllerTests.this.oAuth2UserClient).revokeTokens(username);
 		}
 
 	}

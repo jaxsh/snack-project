@@ -30,7 +30,7 @@ import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.SysResourceVO;
@@ -97,7 +97,7 @@ public class SysUserServiceImpl implements SysUserService {
 		if (this.repository.existsByDsl(condition)) {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Username");
 		}
-		OAuth2UserDTO oauthUserDto = new OAuth2UserDTO();
+		OAuthUserDTO oauthUserDto = new OAuthUserDTO();
 		oauthUserDto.setUsername(dto.getUsername());
 		oauthUserDto.setMobile(dto.getMobile());
 		oauthUserDto.setEmail(dto.getEmail());
@@ -169,7 +169,7 @@ public class SysUserServiceImpl implements SysUserService {
 			}
 		});
 
-		OAuth2UserDTO oAuthPatch = new OAuth2UserDTO();
+		OAuthUserDTO oAuthPatch = new OAuthUserDTO();
 		boolean needSync = false;
 		if (dto.getStatus() != null && !Objects.equals(dto.getStatus(), current.getStatus())) {
 			oAuthPatch.setEnabled(dto.getStatus());
@@ -181,6 +181,10 @@ public class SysUserServiceImpl implements SysUserService {
 		}
 		if (dto.getEmail() != null && !Objects.equals(dto.getEmail(), current.getEmail())) {
 			oAuthPatch.setEmail(dto.getEmail());
+			needSync = true;
+		}
+		if (dto.getExpireDate() != null) {
+			oAuthPatch.setExpireDate(dto.getExpireDate());
 			needSync = true;
 		}
 		if (needSync) {
@@ -265,7 +269,7 @@ public class SysUserServiceImpl implements SysUserService {
 	public void unlock(Long id) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
-		OAuth2UserDTO dto = new OAuth2UserDTO();
+		OAuthUserDTO dto = new OAuthUserDTO();
 		dto.setLocked(YesNoStatus.NO.getCode());
 		this.oAuth2UserClient.update(current.getUsername(), dto);
 	}
@@ -274,7 +278,7 @@ public class SysUserServiceImpl implements SysUserService {
 	public void resetPassword(Long id, String newPassword) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
-		OAuth2UserDTO dto = new OAuth2UserDTO();
+		OAuthUserDTO dto = new OAuthUserDTO();
 		dto.setPassword(newPassword);
 		dto.setInitialPassword(YesNoStatus.YES.getCode());
 		this.oAuth2UserClient.update(current.getUsername(), dto);
@@ -282,10 +286,10 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Override
 	@CacheEvict(value = CACHE_NAME, allEntries = true)
-	public void deleteSessions(Long id) {
+	public void revokeTokens(Long id) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
-		this.oAuth2UserClient.deleteSession(current.getUsername());
+		this.oAuth2UserClient.revokeTokens(current.getUsername());
 	}
 
 	private void validateRoleStatus(Set<String> roleCodes) {

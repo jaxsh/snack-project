@@ -16,8 +16,8 @@
 
 package org.jax.snack.upms.biz.client;
 
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.vo.OAuth2UserVO;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +40,7 @@ public interface OAuth2UserClient {
 	 * @param dto 用户信息 DTO
 	 */
 	@PostExchange
-	void create(@RequestBody OAuth2UserDTO dto);
+	void create(@RequestBody OAuthUserDTO dto);
 
 	/**
 	 * 更新用户信息.
@@ -48,7 +48,7 @@ public interface OAuth2UserClient {
 	 * @param dto 用户信息 DTO
 	 */
 	@PutExchange("/{username}")
-	void update(@PathVariable String username, @RequestBody OAuth2UserDTO dto);
+	void update(@PathVariable String username, @RequestBody OAuthUserDTO dto);
 
 	/**
 	 * 根据用户名获取用户信息.
@@ -56,7 +56,7 @@ public interface OAuth2UserClient {
 	 * @return 用户信息 VO
 	 */
 	@GetExchange("/{username}")
-	OAuth2UserVO getByUsername(@PathVariable String username);
+	OAuthUserVO getByUsername(@PathVariable String username);
 
 	/**
 	 * 删除用户.
@@ -66,10 +66,10 @@ public interface OAuth2UserClient {
 	void delete(@PathVariable String username);
 
 	/**
-	 * 吊销用户的所有 session.
+	 * 吊销用户的所有 token.
 	 * @param username 用户名
 	 */
-	@DeleteExchange("/{username}/sessions")
-	void deleteSession(@PathVariable String username);
+	@DeleteExchange("/{username}/tokens")
+	void revokeTokens(@PathVariable String username);
 
 }

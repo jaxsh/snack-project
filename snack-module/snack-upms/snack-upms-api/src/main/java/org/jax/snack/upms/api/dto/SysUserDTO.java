@@ -116,4 +116,11 @@ public class SysUserDTO {
 	@Size(min = 6, max = 255)
 	private String password;
 
+	/**
+	 * 账号到期日.
+	 * <p>
+	 * null 表示永不到期，不存 sys_user，透传至 oauth2_user.
+	 */
+	private LocalDate expireDate;
+
 }

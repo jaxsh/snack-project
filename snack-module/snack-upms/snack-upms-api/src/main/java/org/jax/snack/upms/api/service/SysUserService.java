@@ -100,9 +100,9 @@ public interface SysUserService {
 	void resetPassword(Long id, String newPassword);
 
 	/**
-	 * 强制下线用户（吊销所有 session）.
+	 * 强制下线用户（吊销所有 token）.
 	 * @param id 用户 ID
 	 */
-	void deleteSessions(Long id);
+	void revokeTokens(Long id);
 
 }
