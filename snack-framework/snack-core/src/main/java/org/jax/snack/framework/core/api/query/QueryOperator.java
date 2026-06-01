@@ -119,6 +119,21 @@ public enum QueryOperator {
 	BETWEEN("_between"),
 
 	/**
+	 * 不在区间 (NOT BETWEEN).
+	 */
+	NOT_BETWEEN("_not_between"),
+
+	/**
+	 * 左模糊否定匹配 (NOT LIKE '%value').
+	 */
+	NOT_LIKE_LEFT("_not_like_left"),
+
+	/**
+	 * 右模糊否定匹配 (NOT LIKE 'value%').
+	 */
+	NOT_LIKE_RIGHT("_not_like_right"),
+
+	/**
 	 * 逻辑非 (NOT).
 	 */
 	NOT("_not");

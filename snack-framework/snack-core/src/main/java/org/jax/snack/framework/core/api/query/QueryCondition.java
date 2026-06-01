@@ -68,6 +68,22 @@ public class QueryCondition extends WhereCondition {
 	private Integer current;
 
 	/**
+	 * GROUP BY 字段列表.
+	 * <p>
+	 * 字段名使用 camelCase, 自动映射为数据库 snake_case 列名.
+	 */
+	@Setter(AccessLevel.PROTECTED)
+	private List<String> groupBy;
+
+	/**
+	 * HAVING 子句.
+	 * <p>
+	 * 原始 SQL 片段, 如 "COUNT(*) > 5".
+	 */
+	@Setter(AccessLevel.PROTECTED)
+	private String having;
+
+	/**
 	 * 创建 Builder 实例.
 	 * @return 新的 Builder 实例
 	 */
@@ -92,6 +108,8 @@ public class QueryCondition extends WhereCondition {
 		builder.orderByList = this.orderBy;
 		builder.pageSize = this.size;
 		builder.currentPage = this.current;
+		builder.groupByList = this.groupBy;
+		builder.havingSql = this.having;
 		return builder;
 	}
 
@@ -109,6 +127,10 @@ public class QueryCondition extends WhereCondition {
 		private Integer pageSize;
 
 		private Integer currentPage;
+
+		private List<String> groupByList;
+
+		private String havingSql;
 
 		@Override
 		public Builder eq(String field, Object value) {
@@ -249,6 +271,24 @@ public class QueryCondition extends WhereCondition {
 		}
 
 		@Override
+		public Builder notBetween(String field, Object start, Object end) {
+			super.notBetween(field, start, end);
+			return this;
+		}
+
+		@Override
+		public Builder notLikeLeft(String field, Object value) {
+			super.notLikeLeft(field, value);
+			return this;
+		}
+
+		@Override
+		public Builder notLikeRight(String field, Object value) {
+			super.notLikeRight(field, value);
+			return this;
+		}
+
+		@Override
 		public Builder incrBy(String field, Number delta) {
 			super.incrBy(field, delta);
 			return this;
@@ -263,6 +303,30 @@ public class QueryCondition extends WhereCondition {
 		@Override
 		public Builder last(String sql) {
 			super.last(sql);
+			return this;
+		}
+
+		@Override
+		public Builder and(WhereCondition condition) {
+			super.and(condition);
+			return this;
+		}
+
+		@Override
+		public Builder or(WhereCondition condition) {
+			super.or(condition);
+			return this;
+		}
+
+		@Override
+		public Builder not(WhereCondition condition) {
+			super.not(condition);
+			return this;
+		}
+
+		@Override
+		public Builder or(String field, Object value) {
+			super.or(field, value);
 			return this;
 		}
 
@@ -344,6 +408,26 @@ public class QueryCondition extends WhereCondition {
 			return this;
 		}
 
+		/**
+		 * GROUP BY 字段.
+		 * @param fields 字段名 (camelCase)
+		 * @return Builder
+		 */
+		public Builder groupBy(String... fields) {
+			this.groupByList = Arrays.asList(fields);
+			return this;
+		}
+
+		/**
+		 * HAVING 子句.
+		 * @param sql SQL 片段, 如 "COUNT(*) > 5"
+		 * @return Builder
+		 */
+		public Builder having(String sql) {
+			this.havingSql = sql;
+			return this;
+		}
+
 		private void addOrderBy(String field, String direction) {
 			if (this.orderByList == null) {
 				this.orderByList = new ArrayList<>();
@@ -369,6 +453,8 @@ public class QueryCondition extends WhereCondition {
 			condition.orderBy = this.orderByList;
 			condition.size = this.pageSize;
 			condition.current = this.currentPage;
+			condition.groupBy = this.groupByList;
+			condition.having = this.havingSql;
 			return condition;
 		}
 

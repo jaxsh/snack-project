@@ -7,9 +7,9 @@
 ## 📦 核心功能
 
 - ✅ **通用查询构建器**：支持静态方法调用，快速构建 `QueryWrapper` 和 `UpdateWrapper`。
-- ✅ **19 种查询操作符**：涵盖 `_eq`, `_like`, `_in`, `_between` 等常见场景。
+- ✅ **22 种查询操作符**：涵盖 `_eq`, `_like`, `_in`, `_between` 等常见场景。
 - ✅ **无限嵌套逻辑**：支持 `_and`, `_or`, `_not` 的递归组合。
-- ✅ **字段选择与排序**：支持类似 GraphQL 的 `select` 指定字段及多字段 `orderBy`。
+- ✅ **字段选择与排序**：支持类似 GraphQL 的 `select` 指定字段、多字段 `orderBy` 及 `groupBy`/`having` 聚合。
 - ✅ **Repository 集成**：提供 `BaseRepository` 契约，支持 DSL 分页、批量更新/删除。
 - ✅ **原子更新**：支持 `incrBy` 和 `decrBy` 原子操作。
 - ✅ **安全性**：通过类型安全的 Builder API 确保查询条件的结构化与完整性，有效防护 SQL 注入。
@@ -132,6 +132,8 @@ public void clearUserEmail(WhereCondition where) {
   "orderBy": [
     { "field": "createTime", "direction": "desc" }
   ],
+  "groupBy": ["department"],
+  "having": "COUNT(*) > 5",
   "last": "FOR UPDATE"
 }
 ```
@@ -140,23 +142,24 @@ public void clearUserEmail(WhereCondition where) {
 - **原子更新**：`"incrBy": { "score": 10 }` (生成 SQL: `SET score = score + 10`)
   > [!TIP]
   > 在更新场景下，只需在 `WhereCondition` 中传入 `incrBy` 映射，并调用 `userRepository.updateByDsl(dto/map, condition)` 即可触发。
+- **分组聚合**：`"groupBy": ["department"]` + `"having": "COUNT(*) > 5"` (仅适用于查询)
 - **自定义追加**：`"last": "FOR UPDATE"` (将片段追加到 SQL 末尾)
 - **自动映射**：前端使用 `camelCase`，后端自动映射为数据库 `snake_case`。
 
 ---
 
-## 🔍 DSL 操作符完整列表 (19 个)
+## 🔍 DSL 操作符完整列表 (22 个)
 
 这些操作符用于构建 `WHERE` 子句。由于 `WrapperBuilder` 的通用性，这些操作符不仅适用于 **查询 (Query)**，同样适用于 **更新 (Update)** 和 **删除 (Delete)** 场景中的条件过滤。
 
-| 分类     | 操作符                                                         | 说明                                | 生成 SQL 示例               |
-|:-------|:------------------------------------------------------------|:----------------------------------|:------------------------|
-| **比较** | `_eq`, `_ne`, `_gt`, `_gte`, `_lt`, `_lte`                  | 等于, 不等于, 大于, 大于等于, 小于, 小于等于       | `age > 18`              |
-| **模糊** | `_like`, `_ilike`, `_like_left`, `_like_right`, `_not_like` | 包含, 不区分大小写包含, 以...结尾, 以...开始, 不包含 | `name LIKE '%val%'`     |
-| **集合** | `_in`, `_nin`                                               | 在数组中, 不在数组中                       | `id IN (1, 2)`          |
-| **空值** | `_is_null`, `_is_not_null`                                  | 是否为 NULL                          | `deleted_at IS NULL`    |
-| **区间** | `_between`                                                  | 取值范围 `[start, end]`               | `age BETWEEN 10 AND 20` |
-| **逻辑** | `_and`, `_or`, `_not`                                       | 逻辑与, 逻辑或, 逻辑非                     | `(cond1 AND cond2)`     |
+| 分类     | 操作符                                                                                          | 说明                                         | 生成 SQL 示例                        |
+|:-------|:---------------------------------------------------------------------------------------------|:-------------------------------------------|:---------------------------------|
+| **比较** | `_eq`, `_ne`, `_gt`, `_gte`, `_lt`, `_lte`                                                   | 等于, 不等于, 大于, 大于等于, 小于, 小于等于                | `age > 18`                       |
+| **模糊** | `_like`, `_like_left`, `_like_right`, `_not_like`, `_not_like_left`, `_not_like_right`        | 包含, 以...结尾, 以...开始, 不包含, 不以...结尾, 不以...开始   | `name LIKE '%val%'`              |
+| **集合** | `_in`, `_nin`                                                                                 | 在数组中, 不在数组中                                | `id IN (1, 2)`                   |
+| **空值** | `_is_null`, `_is_not_null`                                                                    | 是否为 NULL                                   | `deleted_at IS NULL`             |
+| **区间** | `_between`, `_not_between`                                                                    | 在范围内 `[start, end]`, 不在范围内                 | `age BETWEEN 10 AND 20`          |
+| **逻辑** | `_and`, `_or`, `_not`                                                                         | 逻辑与分组, 逻辑或分组, 逻辑非                          | `(cond1 OR cond2)`               |
 
 ---
 
@@ -166,7 +169,8 @@ public void clearUserEmail(WhereCondition where) {
 2. **LIKE 查询不传 `%`**：后端会自动添加（`_like` 对应 `%val%`）。
 3. **按需选择更新驱动**：清除数据用 Map，普通修改用 DTO。
 4. **合理使用 `select`**：在大表查询时减少 I/O 压力。
-5. **实体类常量定义**：为了支持 type-safe 查询且能访问父类（`BaseEntity`）字段，实体类必须手动定义 `Fields` 内部类：
+5. **`groupBy` 仅适用于查询**：`groupBy` 和 `having` 仅在 `QueryCondition` 中生效，不适用于更新/删除。
+6. **实体类常量定义**：为了支持 type-safe 查询且能访问父类（`BaseEntity`）字段，实体类必须手动定义 `Fields` 内部类：
    ```java
    @FieldNameConstants
    public class User extends BaseEntity {

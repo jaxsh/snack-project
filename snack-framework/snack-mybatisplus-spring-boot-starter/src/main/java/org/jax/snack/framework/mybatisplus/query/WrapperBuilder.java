@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -317,6 +318,19 @@ public final class WrapperBuilder {
 		if (!CollectionUtils.isEmpty(condition.getOrderBy())) {
 			applyOrderBy(wrapper, condition.getOrderBy(), columnResolver);
 		}
+
+		if (!CollectionUtils.isEmpty(condition.getGroupBy())) {
+			applyGroupBy(wrapper, condition.getGroupBy(), columnResolver);
+		}
+
+		if (StringUtils.hasText(condition.getHaving())) {
+			wrapper.having(condition.getHaving());
+		}
+	}
+
+	private static <T> void applyGroupBy(QueryWrapper<T> wrapper, List<String> groupByFields,
+			Function<String, String> columnResolver) {
+		groupByFields.stream().map(columnResolver).filter(Objects::nonNull).forEach(wrapper::groupBy);
 	}
 
 	private static <T> void applyWhere(T wrapper, Map<?, ?> where, Function<String, String> columnResolver) {
@@ -446,6 +460,13 @@ public final class WrapperBuilder {
 					wrapper.between(column, list.get(0), list.get(1));
 				}
 			}
+			case NOT_BETWEEN -> {
+				if (value instanceof List<?> list && list.size() == 2) {
+					wrapper.notBetween(column, list.get(0), list.get(1));
+				}
+			}
+			case NOT_LIKE_LEFT -> wrapper.notLikeLeft(column, value);
+			case NOT_LIKE_RIGHT -> wrapper.notLikeRight(column, value);
 			default -> log.warn("Unsupported operator: {}", operator);
 		}
 	}

@@ -16,8 +16,10 @@
 
 package org.jax.snack.framework.core.api.query;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import lombok.AccessLevel;
@@ -111,6 +113,10 @@ public class WhereCondition {
 		protected Map<String, Number> decrByMap;
 
 		protected String lastSql;
+
+		private List<Map<String, Object>> orConditions;
+
+		private List<Map<String, Object>> andConditions;
 
 		/**
 		 * 设置查询条件 Map.
@@ -396,7 +402,41 @@ public class WhereCondition {
 		 * @return Builder
 		 */
 		public Builder between(String field, Object start, Object end) {
-			this.conditions.put(field, Map.of(QueryOperator.BETWEEN.getValue(), new Object[] { start, end }));
+			this.conditions.put(field, Map.of(QueryOperator.BETWEEN.getValue(), List.of(start, end)));
+			return this;
+		}
+
+		/**
+		 * NOT BETWEEN 条件.
+		 * @param field 字段名
+		 * @param start 起始值
+		 * @param end 结束值
+		 * @return Builder
+		 */
+		public Builder notBetween(String field, Object start, Object end) {
+			this.conditions.put(field, Map.of(QueryOperator.NOT_BETWEEN.getValue(), List.of(start, end)));
+			return this;
+		}
+
+		/**
+		 * NOT LIKE '%value' 条件.
+		 * @param field 字段名
+		 * @param value 值
+		 * @return Builder
+		 */
+		public Builder notLikeLeft(String field, Object value) {
+			this.conditions.put(field, Map.of(QueryOperator.NOT_LIKE_LEFT.getValue(), value));
+			return this;
+		}
+
+		/**
+		 * NOT LIKE 'value%' 条件.
+		 * @param field 字段名
+		 * @param value 值
+		 * @return Builder
+		 */
+		public Builder notLikeRight(String field, Object value) {
+			this.conditions.put(field, Map.of(QueryOperator.NOT_LIKE_RIGHT.getValue(), value));
 			return this;
 		}
 
@@ -429,6 +469,58 @@ public class WhereCondition {
 		}
 
 		/**
+		 * OR 子条件分组.
+		 * @param condition 子条件
+		 * @return Builder
+		 */
+		public Builder or(WhereCondition condition) {
+			if (this.orConditions == null) {
+				this.orConditions = new ArrayList<>();
+			}
+			if (condition != null && condition.getWhere() != null) {
+				this.orConditions.add(condition.getWhere());
+			}
+			return this;
+		}
+
+		/**
+		 * OR 等于条件.
+		 * @param field 字段名
+		 * @param value 值
+		 * @return Builder
+		 */
+		public Builder or(String field, Object value) {
+			return or(WhereCondition.builder().eq(field, value).build());
+		}
+
+		/**
+		 * AND 子条件分组.
+		 * @param condition 子条件
+		 * @return Builder
+		 */
+		public Builder and(WhereCondition condition) {
+			if (this.andConditions == null) {
+				this.andConditions = new ArrayList<>();
+			}
+			if (condition != null && condition.getWhere() != null) {
+				this.andConditions.add(condition.getWhere());
+			}
+			return this;
+		}
+
+		/**
+		 * NOT 取反条件.
+		 * @param condition 子条件
+		 * @return Builder
+		 */
+		public Builder not(WhereCondition condition) {
+			if (condition != null && condition.getWhere() != null) {
+				this.conditions.put(QueryOperator.NOT.getValue(), condition.getWhere());
+			}
+			return this;
+		}
+
+		/**
 		 * 追加 SQL 片段.
 		 * @param sql SQL 片段
 		 * @return Builder
@@ -444,7 +536,14 @@ public class WhereCondition {
 		 */
 		public WhereCondition build() {
 			WhereCondition condition = new WhereCondition();
-			condition.setWhere(new HashMap<>(this.conditions));
+			Map<String, Object> where = new HashMap<>(this.conditions);
+			if (this.orConditions != null) {
+				where.put(QueryOperator.OR.getValue(), this.orConditions);
+			}
+			if (this.andConditions != null) {
+				where.put(QueryOperator.AND.getValue(), this.andConditions);
+			}
+			condition.setWhere(where);
 			condition.setIncrBy(this.incrByMap);
 			condition.setDecrBy(this.decrByMap);
 			condition.setLast(this.lastSql);
