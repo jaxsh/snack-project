@@ -18,9 +18,9 @@ package org.jax.snack.oauth.biz.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
-import org.jax.snack.oauth.biz.converter.OAuth2SecurityBeanConverter;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
-import org.jax.snack.oauth.biz.repository.OAuth2RegisteredClientRepository;
+import org.jax.snack.oauth.biz.converter.OAuthRegisteredClientSecurityBeanConverter;
+import org.jax.snack.oauth.biz.entity.OAuthRegisteredClient;
+import org.jax.snack.oauth.biz.repository.OAuthRegisteredClientRepository;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -39,18 +39,18 @@ import org.springframework.stereotype.Component;
 @Primary
 @Component
 @RequiredArgsConstructor
-public class OAuth2RegisteredClientSecurityAdapter implements RegisteredClientRepository {
+public class OAuthRegisteredClientSecurityAdapter implements RegisteredClientRepository {
 
 	private static final String CACHE_NAME = "registered_clients";
 
-	private final OAuth2RegisteredClientRepository repository;
+	private final OAuthRegisteredClientRepository repository;
 
-	private final OAuth2SecurityBeanConverter converter;
+	private final OAuthRegisteredClientSecurityBeanConverter converter;
 
 	@Override
 	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void save(RegisteredClient registeredClient) {
-		OAuth2RegisteredClient entity = this.converter.toEntity(registeredClient);
+		OAuthRegisteredClient entity = this.converter.toEntity(registeredClient);
 		this.repository.findById(entity.getId())
 			.ifPresentOrElse((existing) -> this.repository.update(entity), () -> this.repository.save(entity));
 	}
@@ -64,9 +64,7 @@ public class OAuth2RegisteredClientSecurityAdapter implements RegisteredClientRe
 	@Override
 	@Cacheable(value = CACHE_NAME, key = "#clientId", unless = "#result == null")
 	public RegisteredClient findByClientId(String clientId) {
-		QueryCondition condition = QueryCondition.builder()
-			.eq(OAuth2RegisteredClient.Fields.clientId, clientId)
-			.build();
+		QueryCondition condition = QueryCondition.builder().eq(OAuthRegisteredClient.Fields.clientId, clientId).build();
 		return this.repository.queryListByDsl(condition)
 			.stream()
 			.findFirst()

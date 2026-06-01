@@ -19,9 +19,9 @@ package org.jax.snack.oauth.biz.converter;
 import org.jax.snack.framework.mybatisplus.converter.BasePageConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
-import org.jax.snack.oauth.api.dto.RegisteredClientDTO;
-import org.jax.snack.oauth.api.vo.RegisteredClientVO;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
+import org.jax.snack.oauth.api.dto.OAuthRegisteredClientDTO;
+import org.jax.snack.oauth.api.vo.OAuthRegisteredClientVO;
+import org.jax.snack.oauth.biz.entity.OAuthRegisteredClient;
 import org.mapstruct.Mapper;
 
 /**
@@ -30,8 +30,8 @@ import org.mapstruct.Mapper;
  * @author Jax Jiang
  */
 @Mapper(config = BaseMapStructConfig.class)
-public interface OAuth2RegisteredClientConverter
-		extends BaseDtoConvert<RegisteredClientDTO, OAuth2RegisteredClient, RegisteredClientVO>,
-		BasePageConvert<OAuth2RegisteredClient, RegisteredClientVO> {
+public interface OAuthRegisteredClientConverter
+		extends BaseDtoConvert<OAuthRegisteredClientDTO, OAuthRegisteredClient, OAuthRegisteredClientVO>,
+		BasePageConvert<OAuthRegisteredClient, OAuthRegisteredClientVO> {
 
 }

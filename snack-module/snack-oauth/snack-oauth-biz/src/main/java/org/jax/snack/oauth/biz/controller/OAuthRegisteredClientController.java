@@ -21,10 +21,10 @@ import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
-import org.jax.snack.oauth.api.dto.RegisteredClientDTO;
-import org.jax.snack.oauth.api.service.OAuth2RegisteredClientService;
-import org.jax.snack.oauth.api.vo.RegisteredClientVO;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
+import org.jax.snack.oauth.api.dto.OAuthRegisteredClientDTO;
+import org.jax.snack.oauth.api.service.OAuthRegisteredClientService;
+import org.jax.snack.oauth.api.vo.OAuthRegisteredClientVO;
+import org.jax.snack.oauth.biz.entity.OAuthRegisteredClient;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,16 +44,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/oauth2/clients")
 @RequiredArgsConstructor
-public class OAuth2RegisteredClientController {
+public class OAuthRegisteredClientController {
 
-	private final OAuth2RegisteredClientService service;
+	private final OAuthRegisteredClientService service;
 
 	/**
 	 * 创建客户端.
 	 * @param dto 客户端 DTO.
 	 */
 	@PostMapping
-	public void create(@Validated(Create.class) @RequestBody RegisteredClientDTO dto) {
+	public void create(@Validated(Create.class) @RequestBody OAuthRegisteredClientDTO dto) {
 		this.service.create(dto);
 	}
 
@@ -63,8 +63,8 @@ public class OAuth2RegisteredClientController {
 	 * @return 分页结果（单条数据）
 	 */
 	@GetMapping("/{id}")
-	public PageResult<RegisteredClientVO> getById(@PathVariable String id) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2RegisteredClient.Fields.id, id).build();
+	public PageResult<OAuthRegisteredClientVO> getById(@PathVariable String id) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthRegisteredClient.Fields.id, id).build();
 		return this.service.queryByDsl(condition);
 	}
 
@@ -74,7 +74,7 @@ public class OAuth2RegisteredClientController {
 	 * @return 分页结果
 	 */
 	@PostMapping("/query")
-	public PageResult<RegisteredClientVO> query(@RequestBody QueryCondition condition) {
+	public PageResult<OAuthRegisteredClientVO> query(@RequestBody QueryCondition condition) {
 		return this.service.queryByDsl(condition);
 	}
 
@@ -84,7 +84,7 @@ public class OAuth2RegisteredClientController {
 	 * @param dto 客户端 DTO.
 	 */
 	@PutMapping("/{id}")
-	public void update(@PathVariable String id, @Validated(Update.class) @RequestBody RegisteredClientDTO dto) {
+	public void update(@PathVariable String id, @Validated(Update.class) @RequestBody OAuthRegisteredClientDTO dto) {
 		this.service.update(id, dto);
 	}
 

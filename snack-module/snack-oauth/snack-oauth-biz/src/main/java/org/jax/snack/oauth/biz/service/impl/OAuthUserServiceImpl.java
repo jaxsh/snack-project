@@ -29,15 +29,16 @@ import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.service.OAuth2UserService;
-import org.jax.snack.oauth.api.vo.OAuth2UserVO;
-import org.jax.snack.oauth.biz.converter.OAuth2UserConverter;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
-import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.service.OAuthUserService;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
+import org.jax.snack.oauth.biz.converter.OAuthUserConverter;
+import org.jax.snack.oauth.biz.entity.OAuthAuthorization;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.repository.OAuthAuthorizationRepository;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,27 +51,27 @@ import org.springframework.util.StringUtils;
  */
 @Service
 @RequiredArgsConstructor
-public class OAuth2UserServiceImpl implements OAuth2UserService {
+public class OAuthUserServiceImpl implements OAuthUserService {
 
-	private final OAuth2UserRepository userRepository;
+	private final OAuthUserRepository userRepository;
 
 	private final PasswordEncoder passwordEncoder;
 
 	private final SecurityProperties securityProperties;
 
-	private final OAuth2UserConverter converter;
+	private final OAuthUserConverter converter;
 
-	private final JdbcTemplate jdbcTemplate;
+	private final OAuthAuthorizationRepository authorizationRepository;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void create(OAuth2UserDTO dto) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, dto.getUsername()).build();
+	public void create(OAuthUserDTO dto) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, dto.getUsername()).build();
 		if (!this.userRepository.queryListByDsl(condition).isEmpty()) {
 			throw new IllegalArgumentException("User already exists: " + dto.getUsername());
 		}
 
-		OAuth2User user = this.converter.toEntity(dto);
+		OAuthUser user = this.converter.toEntity(dto);
 		user.setPassword(this.passwordEncoder.encode(this.securityProperties.getDefaultPassword()));
 		user.setEnabled(Status.ENABLED.getCode());
 		user.setLocked(YesNoStatus.NO.getCode());
@@ -83,27 +84,27 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void update(String username, OAuth2UserDTO dto) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, username).build();
+	public void update(String username, OAuthUserDTO dto) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
 
-		OAuth2User existing = this.userRepository.queryListByDsl(condition)
+		OAuthUser existing = this.userRepository.queryListByDsl(condition)
 			.stream()
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
 
-		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.id, existing.getId()).build();
+		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.id, existing.getId()).build();
 
 		// 解锁分支：lockUntil=null 需要 Map 方式（与 OAuth2AuthenticationEvents.resetLockStatus
 		// 相同模式）
 		if (Objects.equals(dto.getLocked(), YesNoStatus.NO.getCode())) {
 			Map<String, Object> setData = new HashMap<>();
-			setData.put(OAuth2User.Fields.locked, YesNoStatus.NO.getCode());
-			setData.put(OAuth2User.Fields.lockCount, 0);
-			setData.put(OAuth2User.Fields.lockUntil, null);
+			setData.put(OAuthUser.Fields.locked, YesNoStatus.NO.getCode());
+			setData.put(OAuthUser.Fields.lockCount, 0);
+			setData.put(OAuthUser.Fields.lockUntil, null);
 			this.userRepository.updateByDsl(setData, where);
 		}
 		else {
-			OAuth2User user = this.converter.toEntity(dto);
+			OAuthUser user = this.converter.toEntity(dto);
 			user.setId(existing.getId());
 
 			if (StringUtils.hasText(dto.getPassword())) {
@@ -122,24 +123,24 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 
 		// 改密副作用：吊销所有 session（多设备踢人）
 		if (StringUtils.hasText(dto.getPassword())) {
-			revokeUserSessions(username);
+			revokeTokens(username);
 		}
 
 		// 禁用副作用：吊销所有 session
 		if (Objects.equals(dto.getEnabled(), Status.DISABLED.getCode())) {
-			revokeUserSessions(username);
+			revokeTokens(username);
 		}
 	}
 
 	@Override
-	public OAuth2UserVO getByUsername(String username) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, username).build();
-		OAuth2User user = this.userRepository.queryListByDsl(condition)
+	public OAuthUserVO getByUsername(String username) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
+		OAuthUser user = this.userRepository.queryListByDsl(condition)
 			.stream()
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
 
-		OAuth2UserVO vo = this.converter.toVO(user);
+		OAuthUserVO vo = this.converter.toVO(user);
 		boolean credentialsExpired = this.securityProperties.isCredentialsExpired(user.getLastPasswordResetTime());
 		int expiredCode = credentialsExpired ? YesNoStatus.YES.getCode() : YesNoStatus.NO.getCode();
 		vo.setExpired(expiredCode);
@@ -150,13 +151,16 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void delete(String username) {
-		WhereCondition condition = WhereCondition.builder().eq(OAuth2User.Fields.username, username).build();
+		WhereCondition condition = WhereCondition.builder().eq(OAuthUser.Fields.username, username).build();
 		this.userRepository.deleteByDsl(condition);
 	}
 
 	@Override
-	public void revokeUserSessions(String username) {
-		this.jdbcTemplate.update("DELETE FROM oauth2_authorization WHERE principal_name = ?", username);
+	public void revokeTokens(String username) {
+		WhereCondition condition = WhereCondition.builder()
+			.eq(OAuthAuthorization.Fields.principalName, username)
+			.build();
+		this.authorizationRepository.deleteByDsl(condition);
 	}
 
 }

@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.biz.repository;
+package org.jax.snack.oauth.biz.repository.impl;
 
-import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
+import lombok.RequiredArgsConstructor;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
+import org.jax.snack.oauth.biz.entity.OAuthAuthorization;
+import org.jax.snack.oauth.biz.mapper.OAuthAuthorizationMapper;
+import org.jax.snack.oauth.biz.repository.OAuthAuthorizationRepository;
+
+import org.springframework.stereotype.Repository;
 
 /**
- * OAuth2 用户认证数据仓储.
+ * OAuth2 授权仓储实现.
  *
  * @author Jax Jiang
  */
-public interface OAuth2UserRepository extends BaseRepository<OAuth2User, Long> {
+@Repository
+@RequiredArgsConstructor
+public class OAuthAuthorizationRepositoryImpl
+		extends AbstractRepository<OAuthAuthorization, String, OAuthAuthorizationMapper>
+		implements OAuthAuthorizationRepository {
 
 }

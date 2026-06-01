@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.biz.repository;
+package org.jax.snack.oauth.biz.repository.impl;
 
-import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
+import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.mapper.OAuthUserMapper;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
+
+import org.springframework.stereotype.Repository;
 
 /**
- * OAuth2 客户端仓储接口.
- * <p>
- * 标准化 Entity 仓储，不再直接继承 RegisteredClientRepository 以避免 findById 冲突. 业务框架适配由 Adapter 实现.
+ * OAuth2 用户仓储实现.
  *
  * @author Jax Jiang
  */
-public interface OAuth2RegisteredClientRepository extends BaseRepository<OAuth2RegisteredClient, String> {
+@Repository
+public class OAuthUserRepositoryImpl extends AbstractRepository<OAuthUser, Long, OAuthUserMapper>
+		implements OAuthUserRepository {
 
 }

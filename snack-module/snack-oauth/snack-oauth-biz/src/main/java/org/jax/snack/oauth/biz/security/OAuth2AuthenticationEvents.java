@@ -26,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.enums.YesNoStatus;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
-import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 
@@ -50,7 +50,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationEvents {
 
-	private final OAuth2UserRepository userRepository;
+	private final OAuthUserRepository userRepository;
 
 	private final SecurityProperties securityProperties;
 
@@ -108,9 +108,9 @@ public class OAuth2AuthenticationEvents {
 	 * @param username 用户名
 	 */
 	private void lockUser(String username) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, username).build();
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
 
-		OAuth2User user = this.userRepository.queryListByDsl(condition).stream().findFirst().orElse(null);
+		OAuthUser user = this.userRepository.queryListByDsl(condition).stream().findFirst().orElse(null);
 		if (user == null) {
 			return;
 		}
@@ -122,7 +122,7 @@ public class OAuth2AuthenticationEvents {
 		user.setLockCount(lockCount);
 		user.setLockUntil(lockUntil);
 
-		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.username, username).build();
+		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.username, username).build();
 		this.userRepository.updateByDsl(user, where);
 
 		this.loginAttemptService.setLockStatus(username, lockUntil);
@@ -159,12 +159,12 @@ public class OAuth2AuthenticationEvents {
 	 * @param username 用户名
 	 */
 	private void resetLockStatus(String username) {
-		WhereCondition where = WhereCondition.builder().eq(OAuth2User.Fields.username, username).build();
+		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.username, username).build();
 
 		Map<String, Object> setData = new HashMap<>();
-		setData.put(OAuth2User.Fields.locked, YesNoStatus.NO.getCode());
-		setData.put(OAuth2User.Fields.lockCount, 0);
-		setData.put(OAuth2User.Fields.lockUntil, null);
+		setData.put(OAuthUser.Fields.locked, YesNoStatus.NO.getCode());
+		setData.put(OAuthUser.Fields.lockCount, 0);
+		setData.put(OAuthUser.Fields.lockUntil, null);
 		this.userRepository.updateByDsl(setData, where);
 	}
 

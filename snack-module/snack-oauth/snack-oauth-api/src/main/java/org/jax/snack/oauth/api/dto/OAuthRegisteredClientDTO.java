@@ -33,7 +33,7 @@ import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 @Getter
 @Setter
 @ToString
-public class RegisteredClientDTO {
+public class OAuthRegisteredClientDTO {
 
 	/**
 	 * 客户端 ID.

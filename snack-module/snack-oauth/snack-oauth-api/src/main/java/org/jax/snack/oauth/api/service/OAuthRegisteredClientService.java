@@ -20,28 +20,28 @@ import java.util.List;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
-import org.jax.snack.oauth.api.dto.RegisteredClientDTO;
-import org.jax.snack.oauth.api.vo.RegisteredClientVO;
+import org.jax.snack.oauth.api.dto.OAuthRegisteredClientDTO;
+import org.jax.snack.oauth.api.vo.OAuthRegisteredClientVO;
 
 /**
  * OAuth2 客户端服务接口.
  *
  * @author Jax Jiang
  */
-public interface OAuth2RegisteredClientService {
+public interface OAuthRegisteredClientService {
 
 	/**
 	 * 创建客户端.
 	 * @param dto 客户端 DTO
 	 */
-	void create(RegisteredClientDTO dto);
+	void create(OAuthRegisteredClientDTO dto);
 
 	/**
 	 * 更新客户端.
 	 * @param id 主键 ID
 	 * @param dto 客户端 DTO
 	 */
-	void update(String id, RegisteredClientDTO dto);
+	void update(String id, OAuthRegisteredClientDTO dto);
 
 	/**
 	 * 删除客户端.
@@ -54,13 +54,13 @@ public interface OAuth2RegisteredClientService {
 	 * @param condition 查询条件
 	 * @return 分页结果
 	 */
-	PageResult<RegisteredClientVO> queryByDsl(QueryCondition condition);
+	PageResult<OAuthRegisteredClientVO> queryByDsl(QueryCondition condition);
 
 	/**
 	 * 根据 Client ID 获取客户端.
 	 * @param clientId 客户端 ID
 	 * @return 客户端 VO
 	 */
-	List<RegisteredClientVO> getByClientId(String clientId);
+	List<OAuthRegisteredClientVO> getByClientId(String clientId);
 
 }

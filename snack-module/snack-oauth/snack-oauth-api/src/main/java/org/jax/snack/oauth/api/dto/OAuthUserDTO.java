@@ -14,73 +14,63 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.biz.entity;
+package org.jax.snack.oauth.api.dto;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
-import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
-import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
+import lombok.ToString;
+import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 
 /**
- * OAuth2 用户实体.
- * <p>
- * 仅存储认证凭证（用户名、密码、状态）。业务资料存储在 UPMS 模块中.
+ * OAuth2 用户传输对象.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
-@FieldNameConstants
-@TableName("oauth2_user")
-public class OAuth2User extends BaseEntity implements Serializable {
-
-	@Serial
-	private static final long serialVersionUID = 1L;
+@ToString
+public class OAuthUserDTO {
 
 	/**
 	 * 用户名.
 	 */
+	@NotBlank(groups = Create.class)
+	@Size(min = 2, max = 64)
 	private String username;
 
 	/**
 	 * 密码.
 	 */
+	@Size(min = 6, max = 255)
 	private String password;
 
 	/**
 	 * 手机号.
 	 */
+	@Pattern(regexp = "^1[3-9]\\d{9}$")
 	private String mobile;
 
 	/**
 	 * 邮箱.
 	 */
+	@Email
 	private String email;
 
 	/**
-	 * 账户状态(0:禁用, 1:正常).
+	 * 账户状态(0:禁用, 1:启用).
 	 */
 	private Integer enabled;
 
 	/**
-	 * 锁定状态(0:正常, 1:锁定).
+	 * 是否锁定(0:否, 1:是).
 	 */
 	private Integer locked;
-
-	/**
-	 * 过期状态(0:正常, 1:过期).
-	 */
-	private Integer expired;
-
-	/**
-	 * 上次改密时间.
-	 */
-	private ZonedDateTime lastPasswordResetTime;
 
 	/**
 	 * 是否初始密码(0:否, 1:是).
@@ -88,19 +78,10 @@ public class OAuth2User extends BaseEntity implements Serializable {
 	private Integer initialPassword;
 
 	/**
-	 * 锁定截止时间.
+	 * 账号到期日.
 	 * <p>
-	 * null 表示永久锁定.
+	 * null 表示永不到期.
 	 */
-	private ZonedDateTime lockUntil;
-
-	/**
-	 * 累计锁定次数.
-	 */
-	private Integer lockCount;
-
-	public static final class Fields extends BaseEntity.Fields {
-
-	}
+	private LocalDate expireDate;
 
 }

@@ -14,65 +14,90 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.api.dto;
+package org.jax.snack.oauth.api.vo;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import java.time.ZonedDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 
 /**
- * OAuth2 用户传输对象.
+ * OAuth2 用户 VO.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
-@ToString
-public class OAuth2UserDTO {
+public class OAuthUserVO {
+
+	/**
+	 * 主键ID.
+	 */
+	private Long id;
 
 	/**
 	 * 用户名.
 	 */
-	@NotBlank(groups = Create.class)
-	@Size(min = 2, max = 64)
 	private String username;
-
-	/**
-	 * 密码.
-	 */
-	@Size(min = 6, max = 255)
-	private String password;
 
 	/**
 	 * 手机号.
 	 */
-	@Pattern(regexp = "^1[3-9]\\d{9}$")
 	private String mobile;
 
 	/**
 	 * 邮箱.
 	 */
-	@Email
 	private String email;
 
 	/**
-	 * 账户状态(0:禁用, 1:启用).
+	 * 账户状态(0:禁用, 1:正常).
 	 */
 	private Integer enabled;
 
 	/**
-	 * 是否锁定(0:否, 1:是).
+	 * 账户状态标签.
+	 */
+	private String enabledLabel;
+
+	/**
+	 * 锁定状态(0:正常, 1:锁定).
 	 */
 	private Integer locked;
 
 	/**
-	 * 是否初始密码(0:否, 1:是).
+	 * 锁定状态标签.
+	 */
+	private String lockedLabel;
+
+	/**
+	 * 过期状态(0:正常, 1:过期).
+	 */
+	private Integer expired;
+
+	/**
+	 * 过期状态标签.
+	 */
+	private String expiredLabel;
+
+	/**
+	 * 创建时间.
+	 */
+	private ZonedDateTime createTime;
+
+	/**
+	 * 更新时间.
+	 */
+	private ZonedDateTime updateTime;
+
+	/**
+	 * 是否为初始密码(0:否, 1:是).
 	 */
 	private Integer initialPassword;
+
+	/**
+	 * 是否为初始密码标签.
+	 */
+	private String initialPasswordLabel;
 
 }

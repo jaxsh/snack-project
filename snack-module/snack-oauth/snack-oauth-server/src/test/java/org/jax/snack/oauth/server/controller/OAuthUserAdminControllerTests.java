@@ -16,15 +16,16 @@
 
 package org.jax.snack.oauth.server.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.service.OAuth2UserService;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
-import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.service.OAuthUserService;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.server.OAuthIntegrationTests;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,17 +50,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author Jax Jiang
  */
-class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
+class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 
 	private static final String API_USER = "/api/oauth2/user";
 
 	private static final String PATH_USERNAME = "/{username}";
 
 	@Autowired
-	private OAuth2UserService userService;
+	private OAuthUserService userService;
 
 	@Autowired
-	private OAuth2UserRepository userRepository;
+	private OAuthUserRepository userRepository;
+
+	@Autowired
+	private UserDetailsService userDetailsService;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -68,13 +73,13 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 	}
 
 	private void createTestUser(String username) {
-		OAuth2UserDTO dto = new OAuth2UserDTO();
+		OAuthUserDTO dto = new OAuthUserDTO();
 		dto.setUsername(username);
 		this.userService.create(dto);
 	}
 
-	private OAuth2User findByUsername(String username) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, username).build();
+	private OAuthUser findByUsername(String username) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
 		return this.userRepository.queryListByDsl(condition).stream().findFirst().orElseThrow();
 	}
 
@@ -99,10 +104,10 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 			createTestUser(username);
 			insertFakeSession(username);
 
-			OAuth2UserDTO dto = new OAuth2UserDTO();
+			OAuthUserDTO dto = new OAuthUserDTO();
 			dto.setEnabled(0);
 
-			OAuth2UserAdminControllerTests.this.mockMvc
+			OAuthUserAdminControllerTests.this.mockMvc
 				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
@@ -119,13 +124,13 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 		void shouldEnableUser() throws Exception {
 			String username = "test_enable";
 			createTestUser(username);
-			OAuth2UserAdminControllerTests.this.jdbcTemplate.update("UPDATE oauth2_user SET enabled=0 WHERE username=?",
+			OAuthUserAdminControllerTests.this.jdbcTemplate.update("UPDATE oauth2_user SET enabled=0 WHERE username=?",
 					username);
 
-			OAuth2UserDTO dto = new OAuth2UserDTO();
+			OAuthUserDTO dto = new OAuthUserDTO();
 			dto.setEnabled(1);
 
-			OAuth2UserAdminControllerTests.this.mockMvc
+			OAuthUserAdminControllerTests.this.mockMvc
 				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
@@ -142,14 +147,14 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 			String username = "test_unlock";
 			createTestUser(username);
 			LocalDateTime lockUntil = ZonedDateTime.now().plusHours(1).toLocalDateTime();
-			OAuth2UserAdminControllerTests.this.jdbcTemplate.update(
+			OAuthUserAdminControllerTests.this.jdbcTemplate.update(
 					"UPDATE oauth2_user SET locked=1, lock_count=5, lock_until=? WHERE username=?", lockUntil,
 					username);
 
-			OAuth2UserDTO dto = new OAuth2UserDTO();
+			OAuthUserDTO dto = new OAuthUserDTO();
 			dto.setLocked(0);
 
-			OAuth2UserAdminControllerTests.this.mockMvc
+			OAuthUserAdminControllerTests.this.mockMvc
 				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
@@ -158,7 +163,7 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
-			OAuth2User user = findByUsername(username);
+			OAuthUser user = findByUsername(username);
 			assertThat(user.getLocked()).isEqualTo(0);
 			assertThat(user.getLockCount()).isEqualTo(0);
 			assertThat(user.getLockUntil()).isNull();
@@ -170,11 +175,11 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 			createTestUser(username);
 			insertFakeSession(username);
 
-			OAuth2UserDTO dto = new OAuth2UserDTO();
+			OAuthUserDTO dto = new OAuthUserDTO();
 			dto.setPassword("NewPass@123");
 			dto.setInitialPassword(1);
 
-			OAuth2UserAdminControllerTests.this.mockMvc
+			OAuthUserAdminControllerTests.this.mockMvc
 				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
@@ -187,23 +192,46 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 			assertThat(countSessions(username)).isEqualTo(0);
 		}
 
+		@Test
+		void shouldExpireAccountBasedOnDate() throws Exception {
+			String username = "test_expire_date";
+			createTestUser(username);
+			LocalDate yesterday = LocalDate.now().minusDays(1);
+
+			OAuthUserDTO dto = new OAuthUserDTO();
+			dto.setExpireDate(yesterday);
+
+			OAuthUserAdminControllerTests.this.mockMvc
+				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(toJson(dto)))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess());
+
+			assertThat(findByUsername(username).getExpireDate()).isEqualTo(yesterday);
+			assertThat(OAuthUserAdminControllerTests.this.userDetailsService.loadUserByUsername(username)
+				.isAccountNonExpired()).isFalse();
+		}
+
 	}
 
 	@Nested
-	class DeleteSessions {
+	class RevokeTokens {
 
 		@Test
-		void shouldDeleteAllSessionsForUser() throws Exception {
+		void shouldRevokeAllTokensForUser() throws Exception {
 			String username = "test_del_sessions";
 			createTestUser(username);
 			insertFakeSession(username);
 			insertFakeSession(username + "_2");
-			OAuth2UserAdminControllerTests.this.jdbcTemplate.update(
+			OAuthUserAdminControllerTests.this.jdbcTemplate.update(
 					"INSERT INTO oauth2_authorization (id, registered_client_id, principal_name, authorization_grant_type) VALUES (?,?,?,?)",
 					"fake2-" + username, "test-client", username, "authorization_code");
 
-			OAuth2UserAdminControllerTests.this.mockMvc
-				.perform(delete(API_USER + PATH_USERNAME + "/sessions", username).with(scopeUpmsJwt())
+			OAuthUserAdminControllerTests.this.mockMvc
+				.perform(delete(API_USER + PATH_USERNAME + "/tokens", username).with(scopeUpmsJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -214,12 +242,12 @@ class OAuth2UserAdminControllerTests extends OAuthIntegrationTests {
 		}
 
 		@Test
-		void shouldSucceedWhenNoSessionExists() throws Exception {
+		void shouldSucceedWhenNoTokenExists() throws Exception {
 			String username = "test_no_session";
 			createTestUser(username);
 
-			OAuth2UserAdminControllerTests.this.mockMvc
-				.perform(delete(API_USER + PATH_USERNAME + "/sessions", username).with(scopeUpmsJwt())
+			OAuthUserAdminControllerTests.this.mockMvc
+				.perform(delete(API_USER + PATH_USERNAME + "/tokens", username).with(scopeUpmsJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())

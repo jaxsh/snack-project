@@ -16,6 +16,7 @@
 
 package org.jax.snack.oauth.biz.service.impl;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -26,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
-import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
@@ -53,7 +54,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-	private final OAuth2UserRepository userRepository;
+	private final OAuthUserRepository userRepository;
 
 	private final SecurityProperties securityProperties;
 
@@ -62,9 +63,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	@NullMarked public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		log.debug("Loading user by username: {}", username);
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, username).build();
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
 
-		OAuth2User user = this.userRepository.queryListByDsl(condition)
+		OAuthUser user = this.userRepository.queryListByDsl(condition)
 			.stream()
 			.findFirst()
 			.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -75,12 +76,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			this.loginAttemptService.setLockStatus(username, user.getLockUntil());
 		}
 
+		boolean accountExpired = Objects.equals(user.getExpired(), YesNoStatus.YES.getCode())
+				|| (user.getExpireDate() != null && LocalDate.now().isAfter(user.getExpireDate()));
+
 		return User.builder()
 			.username(user.getUsername())
 			.password(user.getPassword())
 			.disabled(Objects.equals(user.getEnabled(), Status.DISABLED.getCode()))
 			.accountLocked(accountLocked)
-			.accountExpired(Objects.equals(user.getExpired(), YesNoStatus.YES.getCode()))
+			.accountExpired(accountExpired)
 			.credentialsExpired(false)
 			.authorities(getAuthorities(user))
 			.build();
@@ -93,7 +97,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @param user 用户实体
 	 * @return 是否锁定
 	 */
-	private boolean isAccountLocked(OAuth2User user) {
+	private boolean isAccountLocked(OAuthUser user) {
 		if (!Objects.equals(user.getLocked(), YesNoStatus.YES.getCode())) {
 			return false;
 		}
@@ -113,7 +117,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @param user 用户实体
 	 * @return 集合
 	 */
-	private Collection<? extends GrantedAuthority> getAuthorities(OAuth2User user) {
+	private Collection<? extends GrantedAuthority> getAuthorities(OAuthUser user) {
 		boolean needsPasswordChange = isInitialPasswordUser(user) || isCredentialsExpired(user);
 		if (needsPasswordChange) {
 			return List.of(new SimpleGrantedAuthority(
@@ -127,7 +131,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @param user 用户
 	 * @return 是否为初始密码
 	 */
-	private boolean isInitialPasswordUser(OAuth2User user) {
+	private boolean isInitialPasswordUser(OAuthUser user) {
 		return this.securityProperties.isForceChangeInitialPassword()
 				&& Objects.equals(user.getInitialPassword(), YesNoStatus.YES.getCode());
 	}
@@ -137,7 +141,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	 * @param user 用户
 	 * @return 是否过期
 	 */
-	private boolean isCredentialsExpired(OAuth2User user) {
+	private boolean isCredentialsExpired(OAuthUser user) {
 		return this.securityProperties.isCredentialsExpired(user.getLastPasswordResetTime());
 	}
 

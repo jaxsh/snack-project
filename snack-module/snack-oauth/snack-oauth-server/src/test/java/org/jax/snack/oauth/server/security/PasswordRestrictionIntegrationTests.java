@@ -20,9 +20,9 @@ import java.time.ZonedDateTime;
 
 import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
-import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.server.OAuthIntegrationTests;
 import org.junit.jupiter.api.Nested;
@@ -58,7 +58,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 	private static final String API_CLIENTS = "/api/oauth2/clients/1";
 
 	@Autowired
-	private OAuth2UserRepository userRepository;
+	private OAuthUserRepository userRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -67,7 +67,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 	private SecurityProperties securityProperties;
 
 	private void createUser(String username, String password, boolean initialPassword, ZonedDateTime lastResetTime) {
-		OAuth2User user = new OAuth2User();
+		OAuthUser user = new OAuthUser();
 		user.setUsername(username);
 		user.setPassword(this.passwordEncoder.encode(password));
 		user.setEnabled(Status.ENABLED.getCode());
@@ -121,7 +121,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 			PasswordRestrictionIntegrationTests.this.mockMvc.perform(get(API_CLIENTS).session(session))
 				.andExpect(status().isForbidden());
 
-			OAuth2UserDTO updateDto = new OAuth2UserDTO();
+			OAuthUserDTO updateDto = new OAuthUserDTO();
 			updateDto.setPassword(newPass);
 			PasswordRestrictionIntegrationTests.this.mockMvc
 				.perform(put(API_PROFILE).session(session)
@@ -169,7 +169,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 			PasswordRestrictionIntegrationTests.this.mockMvc.perform(get(API_CLIENTS).session(session))
 				.andExpect(status().isForbidden());
 
-			OAuth2UserDTO updateDto = new OAuth2UserDTO();
+			OAuthUserDTO updateDto = new OAuthUserDTO();
 			updateDto.setPassword(newPass);
 			PasswordRestrictionIntegrationTests.this.mockMvc
 				.perform(put(API_PROFILE).session(session)

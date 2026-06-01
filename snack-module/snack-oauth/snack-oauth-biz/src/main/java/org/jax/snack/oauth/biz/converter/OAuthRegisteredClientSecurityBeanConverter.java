@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
+import org.jax.snack.oauth.biz.entity.OAuthRegisteredClient;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JacksonModule;
@@ -40,19 +40,19 @@ import org.springframework.util.StringUtils;
 /**
  * OAuth2 Security 对象与 Entity 转换器.
  * <p>
- * 负责 RegisteredClient (Security Domain) 与 OAuth2RegisteredClient (Entity) 之间的转换.
+ * 负责 RegisteredClient (Security Domain) 与 OAuthRegisteredClient (Entity) 之间的转换.
  *
  * @author Jax Jiang
  */
 @Component
-public class OAuth2SecurityBeanConverter {
+public class OAuthRegisteredClientSecurityBeanConverter {
 
 	private final JsonMapper jsonMapper;
 
 	/**
 	 * 构造函数, 初始化 Jackson 模块.
 	 */
-	public OAuth2SecurityBeanConverter() {
+	public OAuthRegisteredClientSecurityBeanConverter() {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		List<JacksonModule> securityModules = SecurityJacksonModules.getModules(classLoader);
 
@@ -67,7 +67,7 @@ public class OAuth2SecurityBeanConverter {
 	 * @param entity 实体
 	 * @return RegisteredClient
 	 */
-	public RegisteredClient toDomain(OAuth2RegisteredClient entity) {
+	public RegisteredClient toDomain(OAuthRegisteredClient entity) {
 		Set<String> clientAuthenticationMethods = StringUtils
 			.commaDelimitedListToSet(entity.getClientAuthenticationMethods());
 		Set<String> authorizationGrantTypes = StringUtils.commaDelimitedListToSet(entity.getAuthorizationGrantTypes());
@@ -104,7 +104,7 @@ public class OAuth2SecurityBeanConverter {
 	 * @param registeredClient RegisteredClient
 	 * @return Entity
 	 */
-	public OAuth2RegisteredClient toEntity(RegisteredClient registeredClient) {
+	public OAuthRegisteredClient toEntity(RegisteredClient registeredClient) {
 		List<String> clientAuthenticationMethods = new ArrayList<>(
 				registeredClient.getClientAuthenticationMethods().size());
 		registeredClient.getClientAuthenticationMethods()
@@ -115,7 +115,7 @@ public class OAuth2SecurityBeanConverter {
 		registeredClient.getAuthorizationGrantTypes()
 			.forEach((authorizationGrantType) -> authorizationGrantTypes.add(authorizationGrantType.getValue()));
 
-		OAuth2RegisteredClient entity = new OAuth2RegisteredClient();
+		OAuthRegisteredClient entity = new OAuthRegisteredClient();
 		entity.setId(registeredClient.getId());
 		entity.setClientId(registeredClient.getClientId());
 		entity.setClientIdIssuedAt(registeredClient.getClientIdIssuedAt());

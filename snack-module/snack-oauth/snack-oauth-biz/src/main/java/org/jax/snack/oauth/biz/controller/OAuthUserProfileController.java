@@ -19,9 +19,9 @@ package org.jax.snack.oauth.biz.controller;
 import java.security.Principal;
 
 import lombok.RequiredArgsConstructor;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.service.OAuth2UserService;
-import org.jax.snack.oauth.api.vo.OAuth2UserVO;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.service.OAuthUserService;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,9 +39,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/oauth2/user")
 @RequiredArgsConstructor
-public class OAuth2UserProfileController {
+public class OAuthUserProfileController {
 
-	private final OAuth2UserService userService;
+	private final OAuthUserService userService;
 
 	/**
 	 * 获取当前用户资料.
@@ -49,7 +49,7 @@ public class OAuth2UserProfileController {
 	 * @return 用户资料 VO
 	 */
 	@GetMapping("/profile")
-	public OAuth2UserVO getProfile(Principal principal) {
+	public OAuthUserVO getProfile(Principal principal) {
 		return this.userService.getByUsername(principal.getName());
 	}
 
@@ -59,7 +59,7 @@ public class OAuth2UserProfileController {
 	 * @param dto 用户信息 DTO
 	 */
 	@PutMapping("/profile")
-	public void updateProfile(Principal principal, @RequestBody OAuth2UserDTO dto) {
+	public void updateProfile(Principal principal, @RequestBody OAuthUserDTO dto) {
 		this.userService.update(principal.getName(), dto);
 	}
 

@@ -16,69 +16,82 @@
 
 package org.jax.snack.oauth.api.vo;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
- * OAuth2 用户 VO.
+ * OAuth2 客户端 VO.
  *
  * @author Jax Jiang
  */
 @Getter
 @Setter
-public class OAuth2UserVO {
+@ToString
+public class OAuthRegisteredClientVO {
 
 	/**
-	 * 主键ID.
+	 * 主键 ID.
 	 */
-	private Long id;
+	private String id;
 
 	/**
-	 * 用户名.
+	 * 客户端 ID.
 	 */
-	private String username;
+	private String clientId;
 
 	/**
-	 * 手机号.
+	 * 客户端 ID 发行时间.
 	 */
-	private String mobile;
+	private Instant clientIdIssuedAt;
 
 	/**
-	 * 邮箱.
+	 * 客户端密钥过期时间.
 	 */
-	private String email;
+	private Instant clientSecretExpiresAt;
 
 	/**
-	 * 账户状态(0:禁用, 1:正常).
+	 * 客户端名称.
 	 */
-	private Integer enabled;
+	private String clientName;
 
 	/**
-	 * 账户状态标签.
+	 * 客户端认证方法.
 	 */
-	private String enabledLabel;
+	private String clientAuthenticationMethods;
 
 	/**
-	 * 锁定状态(0:正常, 1:锁定).
+	 * 授权类型.
 	 */
-	private Integer locked;
+	private String authorizationGrantTypes;
 
 	/**
-	 * 锁定状态标签.
+	 * 重定向 URI.
 	 */
-	private String lockedLabel;
+	private String redirectUris;
 
 	/**
-	 * 过期状态(0:正常, 1:过期).
+	 * 退出登录重定向 URI.
 	 */
-	private Integer expired;
+	private String postLogoutRedirectUris;
 
 	/**
-	 * 过期状态标签.
+	 * 权限范围.
 	 */
-	private String expiredLabel;
+	private String scopes;
+
+	/**
+	 * 客户端设置.
+	 */
+	private String clientSettings;
+
+	/**
+	 * 令牌设置.
+	 */
+	private String tokenSettings;
 
 	/**
 	 * 创建时间.
@@ -89,15 +102,5 @@ public class OAuth2UserVO {
 	 * 更新时间.
 	 */
 	private ZonedDateTime updateTime;
-
-	/**
-	 * 是否为初始密码(0:否, 1:是).
-	 */
-	private Integer initialPassword;
-
-	/**
-	 * 是否为初始密码标签.
-	 */
-	private String initialPasswordLabel;
 
 }

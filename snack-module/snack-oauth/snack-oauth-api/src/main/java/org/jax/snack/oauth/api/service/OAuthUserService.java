@@ -16,35 +16,35 @@
 
 package org.jax.snack.oauth.api.service;
 
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.vo.OAuth2UserVO;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 /**
  * OAuth2 用户服务接口.
  *
  * @author Jax Jiang
  */
-public interface OAuth2UserService {
+public interface OAuthUserService {
 
 	/**
 	 * 创建新用户.
 	 * @param dto 用户信息 DTO
 	 */
-	void create(OAuth2UserDTO dto);
+	void create(OAuthUserDTO dto);
 
 	/**
 	 * 更新用户信息.
 	 * @param username 用户名
 	 * @param dto 用户信息 DTO
 	 */
-	void update(String username, OAuth2UserDTO dto);
+	void update(String username, OAuthUserDTO dto);
 
 	/**
 	 * 根据用户名获取用户信息.
 	 * @param username 用户名
 	 * @return 用户信息 VO
 	 */
-	OAuth2UserVO getByUsername(String username);
+	OAuthUserVO getByUsername(String username);
 
 	/**
 	 * 删除用户.
@@ -53,9 +53,9 @@ public interface OAuth2UserService {
 	void delete(String username);
 
 	/**
-	 * 吊销用户的所有 session.
+	 * 吊销用户的所有 token.
 	 * @param username 用户名
 	 */
-	void revokeUserSessions(String username);
+	void revokeTokens(String username);
 
 }

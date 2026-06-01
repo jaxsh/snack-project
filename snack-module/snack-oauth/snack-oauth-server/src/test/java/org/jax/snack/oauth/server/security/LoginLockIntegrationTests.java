@@ -21,8 +21,8 @@ import java.time.ZonedDateTime;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
-import org.jax.snack.oauth.biz.repository.OAuth2UserRepository;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
+import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 import org.jax.snack.oauth.server.OAuthIntegrationTests;
@@ -48,7 +48,7 @@ import static org.springframework.security.test.web.servlet.response.SecurityMoc
 class LoginLockIntegrationTests extends OAuthIntegrationTests {
 
 	@Autowired
-	private OAuth2UserRepository userRepository;
+	private OAuthUserRepository userRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -59,13 +59,13 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 	@MockitoSpyBean
 	private SecurityProperties securityProperties;
 
-	private OAuth2User findByUsername(String username) {
-		QueryCondition condition = QueryCondition.builder().eq(OAuth2User.Fields.username, username).build();
+	private OAuthUser findByUsername(String username) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
 		return this.userRepository.queryListByDsl(condition).stream().findFirst().orElseThrow();
 	}
 
-	private OAuth2User createTestUser(String username, String password) {
-		OAuth2User user = new OAuth2User();
+	private OAuthUser createTestUser(String username, String password) {
+		OAuthUser user = new OAuthUser();
 		user.setUsername(username);
 		user.setPassword(this.passwordEncoder.encode(password));
 		user.setEnabled(Status.ENABLED.getCode());
@@ -126,7 +126,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 			LoginLockIntegrationTests.this.mockMvc.perform(formLogin().user(username).password(password))
 				.andExpect(unauthenticated());
 
-			OAuth2User user = findByUsername(username);
+			OAuthUser user = findByUsername(username);
 			assertThat(user.getLocked()).isEqualTo(YesNoStatus.YES.getCode());
 			assertThat(user.getLockCount()).isEqualTo(1);
 		}
@@ -141,7 +141,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 				LoginLockIntegrationTests.this.mockMvc.perform(formLogin().user(username).password("fail" + i));
 			}
 
-			OAuth2User user = findByUsername(username);
+			OAuthUser user = findByUsername(username);
 			user.setLockUntil(ZonedDateTime.now().minusMinutes(1));
 			LoginLockIntegrationTests.this.userRepository.update(user);
 			LoginLockIntegrationTests.this.loginAttemptService.clearLockStatus(username);
@@ -165,7 +165,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 				LoginLockIntegrationTests.this.mockMvc.perform(formLogin().user(username).password("attempt" + i));
 			}
 
-			OAuth2User user = findByUsername(username);
+			OAuthUser user = findByUsername(username);
 			assertThat(user.getLockCount()).isEqualTo(1);
 
 			user.setLockUntil(ZonedDateTime.now().minusMinutes(1));
@@ -192,13 +192,13 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 			String password = "normalpass";
 			createTestUser(username, password);
 
-			OAuth2User userBefore = findByUsername(username);
+			OAuthUser userBefore = findByUsername(username);
 			ZonedDateTime originalUpdateTime = userBefore.getUpdateTime();
 
 			LoginLockIntegrationTests.this.mockMvc.perform(formLogin().user(username).password(password))
 				.andExpect(authenticated());
 
-			OAuth2User userAfter = findByUsername(username);
+			OAuthUser userAfter = findByUsername(username);
 			assertThat(userAfter.getLocked()).isEqualTo(YesNoStatus.NO.getCode());
 			assertThat(userAfter.getLockCount()).isZero();
 			assertThat(userAfter.getUpdateTime()).isEqualTo(originalUpdateTime);
@@ -208,7 +208,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 		void shouldResetLockStatusWhenLockedUserLoginAfterExpiry() throws Exception {
 			String username = "lockedexpiry_" + System.currentTimeMillis();
 			String password = "lockedpwd";
-			OAuth2User user = createTestUser(username, password);
+			OAuthUser user = createTestUser(username, password);
 			user.setLocked(YesNoStatus.YES.getCode());
 			user.setLockCount(2);
 			user.setLockUntil(ZonedDateTime.now().minusMinutes(1));
@@ -226,7 +226,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 		void shouldDenyPermanentlyLockedUser() throws Exception {
 			String username = "permlocked_" + System.currentTimeMillis();
 			String password = "permpwd";
-			OAuth2User user = createTestUser(username, password);
+			OAuthUser user = createTestUser(username, password);
 			user.setLocked(YesNoStatus.YES.getCode());
 			user.setLockCount(5);
 			user.setLockUntil(null);
@@ -263,7 +263,7 @@ class LoginLockIntegrationTests extends OAuthIntegrationTests {
 
 			assertThat(LoginLockIntegrationTests.this.loginAttemptService.isLocked(username)).isFalse();
 
-			OAuth2User user = findByUsername(username);
+			OAuthUser user = findByUsername(username);
 			assertThat(user.getLocked()).isEqualTo(YesNoStatus.NO.getCode());
 			assertThat(user.getLockCount()).isZero();
 

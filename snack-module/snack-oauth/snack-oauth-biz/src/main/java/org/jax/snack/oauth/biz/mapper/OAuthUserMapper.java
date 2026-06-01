@@ -17,13 +17,15 @@
 package org.jax.snack.oauth.biz.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
 
 /**
- * OAuth2 客户端 Mapper.
+ * OAuth2 用户 Mapper.
+ * <p>
+ * 继承 MyBatis Plus BaseMapper, 提供基础 CRUD 操作.
  *
  * @author Jax Jiang
  */
-public interface OAuth2RegisteredClientMapper extends BaseMapper<OAuth2RegisteredClient> {
+public interface OAuthUserMapper extends BaseMapper<OAuthUser> {
 
 }

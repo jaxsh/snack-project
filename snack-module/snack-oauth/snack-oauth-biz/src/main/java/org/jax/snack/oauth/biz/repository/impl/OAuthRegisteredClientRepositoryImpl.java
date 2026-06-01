@@ -18,9 +18,9 @@ package org.jax.snack.oauth.biz.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
-import org.jax.snack.oauth.biz.mapper.OAuth2RegisteredClientMapper;
-import org.jax.snack.oauth.biz.repository.OAuth2RegisteredClientRepository;
+import org.jax.snack.oauth.biz.entity.OAuthRegisteredClient;
+import org.jax.snack.oauth.biz.mapper.OAuthRegisteredClientMapper;
+import org.jax.snack.oauth.biz.repository.OAuthRegisteredClientRepository;
 
 import org.springframework.stereotype.Repository;
 
@@ -33,8 +33,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 @RequiredArgsConstructor
-public class OAuth2RegisteredClientRepositoryImpl
-		extends AbstractRepository<OAuth2RegisteredClient, String, OAuth2RegisteredClientMapper>
-		implements OAuth2RegisteredClientRepository {
+public class OAuthRegisteredClientRepositoryImpl
+		extends AbstractRepository<OAuthRegisteredClient, String, OAuthRegisteredClientMapper>
+		implements OAuthRegisteredClientRepository {
 
 }

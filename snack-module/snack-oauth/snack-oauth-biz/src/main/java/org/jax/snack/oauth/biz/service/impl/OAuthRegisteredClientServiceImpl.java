@@ -24,12 +24,12 @@ import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.oauth.api.dto.RegisteredClientDTO;
-import org.jax.snack.oauth.api.service.OAuth2RegisteredClientService;
-import org.jax.snack.oauth.api.vo.RegisteredClientVO;
-import org.jax.snack.oauth.biz.converter.OAuth2RegisteredClientConverter;
-import org.jax.snack.oauth.biz.entity.OAuth2RegisteredClient;
-import org.jax.snack.oauth.biz.repository.OAuth2RegisteredClientRepository;
+import org.jax.snack.oauth.api.dto.OAuthRegisteredClientDTO;
+import org.jax.snack.oauth.api.service.OAuthRegisteredClientService;
+import org.jax.snack.oauth.api.vo.OAuthRegisteredClientVO;
+import org.jax.snack.oauth.biz.converter.OAuthRegisteredClientConverter;
+import org.jax.snack.oauth.biz.entity.OAuthRegisteredClient;
+import org.jax.snack.oauth.biz.repository.OAuthRegisteredClientRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,35 +42,35 @@ import org.springframework.util.ObjectUtils;
  */
 @Service
 @RequiredArgsConstructor
-public class OAuth2RegisteredClientServiceImpl implements OAuth2RegisteredClientService {
+public class OAuthRegisteredClientServiceImpl implements OAuthRegisteredClientService {
 
-	private final OAuth2RegisteredClientRepository repository;
+	private final OAuthRegisteredClientRepository repository;
 
-	private final OAuth2RegisteredClientConverter converter;
+	private final OAuthRegisteredClientConverter converter;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void create(RegisteredClientDTO dto) {
+	public void create(OAuthRegisteredClientDTO dto) {
 		QueryCondition existsCondition = QueryCondition.builder()
-			.eq(OAuth2RegisteredClient.Fields.clientId, dto.getClientId())
+			.eq(OAuthRegisteredClient.Fields.clientId, dto.getClientId())
 			.build();
 		boolean exists = this.repository.existsByDsl(existsCondition);
 		if (exists) {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Client ID");
 		}
 
-		OAuth2RegisteredClient entity = this.converter.toEntity(dto);
+		OAuthRegisteredClient entity = this.converter.toEntity(dto);
 		entity.setClientIdIssuedAt(Instant.now());
 		this.repository.save(entity);
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void update(String id, RegisteredClientDTO dto) {
-		OAuth2RegisteredClient existing = this.repository.findById(id)
+	public void update(String id, OAuthRegisteredClientDTO dto) {
+		OAuthRegisteredClient existing = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Registered Client"));
 
-		OAuth2RegisteredClient entity = this.converter.toEntity(dto);
+		OAuthRegisteredClient entity = this.converter.toEntity(dto);
 		entity.setId(id);
 		entity.setClientIdIssuedAt(existing.getClientIdIssuedAt());
 		if (entity.getClientSecret() == null) {
@@ -87,7 +87,7 @@ public class OAuth2RegisteredClientServiceImpl implements OAuth2RegisteredClient
 	}
 
 	@Override
-	public PageResult<RegisteredClientVO> queryByDsl(QueryCondition condition) {
+	public PageResult<OAuthRegisteredClientVO> queryByDsl(QueryCondition condition) {
 		if (!ObjectUtils.isEmpty(condition.getSize())) {
 			return this.converter.toPageResult(this.repository.queryPageByDsl(condition));
 		}
@@ -97,11 +97,9 @@ public class OAuth2RegisteredClientServiceImpl implements OAuth2RegisteredClient
 	}
 
 	@Override
-	public List<RegisteredClientVO> getByClientId(String clientId) {
-		QueryCondition condition = QueryCondition.builder()
-			.eq(OAuth2RegisteredClient.Fields.clientId, clientId)
-			.build();
-		List<OAuth2RegisteredClient> list = this.repository.queryListByDsl(condition);
+	public List<OAuthRegisteredClientVO> getByClientId(String clientId) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthRegisteredClient.Fields.clientId, clientId).build();
+		List<OAuthRegisteredClient> list = this.repository.queryListByDsl(condition);
 		return list.stream().map(this.converter::toVO).toList();
 	}
 

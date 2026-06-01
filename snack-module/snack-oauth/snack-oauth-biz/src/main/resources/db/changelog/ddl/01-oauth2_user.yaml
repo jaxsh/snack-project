@@ -83,6 +83,10 @@ databaseChangeLog:
                   defaultValueNumeric: 1
                   remarks: "是否初始密码(0:否, 1:是)"
               - column:
+                  name: expire_date
+                  type: date
+                  remarks: "账号到期日(null:永不到期)"
+              - column:
                   name: create_by
                   type: varchar(64)
                   remarks: 创建人

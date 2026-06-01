@@ -39,15 +39,15 @@ databaseChangeLog:
                   remarks: 已授权范围
               - column:
                   name: attributes
-                  type: blob
-                  remarks: 属性
+                  type: text
+                  remarks: 属性(JSON)
               - column:
                   name: state
                   type: varchar(500)
                   remarks: 状态
               - column:
                   name: authorization_code_value
-                  type: blob
+                  type: text
                   remarks: 授权码值
               - column:
                   name: authorization_code_issued_at
@@ -59,11 +59,11 @@ databaseChangeLog:
                   remarks: 授权码过期时间
               - column:
                   name: authorization_code_metadata
-                  type: blob
-                  remarks: 授权码元数据
+                  type: text
+                  remarks: 授权码元数据(JSON)
               - column:
                   name: access_token_value
-                  type: blob
+                  type: text
                   remarks: 访问令牌值
               - column:
                   name: access_token_issued_at
@@ -75,8 +75,8 @@ databaseChangeLog:
                   remarks: 访问令牌过期时间
               - column:
                   name: access_token_metadata
-                  type: blob
-                  remarks: 访问令牌元数据
+                  type: text
+                  remarks: 访问令牌元数据(JSON)
               - column:
                   name: access_token_type
                   type: varchar(100)
@@ -87,7 +87,7 @@ databaseChangeLog:
                   remarks: 访问令牌范围
               - column:
                   name: oidc_id_token_value
-                  type: blob
+                  type: text
                   remarks: OIDC ID Token值
               - column:
                   name: oidc_id_token_issued_at
@@ -99,11 +99,15 @@ databaseChangeLog:
                   remarks: OIDC ID Token过期时间
               - column:
                   name: oidc_id_token_metadata
-                  type: blob
-                  remarks: OIDC ID Token元数据
+                  type: text
+                  remarks: OIDC ID Token元数据(JSON)
+              - column:
+                  name: oidc_id_token_claims
+                  type: text
+                  remarks: OIDC ID Token声明(JSON)
               - column:
                   name: refresh_token_value
-                  type: blob
+                  type: text
                   remarks: 刷新令牌值
               - column:
                   name: refresh_token_issued_at
@@ -115,11 +119,11 @@ databaseChangeLog:
                   remarks: 刷新令牌过期时间
               - column:
                   name: refresh_token_metadata
-                  type: blob
-                  remarks: 刷新令牌元数据
+                  type: text
+                  remarks: 刷新令牌元数据(JSON)
               - column:
                   name: user_code_value
-                  type: blob
+                  type: text
                   remarks: 用户码值
               - column:
                   name: user_code_issued_at
@@ -131,11 +135,11 @@ databaseChangeLog:
                   remarks: 用户码过期时间
               - column:
                   name: user_code_metadata
-                  type: blob
-                  remarks: 用户码元数据
+                  type: text
+                  remarks: 用户码元数据(JSON)
               - column:
                   name: device_code_value
-                  type: blob
+                  type: text
                   remarks: 设备码值
               - column:
                   name: device_code_issued_at
@@ -147,8 +151,8 @@ databaseChangeLog:
                   remarks: 设备码过期时间
               - column:
                   name: device_code_metadata
-                  type: blob
-                  remarks: 设备码元数据
+                  type: text
+                  remarks: 设备码元数据(JSON)
       rollback:
         - dropTable:
             tableName: oauth2_authorization

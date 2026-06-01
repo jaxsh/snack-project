@@ -21,9 +21,9 @@ import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.utils.mapstruct.BaseDtoConvert;
 import org.jax.snack.framework.utils.mapstruct.BaseMapStructConfig;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.vo.OAuth2UserVO;
-import org.jax.snack.oauth.biz.entity.OAuth2User;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
+import org.jax.snack.oauth.biz.entity.OAuthUser;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -34,10 +34,10 @@ import org.mapstruct.MappingTarget;
  * @author Jax Jiang
  */
 @Mapper(config = BaseMapStructConfig.class)
-public interface OAuth2UserConverter extends BaseDtoConvert<OAuth2UserDTO, OAuth2User, OAuth2UserVO> {
+public interface OAuthUserConverter extends BaseDtoConvert<OAuthUserDTO, OAuthUser, OAuthUserVO> {
 
 	@AfterMapping
-	default void afterToVO(OAuth2User entity, @MappingTarget OAuth2UserVO vo) {
+	default void afterToVO(OAuthUser entity, @MappingTarget OAuthUserVO vo) {
 		if (entity.getEnabled() != null) {
 			vo.setEnabledLabel(BaseEnum.getNameByCode(Status.class, entity.getEnabled()));
 		}

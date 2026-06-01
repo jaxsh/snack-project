@@ -19,9 +19,9 @@ package org.jax.snack.oauth.biz.controller;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
-import org.jax.snack.oauth.api.dto.OAuth2UserDTO;
-import org.jax.snack.oauth.api.service.OAuth2UserService;
-import org.jax.snack.oauth.api.vo.OAuth2UserVO;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.service.OAuthUserService;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,16 +41,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/oauth2/user")
-public class OAuth2UserAdminController {
+public class OAuthUserAdminController {
 
-	private final OAuth2UserService userService;
+	private final OAuthUserService userService;
 
 	/**
 	 * 创建 OAuth2 用户.
 	 * @param request 创建请求
 	 */
 	@PostMapping
-	public void create(@RequestBody @Validated(Create.class) OAuth2UserDTO request) {
+	public void create(@RequestBody @Validated(Create.class) OAuthUserDTO request) {
 		this.userService.create(request);
 	}
 
@@ -60,7 +60,7 @@ public class OAuth2UserAdminController {
 	 * @return 用户信息 VO
 	 */
 	@GetMapping("/{username}")
-	public OAuth2UserVO getByUsername(@PathVariable String username) {
+	public OAuthUserVO getByUsername(@PathVariable String username) {
 		return this.userService.getByUsername(username);
 	}
 
@@ -70,7 +70,7 @@ public class OAuth2UserAdminController {
 	 * @param request 更新请求
 	 */
 	@PutMapping("/{username}")
-	public void update(@PathVariable String username, @RequestBody @Validated(Update.class) OAuth2UserDTO request) {
+	public void update(@PathVariable String username, @RequestBody @Validated(Update.class) OAuthUserDTO request) {
 		this.userService.update(username, request);
 	}
 
@@ -84,12 +84,12 @@ public class OAuth2UserAdminController {
 	}
 
 	/**
-	 * 吊销用户的所有 session.
+	 * 吊销用户的所有 token.
 	 * @param username 用户名
 	 */
-	@DeleteMapping("/{username}/sessions")
-	public void deleteSessions(@PathVariable String username) {
-		this.userService.revokeUserSessions(username);
+	@DeleteMapping("/{username}/tokens")
+	public void revokeTokens(@PathVariable String username) {
+		this.userService.revokeTokens(username);
 	}
 
 }
