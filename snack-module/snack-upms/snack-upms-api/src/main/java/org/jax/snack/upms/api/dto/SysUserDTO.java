@@ -119,7 +119,7 @@ public class SysUserDTO {
 	/**
 	 * 账号到期日.
 	 * <p>
-	 * null 表示永不到期，不存 sys_user，透传至 oauth2_user.
+	 * null 表示永不到期.
 	 */
 	private LocalDate expireDate;
 

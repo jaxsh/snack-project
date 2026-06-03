@@ -32,7 +32,7 @@ import org.springframework.web.service.annotation.PutExchange;
  *
  * @author Jax Jiang
  */
-@HttpExchange("/api/oauth2/user")
+@HttpExchange("/api/oauth/user")
 public interface OAuth2UserClient {
 
 	/**
