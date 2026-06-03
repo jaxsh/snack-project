@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,8 @@ public class CacheBasedUserDetailsChecker implements UserDetailsChecker {
 		String username = user.getUsername();
 
 		if (this.loginAttemptService.isLocked(username)) {
-			throw new LockedException("User account is locked");
+			throw new LockedException(SpringSecurityMessageSource.getAccessor()
+				.getMessage("AbstractUserDetailsAuthenticationProvider.locked"));
 		}
 
 		if (!user.isAccountNonLocked()) {
@@ -53,7 +55,8 @@ public class CacheBasedUserDetailsChecker implements UserDetailsChecker {
 				lockUntil = ZonedDateTime.now().plusMinutes(5);
 			}
 			this.loginAttemptService.setLockStatus(username, lockUntil);
-			throw new LockedException("User account is locked");
+			throw new LockedException(SpringSecurityMessageSource.getAccessor()
+				.getMessage("AbstractUserDetailsAuthenticationProvider.locked"));
 		}
 	}
 

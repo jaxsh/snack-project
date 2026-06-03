@@ -1,11 +1,11 @@
-# oauth2_authorization OAuth2 授权表
+# oauth_authorization OAuth2 授权表
 databaseChangeLog:
   - changeSet:
-      id: create-oauth2_authorization
+      id: create-oauth_authorization
       author: oauth
       changes:
         - createTable:
-            tableName: oauth2_authorization
+            tableName: oauth_authorization
             remarks: OAuth2 授权表
             columns:
               - column:
@@ -155,4 +155,4 @@ databaseChangeLog:
                   remarks: 设备码元数据(JSON)
       rollback:
         - dropTable:
-            tableName: oauth2_authorization
+            tableName: oauth_authorization

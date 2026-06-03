@@ -52,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 
-	private static final String API_USER = "/api/oauth2/user";
+	private static final String API_USER = "/api/oauth/user";
 
 	private static final String PATH_USERNAME = "/{username}";
 
@@ -85,13 +85,13 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 
 	private void insertFakeSession(String username) {
 		this.jdbcTemplate.update(
-				"INSERT INTO oauth2_authorization (id, registered_client_id, principal_name, authorization_grant_type) VALUES (?,?,?,?)",
+				"INSERT INTO oauth_authorization (id, registered_client_id, principal_name, authorization_grant_type) VALUES (?,?,?,?)",
 				"fake-" + username, "test-client", username, "authorization_code");
 	}
 
 	private int countSessions(String username) {
-		Integer count = this.jdbcTemplate.queryForObject(
-				"SELECT COUNT(*) FROM oauth2_authorization WHERE principal_name=?", Integer.class, username);
+		Integer count = this.jdbcTemplate
+			.queryForObject("SELECT COUNT(*) FROM oauth_authorization WHERE principal_name=?", Integer.class, username);
 		return (count != null) ? count : 0;
 	}
 
@@ -124,7 +124,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 		void shouldEnableUser() throws Exception {
 			String username = "test_enable";
 			createTestUser(username);
-			OAuthUserAdminControllerTests.this.jdbcTemplate.update("UPDATE oauth2_user SET enabled=0 WHERE username=?",
+			OAuthUserAdminControllerTests.this.jdbcTemplate.update("UPDATE oauth_user SET enabled=0 WHERE username=?",
 					username);
 
 			OAuthUserDTO dto = new OAuthUserDTO();
@@ -148,8 +148,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			createTestUser(username);
 			LocalDateTime lockUntil = ZonedDateTime.now().plusHours(1).toLocalDateTime();
 			OAuthUserAdminControllerTests.this.jdbcTemplate.update(
-					"UPDATE oauth2_user SET locked=1, lock_count=5, lock_until=? WHERE username=?", lockUntil,
-					username);
+					"UPDATE oauth_user SET locked=1, lock_count=5, lock_until=? WHERE username=?", lockUntil, username);
 
 			OAuthUserDTO dto = new OAuthUserDTO();
 			dto.setLocked(0);
@@ -227,7 +226,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			insertFakeSession(username);
 			insertFakeSession(username + "_2");
 			OAuthUserAdminControllerTests.this.jdbcTemplate.update(
-					"INSERT INTO oauth2_authorization (id, registered_client_id, principal_name, authorization_grant_type) VALUES (?,?,?,?)",
+					"INSERT INTO oauth_authorization (id, registered_client_id, principal_name, authorization_grant_type) VALUES (?,?,?,?)",
 					"fake2-" + username, "test-client", username, "authorization_code");
 
 			OAuthUserAdminControllerTests.this.mockMvc

@@ -21,6 +21,7 @@ import org.jax.snack.oauth.biz.service.LoginAttemptService;
 import org.jspecify.annotations.NullMarked;
 
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +43,8 @@ public class LockCheckingUserDetailsService implements UserDetailsService {
 	@Override
 	@NullMarked public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		if (this.loginAttemptService.isLocked(username)) {
-			throw new LockedException("User account is locked");
+			throw new LockedException(SpringSecurityMessageSource.getAccessor()
+				.getMessage("AbstractUserDetailsAuthenticationProvider.locked"));
 		}
 		return this.delegate.loadUserByUsername(username);
 	}

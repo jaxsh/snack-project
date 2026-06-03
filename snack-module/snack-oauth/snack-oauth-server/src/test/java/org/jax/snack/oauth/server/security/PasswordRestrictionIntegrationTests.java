@@ -53,9 +53,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 
-	private static final String API_PROFILE = "/api/oauth2/user/profile";
+	private static final String API_PROFILE = "/api/oauth/user/profile";
 
-	private static final String API_CLIENTS = "/api/oauth2/clients/1";
+	private static final String API_CLIENTS = "/api/oauth/clients/1";
 
 	@Autowired
 	private OAuthUserRepository userRepository;

@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jax Jiang
  */
 @RestController
-@RequestMapping("/api/oauth2/user")
+@RequestMapping("/api/oauth/user")
 @RequiredArgsConstructor
 public class OAuthUserProfileController {
 

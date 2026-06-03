@@ -45,8 +45,8 @@ public final class OAuth2SecurityPolicy {
 	public static void configureAuthorization(
 			AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize,
 			List<AuthorizationManager<RequestAuthorizationContext>> securityPolicies) {
-		authorize.requestMatchers("/api/oauth2/user/profile").authenticated();
-		authorize.requestMatchers("/api/oauth2/user/**").hasAuthority("SCOPE_upms");
+		authorize.requestMatchers("/api/oauth/user/profile").authenticated();
+		authorize.requestMatchers("/api/oauth/user/**").hasAuthority("SCOPE_upms");
 		authorize.requestMatchers("/api/**").access((authentication, context) -> {
 			for (AuthorizationManager<RequestAuthorizationContext> policy : securityPolicies) {
 				AuthorizationResult result = policy.authorize(authentication, context);

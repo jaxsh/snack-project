@@ -37,7 +37,7 @@ import org.jax.snack.framework.mybatisplus.entity.BaseEntity;
 @Getter
 @Setter
 @FieldNameConstants
-@TableName("oauth2_user")
+@TableName("oauth_user")
 public class OAuthUser extends BaseEntity implements Serializable {
 
 	@Serial

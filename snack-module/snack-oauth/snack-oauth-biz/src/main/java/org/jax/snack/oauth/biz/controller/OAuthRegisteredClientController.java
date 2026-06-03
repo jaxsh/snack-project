@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jax Jiang
  */
 @RestController
-@RequestMapping("/api/oauth2/clients")
+@RequestMapping("/api/oauth/clients")
 @RequiredArgsConstructor
 public class OAuthRegisteredClientController {
 

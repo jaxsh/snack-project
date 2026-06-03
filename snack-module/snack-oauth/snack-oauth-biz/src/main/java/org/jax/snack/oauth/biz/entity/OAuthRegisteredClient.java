@@ -40,7 +40,7 @@ import lombok.experimental.FieldNameConstants;
 @Getter
 @Setter
 @FieldNameConstants
-@TableName("oauth2_registered_client")
+@TableName("oauth_registered_client")
 public class OAuthRegisteredClient implements Serializable {
 
 	@Serial

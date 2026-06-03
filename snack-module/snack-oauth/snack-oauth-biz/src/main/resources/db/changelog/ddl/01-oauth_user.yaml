@@ -1,11 +1,11 @@
-# oauth2_user OAuth2 用户表
+# oauth_user OAuth2 用户表
 databaseChangeLog:
   - changeSet:
-      id: create-oauth2_user
+      id: create-oauth_user
       author: oauth
       changes:
         - createTable:
-            tableName: oauth2_user
+            tableName: oauth_user
             columns:
               - column:
                   name: id

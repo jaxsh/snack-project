@@ -1,11 +1,11 @@
-# 初始化 OAuth2 用户数据
+# 初始化 OAuth 用户数据
 databaseChangeLog:
   - changeSet:
-      id: insert-oauth2_user
+      id: insert-oauth_user
       author: oauth
       changes:
         - insert:
-            tableName: oauth2_user
+            tableName: oauth_user
             columns:
               - column:
                   name: id

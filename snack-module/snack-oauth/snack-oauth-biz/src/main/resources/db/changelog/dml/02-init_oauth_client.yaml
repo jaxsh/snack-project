@@ -1,4 +1,4 @@
-# 初始化 OAuth2 客户端数据
+# 初始化 OAuth 客户端数据
 databaseChangeLog:
   - changeSet:
       id: insert-snack-upms-server
@@ -6,7 +6,7 @@ databaseChangeLog:
       comment: "Client ID: snack-upms-server, Secret: secret"
       changes:
         - insert:
-            tableName: oauth2_registered_client
+            tableName: oauth_registered_client
             columns:
               - column:
                   name: id
@@ -59,7 +59,7 @@ databaseChangeLog:
       comment: "Client ID: snack-upms-service, Secret: secret — service account for UPMS->OAuth internal calls"
       changes:
         - insert:
-            tableName: oauth2_registered_client
+            tableName: oauth_registered_client
             columns:
               - column:
                   name: id
@@ -112,7 +112,7 @@ databaseChangeLog:
       comment: "Client ID: snack-oauth-server, Secret: secret"
       changes:
         - insert:
-            tableName: oauth2_registered_client
+            tableName: oauth_registered_client
             columns:
               - column:
                   name: id

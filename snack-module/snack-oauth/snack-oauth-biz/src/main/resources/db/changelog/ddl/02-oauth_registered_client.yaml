@@ -1,11 +1,11 @@
-# oauth2_registered_client OAuth2 客户端注册表
+# oauth_registered_client OAuth2 客户端注册表
 databaseChangeLog:
   - changeSet:
-      id: create-oauth2_registered_client
+      id: create-oauth_registered_client
       author: oauth
       changes:
         - createTable:
-            tableName: oauth2_registered_client
+            tableName: oauth_registered_client
             remarks: OAuth2客户端注册表
             columns:
               - column:
@@ -99,9 +99,9 @@ databaseChangeLog:
                   defaultValueComputed: CURRENT_TIMESTAMP
                   remarks: 更新时间
         - addUniqueConstraint:
-            tableName: oauth2_registered_client
+            tableName: oauth_registered_client
             columnNames: client_id
             constraintName: uk_client_id
       rollback:
         - dropTable:
-            tableName: oauth2_registered_client
+            tableName: oauth_registered_client

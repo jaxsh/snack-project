@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/oauth2/user")
+@RequestMapping("/api/oauth/user")
 public class OAuthUserAdminController {
 
 	private final OAuthUserService userService;

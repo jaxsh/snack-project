@@ -37,7 +37,7 @@ import lombok.experimental.FieldNameConstants;
 @Getter
 @Setter
 @FieldNameConstants
-@TableName("oauth2_authorization")
+@TableName("oauth_authorization")
 public class OAuthAuthorization implements Serializable {
 
 	@Serial
