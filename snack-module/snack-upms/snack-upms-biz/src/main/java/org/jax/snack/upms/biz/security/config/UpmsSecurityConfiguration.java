@@ -20,7 +20,9 @@ import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 import org.jax.snack.upms.biz.security.UpmsGrantedAuthoritiesMapper;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
 /**
@@ -39,11 +41,17 @@ public class UpmsSecurityConfiguration implements OAuth2ClientSecurityCustomizer
 
 	@Override
 	public int getOrder() {
-		return 100;
+		return -100;
 	}
 
 	@Override
 	public void customize(HttpSecurity http) {
+	}
+
+	@Override
+	public void configureAuthorization(
+			AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize) {
+		authorize.requestMatchers(HttpMethod.PUT, "/api/upms/users/password").authenticated();
 	}
 
 	@Override

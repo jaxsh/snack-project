@@ -18,7 +18,6 @@ package org.jax.snack.upms.biz.service.impl;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -91,6 +90,7 @@ public class SysUserServiceImpl implements SysUserService {
 	private final TransactionTemplate transactionTemplate;
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysUserDTO dto) {
 		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.username, dto.getUsername()).build();
@@ -103,31 +103,8 @@ public class SysUserServiceImpl implements SysUserService {
 		oauthUserDto.setEmail(dto.getEmail());
 		this.oAuth2UserClient.create(oauthUserDto);
 
-		this.transactionTemplate.executeWithoutResult((status) -> {
-			SysUser entity = this.converter.toEntity(dto);
-			this.repository.save(entity);
-
-			if (!CollectionUtils.isEmpty(dto.getRoleCodes())) {
-				validateRoleStatus(dto.getRoleCodes());
-				Set<SysUserRole> relations = dto.getRoleCodes().stream().map((roleCode) -> {
-					SysUserRole relation = new SysUserRole();
-					relation.setUsername(dto.getUsername());
-					relation.setRoleCode(roleCode);
-					return relation;
-				}).collect(Collectors.toSet());
-				this.userRoleRepository.saveBatch(relations);
-			}
-
-			if (!CollectionUtils.isEmpty(dto.getOrgCodes())) {
-				Set<SysUserOrg> relations = dto.getOrgCodes().stream().map((orgCode) -> {
-					SysUserOrg relation = new SysUserOrg();
-					relation.setUsername(dto.getUsername());
-					relation.setOrgCode(orgCode);
-					return relation;
-				}).collect(Collectors.toSet());
-				this.userOrgRepository.saveBatch(relations);
-			}
-		});
+		SysUser entity = this.converter.toEntity(dto);
+		this.repository.save(entity);
 	}
 
 	@Override
@@ -142,32 +119,6 @@ public class SysUserServiceImpl implements SysUserService {
 		entity.setUsername(current.getUsername());
 
 		this.repository.update(entity);
-
-		Optional.ofNullable(dto.getRoleCodes()).ifPresent((roleCodes) -> {
-			deleteUserRolesByUsername(current.getUsername());
-			if (!CollectionUtils.isEmpty(roleCodes)) {
-				Set<SysUserRole> relations = roleCodes.stream().map((roleCode) -> {
-					SysUserRole relation = new SysUserRole();
-					relation.setUsername(current.getUsername());
-					relation.setRoleCode(roleCode);
-					return relation;
-				}).collect(Collectors.toSet());
-				this.userRoleRepository.saveBatch(relations);
-			}
-		});
-
-		Optional.ofNullable(dto.getOrgCodes()).ifPresent((orgCodes) -> {
-			deleteUserOrgsByUsername(current.getUsername());
-			if (!CollectionUtils.isEmpty(orgCodes)) {
-				Set<SysUserOrg> relations = orgCodes.stream().map((orgCode) -> {
-					SysUserOrg relation = new SysUserOrg();
-					relation.setUsername(current.getUsername());
-					relation.setOrgCode(orgCode);
-					return relation;
-				}).collect(Collectors.toSet());
-				this.userOrgRepository.saveBatch(relations);
-			}
-		});
 
 		OAuthUserDTO oAuthPatch = new OAuthUserDTO();
 		boolean needSync = false;
@@ -275,12 +226,13 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
-	public void resetPassword(Long id, String newPassword) {
+	public void resetPassword(Long id, String newPassword, YesNoStatus initialPassword, YesNoStatus expired) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 		OAuthUserDTO dto = new OAuthUserDTO();
 		dto.setPassword(newPassword);
-		dto.setInitialPassword(YesNoStatus.YES.getCode());
+		dto.setInitialPassword(initialPassword.getCode());
+		dto.setExpired(expired.getCode());
 		this.oAuth2UserClient.update(current.getUsername(), dto);
 	}
 
@@ -290,6 +242,56 @@ public class SysUserServiceImpl implements SysUserService {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 		this.oAuth2UserClient.revokeTokens(current.getUsername());
+	}
+
+	@Override
+	public void updateUserRoles(String username, Set<String> roleCodes) {
+		deleteUserRolesByUsername(username);
+		if (!CollectionUtils.isEmpty(roleCodes)) {
+			validateRoleStatus(roleCodes);
+			Set<SysUserRole> relations = roleCodes.stream().map((roleCode) -> {
+				SysUserRole relation = new SysUserRole();
+				relation.setUsername(username);
+				relation.setRoleCode(roleCode);
+				return relation;
+			}).collect(Collectors.toSet());
+			this.userRoleRepository.saveBatch(relations);
+		}
+	}
+
+	@Override
+	public void updateUserOrgs(String username, Set<String> orgCodes) {
+		deleteUserOrgsByUsername(username);
+		if (!CollectionUtils.isEmpty(orgCodes)) {
+			Set<SysUserOrg> relations = orgCodes.stream().map((orgCode) -> {
+				SysUserOrg relation = new SysUserOrg();
+				relation.setUsername(username);
+				relation.setOrgCode(orgCode);
+				return relation;
+			}).collect(Collectors.toSet());
+			this.userOrgRepository.saveBatch(relations);
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
+	public void createWithRelations(SysUserDTO dto) {
+		this.create(dto);
+		this.updateUserRoles(dto.getUsername(), dto.getRoleCodes());
+		this.updateUserOrgs(dto.getUsername(), dto.getOrgCodes());
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
+	public void updateWithRelations(Long id, SysUserDTO dto) {
+		SysUser current = this.repository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+
+		this.update(id, dto);
+		this.updateUserRoles(current.getUsername(), dto.getRoleCodes());
+		this.updateUserOrgs(current.getUsername(), dto.getOrgCodes());
 	}
 
 	private void validateRoleStatus(Set<String> roleCodes) {

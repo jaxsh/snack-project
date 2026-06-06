@@ -113,7 +113,8 @@ public class SysUserDTO {
 	/**
 	 * 新密码（仅用于重置密码操作）.
 	 */
-	@Size(min = 6, max = 255)
+	@Size(min = 8, max = 255)
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,255}$")
 	private String password;
 
 	/**

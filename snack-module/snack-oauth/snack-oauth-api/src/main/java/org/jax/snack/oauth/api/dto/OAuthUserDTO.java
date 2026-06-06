@@ -47,7 +47,8 @@ public class OAuthUserDTO {
 	/**
 	 * 密码.
 	 */
-	@Size(min = 6, max = 255)
+	@Size(min = 8, max = 255)
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,255}$")
 	private String password;
 
 	/**
@@ -76,6 +77,11 @@ public class OAuthUserDTO {
 	 * 是否初始密码(0:否, 1:是).
 	 */
 	private Integer initialPassword;
+
+	/**
+	 * 是否过期(0:否, 1:是).
+	 */
+	private Integer expired;
 
 	/**
 	 * 账号到期日.

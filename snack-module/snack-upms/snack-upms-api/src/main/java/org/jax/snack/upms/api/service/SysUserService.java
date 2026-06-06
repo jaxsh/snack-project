@@ -17,10 +17,12 @@
 package org.jax.snack.upms.api.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
@@ -33,13 +35,13 @@ import org.jax.snack.upms.api.vo.SysUserVO;
 public interface SysUserService {
 
 	/**
-	 * 创建用户.
+	 * 创建用户基本信息（仅单表操作，不同步角色与组织关系）.
 	 * @param dto 用户 DTO.
 	 */
 	void create(SysUserDTO dto);
 
 	/**
-	 * 更新用户.
+	 * 更新用户基本信息（仅单表操作，退化为仅主表更新，不处理关联表关系）.
 	 * @param id 主键 ID.
 	 * @param dto 用户 DTO.
 	 */
@@ -93,16 +95,45 @@ public interface SysUserService {
 	void unlock(Long id);
 
 	/**
-	 * 重置用户密码（管理员操作，强制用户下次登录改密）.
+	 * 重置用户密码.
 	 * @param id 用户 ID
 	 * @param newPassword 新密码
+	 * @param initialPassword 是否标记为初始密码
+	 * @param expired 是否标记为已过期
 	 */
-	void resetPassword(Long id, String newPassword);
+	void resetPassword(Long id, String newPassword, YesNoStatus initialPassword, YesNoStatus expired);
 
 	/**
 	 * 强制下线用户（吊销所有 token）.
 	 * @param id 用户 ID
 	 */
 	void revokeTokens(Long id);
+
+	/**
+	 * 独立更新用户的角色关联关系.
+	 * @param username 用户名
+	 * @param roleCodes 角色编码集合
+	 */
+	void updateUserRoles(String username, Set<String> roleCodes);
+
+	/**
+	 * 独立更新用户的组织机构关联关系.
+	 * @param username 用户名
+	 * @param orgCodes 组织机构编码集合
+	 */
+	void updateUserOrgs(String username, Set<String> orgCodes);
+
+	/**
+	 * 创建用户及其角色、组织关联关系 (管理员级联创建).
+	 * @param dto 用户 DTO
+	 */
+	void createWithRelations(SysUserDTO dto);
+
+	/**
+	 * 更新用户及其角色、组织关联关系 (管理员级联更新).
+	 * @param id 用户 ID
+	 * @param dto 用户 DTO
+	 */
+	void updateWithRelations(Long id, SysUserDTO dto);
 
 }

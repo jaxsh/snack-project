@@ -94,8 +94,6 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 
 		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.id, existing.getId()).build();
 
-		// 解锁分支：lockUntil=null 需要 Map 方式（与 OAuth2AuthenticationEvents.resetLockStatus
-		// 相同模式）
 		if (Objects.equals(dto.getLocked(), YesNoStatus.NO.getCode())) {
 			Map<String, Object> setData = new HashMap<>();
 			setData.put(OAuthUser.Fields.locked, YesNoStatus.NO.getCode());
@@ -112,7 +110,6 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 				user.setLastPasswordResetTime(ZonedDateTime.now());
 				user.setLocked(YesNoStatus.NO.getCode());
 				user.setExpired(YesNoStatus.NO.getCode());
-				// initialPassword 未显式设置时清零（兼容用户自行改密的场景）
 				if (dto.getInitialPassword() == null) {
 					user.setInitialPassword(YesNoStatus.NO.getCode());
 				}
@@ -121,12 +118,11 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 			this.userRepository.updateByDsl(user, where);
 		}
 
-		// 改密副作用：吊销所有 session（多设备踢人）
-		if (StringUtils.hasText(dto.getPassword())) {
+		if (StringUtils.hasText(dto.getPassword())
+				&& Objects.equals(dto.getInitialPassword(), YesNoStatus.YES.getCode())) {
 			revokeTokens(username);
 		}
 
-		// 禁用副作用：吊销所有 session
 		if (Objects.equals(dto.getEnabled(), Status.DISABLED.getCode())) {
 			revokeTokens(username);
 		}

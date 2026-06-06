@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.upms.api.dto.SysUserDTO;
@@ -61,7 +62,7 @@ public class SysUserController {
 	 */
 	@PostMapping
 	public void create(@Validated(Create.class) @RequestBody SysUserDTO dto) {
-		this.service.create(dto);
+		this.service.createWithRelations(dto);
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class SysUserController {
 	 */
 	@PutMapping("/{id}")
 	public void update(@PathVariable Long id, @Validated(Update.class) @RequestBody SysUserDTO dto) {
-		this.service.update(id, dto);
+		this.service.updateWithRelations(id, dto);
 	}
 
 	/**
@@ -141,7 +142,7 @@ public class SysUserController {
 	 */
 	@PostMapping("/{id}/reset-password")
 	public void resetPassword(@PathVariable Long id, @Validated @RequestBody SysUserDTO dto) {
-		this.service.resetPassword(id, dto.getPassword());
+		this.service.resetPassword(id, dto.getPassword(), YesNoStatus.YES, YesNoStatus.NO);
 	}
 
 	/**
@@ -151,6 +152,28 @@ public class SysUserController {
 	@DeleteMapping("/{id}/tokens")
 	public void revokeTokens(@PathVariable Long id) {
 		this.service.revokeTokens(id);
+	}
+
+	/**
+	 * 更新当前登录用户的个人基本资料.
+	 * @param dto 用户 DTO (仅修改个人允许修改的字段)
+	 */
+	@PutMapping("/profile")
+	public void updateProfile(@Validated(Update.class) @RequestBody SysUserDTO dto) {
+		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+		SysUserVO current = this.service.getByUsername(username);
+		this.service.update(current.getId(), dto);
+	}
+
+	/**
+	 * 修改当前登录用户的密码.
+	 * @param dto 包含新密码的 DTO
+	 */
+	@PutMapping("/password")
+	public void changePassword(@Validated @RequestBody SysUserDTO dto) {
+		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+		SysUserVO current = this.service.getByUsername(username);
+		this.service.resetPassword(current.getId(), dto.getPassword(), YesNoStatus.NO, YesNoStatus.NO);
 	}
 
 }
