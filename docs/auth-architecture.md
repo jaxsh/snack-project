@@ -1,6 +1,6 @@
 # 认证授权架构文档
 
-> 审计日期：2026-05-24 | 最后更新：2026-06-05（前端认证流程重构、API 路径统一、GAP-8 新增）
+> 审计日期：2026-05-24 | 最后更新：2026-06-06（登录页路径变更、UpmsSecurityConfiguration Order 修正、GAP-8 修复完成）
 > 审计范围：snack-oauth、snack-upms、oauth2 starter、snack-project-web
 
 ---
@@ -103,8 +103,8 @@
 
 | Customizer | Order | 作用 |
 |------------|-------|------|
+| `UpmsSecurityConfiguration`（upms-biz） | -100 | 提供 `UpmsGrantedAuthoritiesMapper`（OAuth2 登录回调时加载 ROLE_* 和资源权限）；放行 `PUT /api/upms/users/password`（authenticated） |
 | `OAuth2SecurityCustomizer`（oauth-biz） | 0 | 注册路径规则（见下）；收集所有 `AuthorizationManager` Bean 组成 `securityPolicies` 链 |
-| `UpmsSecurityConfiguration`（upms-biz） | 100 | 仅提供 `UpmsGrantedAuthoritiesMapper`（OAuth2 登录回调时加载 ROLE_* 和资源权限） |
 | `OAuthFormLoginCustomizer`（oauth-biz） | LOWEST | 配置 formLogin JSON handlers；`exceptionHandling`：`/api/**` → 401 JSON，其他路径 → 302 |
 
 `OAuth2SecurityCustomizer` 注册的路径规则（首匹配，顺序固定）：
@@ -144,15 +144,15 @@
 
 ### 2.1 用户登录（前端 SPA → BFF → SAS）
 
-前端 SPA 自带登录页（`/user/login`），不依赖 SAS 的 Server-Side 渲染登录页。
+前端 SPA 自带登录页（`/account/login`），不依赖 SAS 的 Server-Side 渲染登录页。
 
 ```
-前端 SPA (/user/login)        BFF (Order 2)                   SAS (Order 1)
+前端 SPA (/account/login)     BFF (Order 2)                   SAS (Order 1)
   │                                │                                │
   │ 访问受保护路由                  │                                │
   │──────────────────────────────>│                                │
   │                                │ onPageChange: 无 currentUser  │
-  │<── history.replace('/user/login?redirect=...')                 │
+  │<── history.replace('/account/login?redirect=...')                 │
   │                                │                                │
   │ [用户填写账密，点击登录]          │                                │
   │ POST /auth-api/login           │                                │
@@ -244,7 +244,7 @@ OAuth2 Client (SessionStateCheckFilter)              SAS (OAuth2TokenCustomizerI
   │ → HTTP 401 JSON {"redirectUrl":"/oauth2/authorization/snack-upms-server"}
 ```
 
-> ⚠️ **GAP-8**：`SessionStateCheckFilter` 返回的 `{"redirectUrl":"..."}` 与 `BizAuthenticationEntryPoint` 的标准格式 `{"code":"2003","data":{"loginUrl":"..."}}` 不一致。前端 `requestErrorConfig.ts` 当前只识别 `data?.data?.loginUrl`，无法处理 `redirectUrl` 键，导致会话中 AT 刷新失败时前端仅展示泛化错误 toast 而不自动跳转登录页。用户需等下次请求触发 `BizAuthenticationEntryPoint` 才能完成重定向。详见 §11 GAP-8。
+> `SessionStateCheckFilter` 返回格式：`{"data":{"loginUrl":"/oauth2/authorization/snack-upms-server"}}`，与 `BizAuthenticationEntryPoint` 的标准格式保持一致，前端 `requestErrorConfig.ts` 可正确识别并跳转（GAP-8 已修复）。
 
 ---
 
@@ -472,11 +472,8 @@ oauth_user 与 sys_user 双写，OAuth2UserClient 调用失败时通过 `transac
    changePasswordRequired=true → history.replace('/account/change-password')
 
 ⑤ 用户提交新密码 → PUT /api/upms/users/password
-   PasswordRestrictionAuthorizationManager：/api/upms/users/password 走 securityPolicies
-   （pre_auth_reset 用户无权访问 → 403）
-
-   ⚠️ 注意：改密接口需对 pre_auth_reset scope 用户放行，当前由前端路由守卫保证
-      用户只能在改密页操作；若需防御性保护，可在 SecurityPolicy 为该接口添加例外规则。
+   UpmsSecurityConfiguration（Order -100）：PUT /api/upms/users/password → authenticated()
+   先于 securityPolicies 链匹配，pre_auth_reset 用户已认证即可访问
 
 ⑥ 前端：
    await changePassword(values.password)         // PUT /api/upms/users/password
@@ -510,9 +507,8 @@ AT 到期，下次请求触发刷新：
     ③ SAS 返回 400 access_denied
     ④ SessionStateCheckFilter 捕获 OAuth2AuthorizationException
          session.invalidate() + SecurityContextHolder.clearContext()
-         HTTP 401：{"redirectUrl":"/oauth2/authorization/snack-upms-server"}
-    ⑤ 前端当前仅展示泛化 toast（见 GAP-8），下次请求经 BizAuthenticationEntryPoint
-       返回标准格式 → 前端显示"登录状态已过期，请重新登录"，1.5秒后跳转
+         HTTP 401：{"data":{"loginUrl":"/oauth2/authorization/snack-upms-server"}}
+    ⑤ 前端 requestErrorConfig.ts 识别 data.loginUrl → 显示"登录状态已过期，请重新登录"，1.5秒后跳转
     ⑥ 重新登录 → 同 §5.2 流程（密码已过期）→ 路由守卫跳转改密页
 ```
 
@@ -770,7 +766,7 @@ snack:
   oauth2:
     client:
       server-url: ${OAUTH_SERVER_URL:http://localhost:${server.port:8080}}
-      login-page: http://localhost:8000/user/login     # SPA 登录页地址
+      login-page: http://localhost:8000/account/login   # SPA 登录页地址
       default-success-url: http://localhost:8000/      # 登录成功后默认跳转
 
 spring:
@@ -855,9 +851,7 @@ spring:
 | 已认证但无 RBAC 权限 | **403** | `{"code":"2003","msg":"Access Denied"}` | `BizAccessDeniedHandler` |
 | `pre_auth_reset` 用户访问非 profile 接口 | **403** | `{"code":"2003","msg":"Access Denied"}` | `PasswordRestrictionAuthorizationManager` |
 | AT 未过期，会话中密码到期（5min 窗口内） | **200** | 业务数据（缓存 AT 有效） | Controller |
-| AT 过期，SAS 刷新时检测到密码 / 账号异常 | **401** | `{"redirectUrl":"/oauth2/authorization/snack-upms-server"}` ⚠️ | `SessionStateCheckFilter` |
-
-> ⚠️ `SessionStateCheckFilter` 的 401 响应格式（`{"redirectUrl":"..."}`）与 `BizAuthenticationEntryPoint` 的标准格式（`{"code":"2003","data":{"loginUrl":"..."}}`）不一致，前端当前无法自动跳转（见 GAP-8）。
+| AT 过期，SAS 刷新时检测到密码 / 账号异常 | **401** | `{"data":{"loginUrl":"/oauth2/authorization/snack-upms-server"}}` | `SessionStateCheckFilter` |
 
 **C-2. 未登录 / Session 超时**
 
@@ -916,7 +910,6 @@ spring:
 | 认证事件（锁定） | `snack-oauth-biz/.../security/OAuth2AuthenticationEvents.java` | `onAuthenticationFailure/Success()` |
 | 安全策略配置 | `snack-oauth-biz/.../security/config/SecurityProperties.java` | `isCredentialsExpired()` |
 | OAuth2 用户服务 | `snack-oauth-biz/.../service/impl/OAuthUserServiceImpl.java` | `create()`, `update()` |
-| Profile 控制器 | `snack-oauth-biz/.../controller/OAuthUserProfileController.java` | `getProfile()` (`GET /api/oauth/user/profile`) |
 | **OAuth2 Client / BFF** | | |
 | Client 自动配置 | `snack-oauth2-client-starter/.../config/OAuth2ClientAutoConfiguration.java` | `oauth2ClientSecurityFilterChain()` |
 | AT 懒刷新过滤器 | `snack-oauth2-client-starter/.../security/SessionStateCheckFilter.java` | `doFilterInternal()`（AT 刷新 + 异常时强制登出 401） |
