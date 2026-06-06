@@ -34,7 +34,7 @@ spring:
             client-id: snack-upms-service
             client-secret: secret
             authorization-grant-type: client_credentials
-            scope: upms
+            scope: client
         provider:
           snack-oauth:
             authorization-uri: ${snack.oauth2.client.server-url}/oauth2/authorize

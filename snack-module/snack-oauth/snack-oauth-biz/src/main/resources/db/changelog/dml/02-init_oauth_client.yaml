@@ -90,7 +90,7 @@ databaseChangeLog:
                   value: ""
               - column:
                   name: scopes
-                  value: upms
+                  value: client
               - column:
                   name: client_settings
                   value: '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":false}'

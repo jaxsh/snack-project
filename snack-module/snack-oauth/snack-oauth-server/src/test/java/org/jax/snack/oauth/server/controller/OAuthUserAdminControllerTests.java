@@ -68,8 +68,8 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	private JwtRequestPostProcessor scopeUpmsJwt() {
-		return jwt().authorities(new SimpleGrantedAuthority("SCOPE_upms"));
+	private JwtRequestPostProcessor scopeClientJwt() {
+		return jwt().authorities(new SimpleGrantedAuthority("SCOPE_client"));
 	}
 
 	private void createTestUser(String username) {
@@ -108,7 +108,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			dto.setEnabled(0);
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
+				.perform(put(API_USER + PATH_USERNAME, username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(toJson(dto)))
@@ -131,7 +131,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			dto.setEnabled(1);
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
+				.perform(put(API_USER + PATH_USERNAME, username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(toJson(dto)))
@@ -154,7 +154,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			dto.setLocked(0);
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
+				.perform(put(API_USER + PATH_USERNAME, username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(toJson(dto)))
@@ -179,7 +179,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			dto.setInitialPassword(1);
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
+				.perform(put(API_USER + PATH_USERNAME, username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(toJson(dto)))
@@ -201,7 +201,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			dto.setExpireDate(yesterday);
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(put(API_USER + PATH_USERNAME, username).with(scopeUpmsJwt())
+				.perform(put(API_USER + PATH_USERNAME, username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(toJson(dto)))
@@ -230,7 +230,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 					"fake2-" + username, "test-client", username, "authorization_code");
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(delete(API_USER + PATH_USERNAME + "/tokens", username).with(scopeUpmsJwt())
+				.perform(delete(API_USER + PATH_USERNAME + "/tokens", username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -246,7 +246,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			createTestUser(username);
 
 			OAuthUserAdminControllerTests.this.mockMvc
-				.perform(delete(API_USER + PATH_USERNAME + "/tokens", username).with(scopeUpmsJwt())
+				.perform(delete(API_USER + PATH_USERNAME + "/tokens", username).with(scopeClientJwt())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())

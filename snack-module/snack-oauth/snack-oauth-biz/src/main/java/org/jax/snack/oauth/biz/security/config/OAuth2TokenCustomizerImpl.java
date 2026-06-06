@@ -69,6 +69,14 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 			return;
 		}
 
+		if (AuthorizationGrantType.CLIENT_CREDENTIALS.equals(context.getAuthorizationGrantType())) {
+			Set<String> scopes = context.getAuthorizedScopes();
+			Set<String> newScopes = (scopes != null) ? new HashSet<>(scopes) : new HashSet<>();
+			newScopes.add("client");
+			context.getClaims().claim("scope", newScopes);
+			return;
+		}
+
 		if (requiresPasswordChange(context.getPrincipal())) {
 			context.getClaims()
 				.claim("scope", new HashSet<>(Set.of("openid", OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)));

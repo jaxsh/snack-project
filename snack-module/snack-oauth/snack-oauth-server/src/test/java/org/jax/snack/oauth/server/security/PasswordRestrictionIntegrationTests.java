@@ -125,7 +125,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 			updateDto.setExpired(YesNoStatus.NO.getCode());
 			PasswordRestrictionIntegrationTests.this.mockMvc
 				.perform(put("/api/oauth/user/{username}", username).with(csrf())
-					.with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_upms")))
+					.with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_client")))
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(PasswordRestrictionIntegrationTests.this.jsonMapper.writeValueAsString(updateDto)))
 				.andExpect(status().isOk());
@@ -175,7 +175,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 			updateDto.setExpired(YesNoStatus.NO.getCode());
 			PasswordRestrictionIntegrationTests.this.mockMvc
 				.perform(put("/api/oauth/user/{username}", username).with(csrf())
-					.with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_upms")))
+					.with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_client")))
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(PasswordRestrictionIntegrationTests.this.jsonMapper.writeValueAsString(updateDto)))
 				.andExpect(status().isOk());
