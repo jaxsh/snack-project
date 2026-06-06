@@ -18,6 +18,7 @@ package org.jax.snack.framework.oauth2.client.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.jax.snack.framework.oauth2.client.security.AuditLogoutHandler;
 import org.jax.snack.framework.oauth2.client.security.JsonLogoutSuccessHandler;
@@ -28,6 +29,7 @@ import org.jax.snack.framework.oauth2.client.spi.LoginAuditHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2TokenClient;
 import org.jspecify.annotations.NullMarked;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -105,6 +107,7 @@ public class OAuth2ClientAutoConfiguration {
 	 * @param logoutHandlers 退出处理器列表
 	 * @param defaultMapperProvider 默认权限映射器提供者
 	 * @param authorizedClientManager OAuth2 授权客户端管理器
+	 * @param jsonMapper JSON 序列化器
 	 * @return SecurityFilterChain
 	 */
 	@Bean
@@ -112,7 +115,7 @@ public class OAuth2ClientAutoConfiguration {
 	public SecurityFilterChain oauth2ClientSecurityFilterChain(HttpSecurity http, OAuth2ClientProperties properties,
 			ObjectProvider<OAuth2ClientSecurityCustomizer> customizers, ObjectProvider<LogoutHandler> logoutHandlers,
 			@Qualifier("oidcScopeGrantedAuthoritiesMapper") ObjectProvider<GrantedAuthoritiesMapper> defaultMapperProvider,
-			OAuth2AuthorizedClientManager authorizedClientManager) {
+			OAuth2AuthorizedClientManager authorizedClientManager, JsonMapper jsonMapper) {
 
 		GrantedAuthoritiesMapper defaultMapper = defaultMapperProvider
 			.getIfAvailable(OidcScopeGrantedAuthoritiesMapper::new);
@@ -125,7 +128,7 @@ public class OAuth2ClientAutoConfiguration {
 
 		GrantedAuthoritiesMapper authoritiesMapper = sortedCustomizers.stream()
 			.map(OAuth2ClientSecurityCustomizer::authoritiesMapper)
-			.filter(java.util.Objects::nonNull)
+			.filter(Objects::nonNull)
 			.findFirst()
 			.orElse(defaultMapper);
 
@@ -169,10 +172,12 @@ public class OAuth2ClientAutoConfiguration {
 			for (LogoutHandler handler : allLogoutHandlers) {
 				logout.addLogoutHandler(handler);
 			}
-			logout.logoutSuccessHandler(new JsonLogoutSuccessHandler(loginUrl));
+			logout.logoutSuccessHandler(
+					new JsonLogoutSuccessHandler(loginUrl, properties.getEndSessionEndpointUri(), jsonMapper));
 		});
 
-		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId()),
+		http.addFilterAfter(
+				new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(), jsonMapper),
 				SecurityContextHolderFilter.class);
 
 		return http.build();

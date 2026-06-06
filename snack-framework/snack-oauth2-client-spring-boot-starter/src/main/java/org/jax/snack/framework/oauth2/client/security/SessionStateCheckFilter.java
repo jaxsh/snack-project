@@ -19,6 +19,7 @@ package org.jax.snack.framework.oauth2.client.security;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -56,10 +58,14 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 
 	private final String loginUrl;
 
-	public SessionStateCheckFilter(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId) {
+	private final JsonMapper jsonMapper;
+
+	public SessionStateCheckFilter(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId,
+			JsonMapper jsonMapper) {
 		this.authorizedClientManager = authorizedClientManager;
 		this.registrationId = registrationId;
 		this.loginUrl = "/oauth2/authorization/" + registrationId;
+		this.jsonMapper = jsonMapper;
 	}
 
 	@Override
@@ -105,9 +111,9 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		String body = "{\"redirectUrl\":\"" + this.loginUrl + "\"}";
+		Map<String, Object> body = Map.of("data", Map.of("loginUrl", this.loginUrl));
 		try (PrintWriter writer = response.getWriter()) {
-			writer.write(body);
+			writer.write(this.jsonMapper.writeValueAsString(body));
 			writer.flush();
 		}
 	}
