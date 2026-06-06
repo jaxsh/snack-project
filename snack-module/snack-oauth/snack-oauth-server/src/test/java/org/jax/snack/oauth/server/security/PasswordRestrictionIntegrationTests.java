@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MvcResult;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.logout;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -52,8 +54,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Jax Jiang
  */
 class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
-
-	private static final String API_PROFILE = "/api/oauth/user/profile";
 
 	private static final String API_CLIENTS = "/api/oauth/clients/1";
 
@@ -96,8 +96,6 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 
 			MockHttpSession session = loginAndGetSession(username, password);
 
-			PasswordRestrictionIntegrationTests.this.mockMvc.perform(get(API_PROFILE).session(session))
-				.andExpect(status().isOk());
 			PasswordRestrictionIntegrationTests.this.mockMvc.perform(get(API_CLIENTS).session(session))
 				.andExpect(status().is2xxSuccessful());
 		}
@@ -114,7 +112,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 
 			String username = "init_flow_" + System.currentTimeMillis();
 			String initialPass = "initial_pass";
-			String newPass = "new_pass_123";
+			String newPass = "Newpass@123";
 			createUser(username, initialPass, true, null);
 
 			MockHttpSession session = loginAndGetSession(username, initialPass);
@@ -123,9 +121,11 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 
 			OAuthUserDTO updateDto = new OAuthUserDTO();
 			updateDto.setPassword(newPass);
+			updateDto.setInitialPassword(YesNoStatus.NO.getCode());
+			updateDto.setExpired(YesNoStatus.NO.getCode());
 			PasswordRestrictionIntegrationTests.this.mockMvc
-				.perform(put(API_PROFILE).session(session)
-					.with(csrf())
+				.perform(put("/api/oauth/user/{username}", username).with(csrf())
+					.with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_upms")))
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(PasswordRestrictionIntegrationTests.this.jsonMapper.writeValueAsString(updateDto)))
 				.andExpect(status().isOk());
@@ -162,7 +162,7 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 
 			String username = "expired_flow_" + System.currentTimeMillis();
 			String initialPass = "expired_pass";
-			String newPass = "new_pass_456";
+			String newPass = "Newpass@456";
 			createUser(username, initialPass, false, ZonedDateTime.now().minusDays(100));
 
 			MockHttpSession session = loginAndGetSession(username, initialPass);
@@ -171,9 +171,11 @@ class PasswordRestrictionIntegrationTests extends OAuthIntegrationTests {
 
 			OAuthUserDTO updateDto = new OAuthUserDTO();
 			updateDto.setPassword(newPass);
+			updateDto.setInitialPassword(YesNoStatus.NO.getCode());
+			updateDto.setExpired(YesNoStatus.NO.getCode());
 			PasswordRestrictionIntegrationTests.this.mockMvc
-				.perform(put(API_PROFILE).session(session)
-					.with(csrf())
+				.perform(put("/api/oauth/user/{username}", username).with(csrf())
+					.with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_upms")))
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(PasswordRestrictionIntegrationTests.this.jsonMapper.writeValueAsString(updateDto)))
 				.andExpect(status().isOk());

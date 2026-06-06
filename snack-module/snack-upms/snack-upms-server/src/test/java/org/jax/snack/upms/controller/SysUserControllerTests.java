@@ -26,6 +26,7 @@ import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysResourceDTO;
 import org.jax.snack.upms.api.dto.SysRoleDTO;
@@ -233,8 +234,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Disable"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
+			ArgumentCaptor<OAuthUserDTO> captor = ArgumentCaptor.forClass(OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -274,8 +274,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Contact"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
+			ArgumentCaptor<OAuthUserDTO> captor = ArgumentCaptor.forClass(OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -300,8 +299,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Expire"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
+			ArgumentCaptor<OAuthUserDTO> captor = ArgumentCaptor.forClass(OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -374,8 +372,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "Unlock"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
+			ArgumentCaptor<OAuthUserDTO> captor = ArgumentCaptor.forClass(OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -411,8 +408,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(buildDto(username, "ResetPw"));
 			SysUserVO created = queryByUsername(username);
 
-			ArgumentCaptor<org.jax.snack.oauth.api.dto.OAuthUserDTO> captor = ArgumentCaptor
-				.forClass(org.jax.snack.oauth.api.dto.OAuthUserDTO.class);
+			ArgumentCaptor<OAuthUserDTO> captor = ArgumentCaptor.forClass(OAuthUserDTO.class);
 			Mockito.doNothing()
 				.when(SysUserControllerTests.this.oAuth2UserClient)
 				.update(eq(username), captor.capture());
@@ -484,7 +480,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserDTO userDto = buildDto(username, "ResUser");
 			userDto.setRoleCodes(Set.of(roleCode));
 			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).create(any());
-			SysUserControllerTests.this.sysUserService.create(userDto);
+			SysUserControllerTests.this.sysUserService.createWithRelations(userDto);
 
 			SysUserControllerTests.this.mockMvc
 				.perform(get(API_USERS_RESOURCES).with(defaultJwt().jwt((builder) -> builder.subject(username))))

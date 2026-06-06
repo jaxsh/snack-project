@@ -19,7 +19,6 @@ package org.jax.snack.framework.core.api.query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -444,8 +443,9 @@ public class QueryCondition extends WhereCondition {
 		 */
 		@Override
 		public QueryCondition build() {
+			WhereCondition base = super.build();
 			QueryCondition condition = new QueryCondition();
-			condition.where = new HashMap<>(this.conditions);
+			condition.where = base.getWhere();
 			condition.incrBy = this.incrByMap;
 			condition.decrBy = this.decrByMap;
 			condition.last = this.lastSql;
