@@ -104,4 +104,11 @@ public class OAuth2ClientProperties {
 	 */
 	private String loginPage = "/login";
 
+	/**
+	 * SAS 的 OIDC 登出端点（end_session_endpoint）.
+	 * <p>
+	 * 配置示例：{@code ${snack.oauth2.client.server-url}/connect/logout}
+	 */
+	private String endSessionEndpointUri;
+
 }
