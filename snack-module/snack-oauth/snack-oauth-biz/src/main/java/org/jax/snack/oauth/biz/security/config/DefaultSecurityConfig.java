@@ -82,10 +82,13 @@ public class DefaultSecurityConfig {
 			authorize.anyRequest().authenticated();
 		})
 			.formLogin((form) -> form.successHandler(successHandler).failureHandler(failureHandler))
+			.logout((logout) -> logout.logoutRequestMatcher((request) -> "/logout".equals(request.getRequestURI()))
+				.logoutSuccessUrl(loginPage))
 			.exceptionHandling(
 					(exceptions) -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage))
 						.accessDeniedHandler(accessDeniedHandler))
-			.csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+			.csrf((csrf) -> csrf.ignoringRequestMatchers("/login")
+				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
 

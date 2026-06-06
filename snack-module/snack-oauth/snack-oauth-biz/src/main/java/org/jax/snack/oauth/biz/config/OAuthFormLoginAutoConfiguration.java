@@ -19,6 +19,7 @@ package org.jax.snack.oauth.biz.config;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientAutoConfiguration;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.oauth.biz.security.config.OAuthFormLoginCustomizer;
+import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationSuccessHandler;
@@ -83,6 +84,7 @@ public class OAuthFormLoginAutoConfiguration {
 	 * {@code oauth2ClientSecurityFilterChain}， 配置 JSON 认证处理器和路径分派入口点（/api/** → 401
 	 * JSON，其他路径 → 302 OAuth2 授权）。
 	 * @param clientProperties OAuth2 Client 配置
+	 * @param securityProperties 安全策略属性
 	 * @param successHandler 认证成功处理器
 	 * @param failureHandler 认证失败处理器
 	 * @param accessDeniedHandler 访问拒绝处理器
@@ -92,10 +94,11 @@ public class OAuthFormLoginAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public OAuthFormLoginCustomizer oAuthFormLoginCustomizer(OAuth2ClientProperties clientProperties,
-			JsonAuthenticationSuccessHandler successHandler, JsonAuthenticationFailureHandler failureHandler,
-			BizAccessDeniedHandler accessDeniedHandler, JsonMapper jsonMapper) {
-		return new OAuthFormLoginCustomizer(clientProperties, successHandler, failureHandler, accessDeniedHandler,
-				jsonMapper);
+			SecurityProperties securityProperties, JsonAuthenticationSuccessHandler successHandler,
+			JsonAuthenticationFailureHandler failureHandler, BizAccessDeniedHandler accessDeniedHandler,
+			JsonMapper jsonMapper) {
+		return new OAuthFormLoginCustomizer(clientProperties, securityProperties, successHandler, failureHandler,
+				accessDeniedHandler, jsonMapper);
 	}
 
 }

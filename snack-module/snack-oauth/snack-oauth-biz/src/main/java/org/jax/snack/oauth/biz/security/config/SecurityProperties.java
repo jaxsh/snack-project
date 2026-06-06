@@ -75,6 +75,11 @@ public class SecurityProperties {
 	private String loginPage = "/login";
 
 	/**
+	 * 外部改密页面地址.
+	 */
+	private String changePasswordPage = "/account/change-password";
+
+	/**
 	 * 判断凭证是否已过期.
 	 * @param lastPasswordResetTime 最近一次密码重置时间
 	 * @return 是否过期

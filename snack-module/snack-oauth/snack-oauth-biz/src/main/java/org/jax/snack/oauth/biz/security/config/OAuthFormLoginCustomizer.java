@@ -19,6 +19,7 @@ package org.jax.snack.oauth.biz.security.config;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
+import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
 import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
 import org.jax.snack.oauth.biz.security.handler.BizAuthenticationEntryPoint;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
@@ -27,7 +28,10 @@ import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.core.Ordered;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * 表单登录定制器.
@@ -40,6 +44,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer {
 
 	private final OAuth2ClientProperties clientProperties;
+
+	private final SecurityProperties securityProperties;
 
 	private final JsonAuthenticationSuccessHandler successHandler;
 
@@ -59,6 +65,37 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 			.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint(oauthEntryPoint),
 					(request) -> true)
 			.accessDeniedHandler(this.accessDeniedHandler));
+		http.oauth2Login((oauth2) -> oauth2.successHandler(buildOAuth2SuccessHandler()));
+	}
+
+	private AuthenticationSuccessHandler buildOAuth2SuccessHandler() {
+		String restrictedAuthority = OAuth2SecurityConstants.SCOPE_PREFIX
+				+ OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE;
+		String changePasswordUrl = toAbsoluteUrl(this.securityProperties.getChangePasswordPage(),
+				this.clientProperties.getDefaultSuccessUrl());
+		String defaultUrl = this.clientProperties.getDefaultSuccessUrl();
+		return (req, res, auth) -> {
+			boolean hasRestriction = auth.getAuthorities()
+				.stream()
+				.anyMatch((a) -> a.getAuthority().equals(restrictedAuthority));
+			String target = hasRestriction ? changePasswordUrl : defaultUrl;
+			new SimpleUrlAuthenticationSuccessHandler(target).onAuthenticationSuccess(req, res, auth);
+		};
+	}
+
+	private static String toAbsoluteUrl(String path, String baseUrl) {
+		if (UriComponentsBuilder.fromUriString(path).build().getScheme() != null) {
+			return path;
+		}
+		if (UriComponentsBuilder.fromUriString(baseUrl).build().getScheme() == null) {
+			return path;
+		}
+		return UriComponentsBuilder.fromUriString(baseUrl)
+			.replacePath(null)
+			.replaceQuery(null)
+			.fragment(null)
+			.build()
+			.toUriString() + path;
 	}
 
 	@Override

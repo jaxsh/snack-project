@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
@@ -69,7 +70,8 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 		}
 
 		if (requiresPasswordChange(context.getPrincipal())) {
-			context.getClaims().claim("scope", new HashSet<>(Set.of(OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)));
+			context.getClaims()
+				.claim("scope", new HashSet<>(Set.of("openid", OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)));
 			context.getClaims().claim("authorities", Collections.emptyList());
 			context.getClaims().expiresAt(Instant.now().plus(RESTRICTED_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
 		}
@@ -88,8 +90,8 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 				|| !freshUser.isAccountNonExpired();
 		boolean passwordExpired = freshUser.getAuthorities()
 			.stream()
-			.anyMatch((a) -> a.getAuthority()
-				.equals(OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE));
+			.anyMatch((a) -> Objects.equals(a.getAuthority(),
+					OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE));
 		if (invalidState || passwordExpired) {
 			log.debug("User {} is in invalid state during token refresh, denying", username);
 			throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.ACCESS_DENIED));

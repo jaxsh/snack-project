@@ -1,7 +1,8 @@
 spring:
   profiles:
     active: oauth,${ENV:dev}
-    name: snack-oauth
+  application:
+    name: snack-oauth-server
   docker:
     compose:
       lifecycle-management: start-and-stop
