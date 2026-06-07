@@ -17,6 +17,7 @@
 package org.jax.snack.framework.oauth2.client.security;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -44,7 +45,7 @@ public class UsernameBasedSessionRegistry extends SessionRegistryImpl {
 		return getAllPrincipals().stream()
 			.filter((p) -> username.equals(extractUsername(p)))
 			.flatMap((p) -> super.getAllSessions(p, includeExpiredSessions).stream())
-			.toList();
+			.collect(Collectors.toList());
 	}
 
 	private static String extractUsername(Object principal) {
