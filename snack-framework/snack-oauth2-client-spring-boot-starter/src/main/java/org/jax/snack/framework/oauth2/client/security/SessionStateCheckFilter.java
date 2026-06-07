@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -60,12 +61,15 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 
 	private final JsonMapper jsonMapper;
 
+	private final SessionRefreshLock sessionRefreshLock;
+
 	public SessionStateCheckFilter(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId,
-			JsonMapper jsonMapper) {
+			JsonMapper jsonMapper, SessionRefreshLock sessionRefreshLock) {
 		this.authorizedClientManager = authorizedClientManager;
 		this.registrationId = registrationId;
 		this.loginUrl = "/oauth2/authorization/" + registrationId;
 		this.jsonMapper = jsonMapper;
+		this.sessionRefreshLock = sessionRefreshLock;
 	}
 
 	@Override
@@ -78,7 +82,19 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 			return;
 		}
 
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			chain.doFilter(request, response);
+			return;
+		}
+
+		boolean locked = false;
 		try {
+			locked = this.sessionRefreshLock.tryLock(session.getId(), 3, TimeUnit.SECONDS);
+			if (!locked) {
+				chain.doFilter(request, response);
+				return;
+			}
 			OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
 				.withClientRegistrationId(this.registrationId)
 				.principal(auth)
@@ -97,6 +113,16 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 			log.debug("AT refresh denied ({}), forcing re-login", ex.getError().getErrorCode());
 			forceLogoutAndReturn401(request, response);
 			return;
+		}
+		catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+			chain.doFilter(request, response);
+			return;
+		}
+		finally {
+			if (locked) {
+				this.sessionRefreshLock.unlock(session.getId());
+			}
 		}
 
 		chain.doFilter(request, response);

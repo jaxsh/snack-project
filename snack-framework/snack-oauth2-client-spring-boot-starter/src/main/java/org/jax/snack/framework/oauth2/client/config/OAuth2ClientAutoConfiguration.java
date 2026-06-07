@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.Objects;
 
 import org.jax.snack.framework.oauth2.client.security.AuditLogoutHandler;
+import org.jax.snack.framework.oauth2.client.security.CacheSessionRefreshLock;
 import org.jax.snack.framework.oauth2.client.security.JsonLogoutSuccessHandler;
 import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.framework.oauth2.client.security.RevokeTokenLogoutHandler;
+import org.jax.snack.framework.oauth2.client.security.SessionRefreshLock;
 import org.jax.snack.framework.oauth2.client.security.SessionStateCheckFilter;
 import org.jax.snack.framework.oauth2.client.spi.LoginAuditHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
@@ -41,6 +43,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -108,6 +111,7 @@ public class OAuth2ClientAutoConfiguration {
 	 * @param defaultMapperProvider 默认权限映射器提供者
 	 * @param authorizedClientManager OAuth2 授权客户端管理器
 	 * @param jsonMapper JSON 序列化器
+	 * @param sessionRefreshLock Session 刷新锁
 	 * @return SecurityFilterChain
 	 */
 	@Bean
@@ -115,7 +119,8 @@ public class OAuth2ClientAutoConfiguration {
 	public SecurityFilterChain oauth2ClientSecurityFilterChain(HttpSecurity http, OAuth2ClientProperties properties,
 			ObjectProvider<OAuth2ClientSecurityCustomizer> customizers, ObjectProvider<LogoutHandler> logoutHandlers,
 			@Qualifier("oidcScopeGrantedAuthoritiesMapper") ObjectProvider<GrantedAuthoritiesMapper> defaultMapperProvider,
-			OAuth2AuthorizedClientManager authorizedClientManager, JsonMapper jsonMapper) {
+			OAuth2AuthorizedClientManager authorizedClientManager, JsonMapper jsonMapper,
+			SessionRefreshLock sessionRefreshLock) {
 
 		GrantedAuthoritiesMapper defaultMapper = defaultMapperProvider
 			.getIfAvailable(OidcScopeGrantedAuthoritiesMapper::new);
@@ -176,11 +181,23 @@ public class OAuth2ClientAutoConfiguration {
 					new JsonLogoutSuccessHandler(loginUrl, properties.getEndSessionEndpointUri(), jsonMapper));
 		});
 
-		http.addFilterAfter(
-				new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(), jsonMapper),
-				SecurityContextHolderFilter.class);
+		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(),
+				jsonMapper, sessionRefreshLock), SecurityContextHolderFilter.class);
 
 		return http.build();
+	}
+
+	/**
+	 * Session 刷新锁.
+	 * <p>
+	 * 基于 Spring Cache，后端由 {@code spring.cache.type} 决定：Caffeine 为本地锁，Redis 为分布式锁.
+	 * @param cacheManagerProvider Spring CacheManager 提供者
+	 * @return SessionRefreshLock
+	 */
+	@Bean
+	@ConditionalOnMissingBean(SessionRefreshLock.class)
+	public SessionRefreshLock sessionRefreshLock(ObjectProvider<CacheManager> cacheManagerProvider) {
+		return new CacheSessionRefreshLock(cacheManagerProvider.getIfAvailable());
 	}
 
 	/**
