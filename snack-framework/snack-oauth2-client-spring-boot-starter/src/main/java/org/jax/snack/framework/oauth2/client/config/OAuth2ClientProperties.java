@@ -111,4 +111,11 @@ public class OAuth2ClientProperties {
 	 */
 	private String endSessionEndpointUri;
 
+	/**
+	 * 最大并发 Session 数.
+	 * <p>
+	 * -1 表示不限制；1 表示同时只允许一个设备登录，新登录踢出旧 Session.
+	 */
+	private int maxSessions = -1;
+
 }

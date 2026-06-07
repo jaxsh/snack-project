@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import org.jax.snack.framework.oauth2.client.security.AuditLogoutHandler;
 import org.jax.snack.framework.oauth2.client.security.CacheSessionRefreshLock;
+import org.jax.snack.framework.oauth2.client.security.JsonExpiredSessionStrategy;
 import org.jax.snack.framework.oauth2.client.security.JsonLogoutSuccessHandler;
 import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.framework.oauth2.client.security.RevokeTokenLogoutHandler;
@@ -189,7 +190,12 @@ public class OAuth2ClientAutoConfiguration {
 		});
 
 		http.sessionManagement((session) -> session.sessionFixation((fixation) -> fixation.changeSessionId())
-			.sessionConcurrency((concurrency) -> concurrency.maximumSessions(-1).sessionRegistry(sessionRegistry)));
+			.sessionConcurrency((concurrency) -> {
+				concurrency.maximumSessions(properties.getMaxSessions()).sessionRegistry(sessionRegistry);
+				if (properties.getMaxSessions() > 0) {
+					concurrency.expiredSessionStrategy(new JsonExpiredSessionStrategy(loginUrl, jsonMapper));
+				}
+			}));
 
 		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(),
 				jsonMapper, sessionRefreshLock), SecurityContextHolderFilter.class);
