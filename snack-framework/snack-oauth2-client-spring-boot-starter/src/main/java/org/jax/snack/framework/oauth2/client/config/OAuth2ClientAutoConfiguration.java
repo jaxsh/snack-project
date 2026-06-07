@@ -41,6 +41,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
@@ -50,6 +51,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -64,6 +67,9 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfLogoutHandler;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -112,6 +118,7 @@ public class OAuth2ClientAutoConfiguration {
 	 * @param authorizedClientManager OAuth2 授权客户端管理器
 	 * @param jsonMapper JSON 序列化器
 	 * @param sessionRefreshLock Session 刷新锁
+	 * @param sessionRegistry Session 注册表
 	 * @return SecurityFilterChain
 	 */
 	@Bean
@@ -120,7 +127,7 @@ public class OAuth2ClientAutoConfiguration {
 			ObjectProvider<OAuth2ClientSecurityCustomizer> customizers, ObjectProvider<LogoutHandler> logoutHandlers,
 			@Qualifier("oidcScopeGrantedAuthoritiesMapper") ObjectProvider<GrantedAuthoritiesMapper> defaultMapperProvider,
 			OAuth2AuthorizedClientManager authorizedClientManager, JsonMapper jsonMapper,
-			SessionRefreshLock sessionRefreshLock) {
+			SessionRefreshLock sessionRefreshLock, SessionRegistry sessionRegistry) {
 
 		GrantedAuthoritiesMapper defaultMapper = defaultMapperProvider
 			.getIfAvailable(OidcScopeGrantedAuthoritiesMapper::new);
@@ -181,6 +188,9 @@ public class OAuth2ClientAutoConfiguration {
 					new JsonLogoutSuccessHandler(loginUrl, properties.getEndSessionEndpointUri(), jsonMapper));
 		});
 
+		http.sessionManagement((session) -> session.sessionFixation((fixation) -> fixation.changeSessionId())
+			.sessionConcurrency((concurrency) -> concurrency.maximumSessions(-1).sessionRegistry(sessionRegistry)));
+
 		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(),
 				jsonMapper, sessionRefreshLock), SecurityContextHolderFilter.class);
 
@@ -198,6 +208,29 @@ public class OAuth2ClientAutoConfiguration {
 	@ConditionalOnMissingBean(SessionRefreshLock.class)
 	public SessionRefreshLock sessionRefreshLock(ObjectProvider<CacheManager> cacheManagerProvider) {
 		return new CacheSessionRefreshLock(cacheManagerProvider.getIfAvailable());
+	}
+
+	/**
+	 * Session 注册表（本地模式）.
+	 * <p>
+	 * spring-session 不在 classpath 时使用内存实现.
+	 * @return SessionRegistry
+	 */
+	@Bean
+	@ConditionalOnMissingBean(SessionRegistry.class)
+	@ConditionalOnMissingClass("org.springframework.session.FindByIndexNameSessionRepository")
+	public SessionRegistry sessionRegistry() {
+		return new SessionRegistryImpl();
+	}
+
+	/**
+	 * 发布 Session 销毁事件，{@link SessionRegistryImpl} 依赖此 Bean 感知 Session 过期.
+	 * @return HttpSessionEventPublisher
+	 */
+	@Bean
+	@ConditionalOnMissingBean(HttpSessionEventPublisher.class)
+	public HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
 	}
 
 	/**
@@ -282,6 +315,28 @@ public class OAuth2ClientAutoConfiguration {
 			OAuth2TokenClient tokenClient, OAuth2ClientProperties properties) {
 		return new RevokeTokenLogoutHandler(authorizedClientRepository, tokenClient,
 				properties.getDefaultRegistrationId());
+	}
+
+	/**
+	 * Spring Session 模式下的 Session 注册表.
+	 * <p>
+	 * 仅当 spring-session 存在时生效，切换到分布式实现，代码无需改动.
+	 */
+	@org.springframework.context.annotation.Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(name = "org.springframework.session.FindByIndexNameSessionRepository")
+	static class SpringSessionRegistryConfiguration {
+
+		/**
+		 * Session 注册表（Redis 模式）.
+		 * @param sessionRepository Spring Session Repository
+		 * @return SessionRegistry
+		 */
+		@Bean
+		@ConditionalOnMissingBean(SessionRegistry.class)
+		SessionRegistry sessionRegistry(FindByIndexNameSessionRepository<?> sessionRepository) {
+			return new SpringSessionBackedSessionRegistry<>(sessionRepository);
+		}
+
 	}
 
 }

@@ -9,4 +9,5 @@ dependencies {
 
 	compileOnly 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
 	compileOnly 'jakarta.servlet:jakarta.servlet-api'
+	compileOnly 'org.springframework.session:spring-session-core'
 }
