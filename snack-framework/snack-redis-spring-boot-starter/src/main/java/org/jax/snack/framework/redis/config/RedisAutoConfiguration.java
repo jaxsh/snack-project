@@ -19,9 +19,11 @@ package org.jax.snack.framework.redis.config;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
@@ -70,6 +72,20 @@ public class RedisAutoConfiguration {
 	@ConditionalOnMissingBean
 	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
 		return new StringRedisTemplate(redisConnectionFactory);
+	}
+
+	/**
+	 * 配置 Spring Cache 使用 JSON 序列化.
+	 * <p>
+	 * 与 {@link RedisTemplate} 保持一致，Value 使用 JSON 序列化，禁止缓存 null 值.
+	 * @return RedisCacheConfiguration
+	 */
+	@Bean
+	@ConditionalOnMissingBean(RedisCacheConfiguration.class)
+	public RedisCacheConfiguration redisCacheConfiguration() {
+		return RedisCacheConfiguration.defaultCacheConfig()
+			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()))
+			.disableCachingNullValues();
 	}
 
 }
