@@ -28,6 +28,7 @@ import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritie
 import org.jax.snack.framework.oauth2.client.security.RevokeTokenLogoutHandler;
 import org.jax.snack.framework.oauth2.client.security.SessionRefreshLock;
 import org.jax.snack.framework.oauth2.client.security.SessionStateCheckFilter;
+import org.jax.snack.framework.oauth2.client.security.UsernameBasedSessionRegistry;
 import org.jax.snack.framework.oauth2.client.spi.LoginAuditHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2TokenClient;
@@ -226,7 +227,7 @@ public class OAuth2ClientAutoConfiguration {
 	@ConditionalOnMissingBean(SessionRegistry.class)
 	@ConditionalOnMissingClass("org.springframework.session.FindByIndexNameSessionRepository")
 	public SessionRegistry sessionRegistry() {
-		return new SessionRegistryImpl();
+		return new UsernameBasedSessionRegistry();
 	}
 
 	/**
