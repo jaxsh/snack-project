@@ -19,7 +19,6 @@ package org.jax.snack.framework.oauth2.client.security;
 import java.util.List;
 
 import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -32,47 +31,20 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
  * {@link org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy}
  * 无法找到已有会话，并发限制形同虚设.
  * <p>
- * 本实现在 {@link #getAllSessions} 中改为按用户名（principal name）匹配，避免上述问题.
+ * 本实现继承 {@link SessionRegistryImpl}，覆盖 {@link #getAllSessions} 改为按用户名（principal name）匹配.
+ * 继承而非组合确保 {@code HttpSessionDestroyedEvent} 能正确触发，旧会话可被及时清理.
  *
  * @author Jax Jiang
  */
-public class UsernameBasedSessionRegistry implements SessionRegistry {
-
-	private final SessionRegistryImpl delegate = new SessionRegistryImpl();
-
-	@Override
-	public List<Object> getAllPrincipals() {
-		return this.delegate.getAllPrincipals();
-	}
+public class UsernameBasedSessionRegistry extends SessionRegistryImpl {
 
 	@Override
 	public List<SessionInformation> getAllSessions(Object principal, boolean includeExpiredSessions) {
 		String username = extractUsername(principal);
-		return this.delegate.getAllPrincipals()
-			.stream()
+		return getAllPrincipals().stream()
 			.filter((p) -> username.equals(extractUsername(p)))
-			.flatMap((p) -> this.delegate.getAllSessions(p, includeExpiredSessions).stream())
+			.flatMap((p) -> super.getAllSessions(p, includeExpiredSessions).stream())
 			.toList();
-	}
-
-	@Override
-	public SessionInformation getSessionInformation(String sessionId) {
-		return this.delegate.getSessionInformation(sessionId);
-	}
-
-	@Override
-	public void refreshLastRequest(String sessionId) {
-		this.delegate.refreshLastRequest(sessionId);
-	}
-
-	@Override
-	public void registerNewSession(String sessionId, Object principal) {
-		this.delegate.registerNewSession(sessionId, principal);
-	}
-
-	@Override
-	public void removeSessionInformation(String sessionId) {
-		this.delegate.removeSessionInformation(sessionId);
 	}
 
 	private static String extractUsername(Object principal) {
