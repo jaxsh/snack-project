@@ -290,8 +290,12 @@ public class SysUserServiceImpl implements SysUserService {
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 
 		this.update(id, dto);
-		this.updateUserRoles(current.getUsername(), dto.getRoleCodes());
-		this.updateUserOrgs(current.getUsername(), dto.getOrgCodes());
+		if (dto.getRoleCodes() != null) {
+			this.updateUserRoles(current.getUsername(), dto.getRoleCodes());
+		}
+		if (dto.getOrgCodes() != null) {
+			this.updateUserOrgs(current.getUsername(), dto.getOrgCodes());
+		}
 	}
 
 	private void validateRoleStatus(Set<String> roleCodes) {
