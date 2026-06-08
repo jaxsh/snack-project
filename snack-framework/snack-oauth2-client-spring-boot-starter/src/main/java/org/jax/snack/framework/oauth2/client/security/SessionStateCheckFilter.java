@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,6 +55,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 public class SessionStateCheckFilter extends OncePerRequestFilter {
 
+	private static final String SESSION_EXPIRED_KEY = "oauth2.client.error.sessionExpired";
+
 	private final OAuth2AuthorizedClientManager authorizedClientManager;
 
 	private final String registrationId;
@@ -63,13 +67,16 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 
 	private final SessionRefreshLock sessionRefreshLock;
 
+	private final MessageSource messageSource;
+
 	public SessionStateCheckFilter(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId,
-			JsonMapper jsonMapper, SessionRefreshLock sessionRefreshLock) {
+			JsonMapper jsonMapper, SessionRefreshLock sessionRefreshLock, MessageSource messageSource) {
 		this.authorizedClientManager = authorizedClientManager;
 		this.registrationId = registrationId;
 		this.loginUrl = "/oauth2/authorization/" + registrationId;
 		this.jsonMapper = jsonMapper;
 		this.sessionRefreshLock = sessionRefreshLock;
+		this.messageSource = messageSource;
 	}
 
 	@Override
@@ -137,7 +144,8 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		Map<String, Object> body = Map.of("data", Map.of("loginUrl", this.loginUrl));
+		String msg = this.messageSource.getMessage(SESSION_EXPIRED_KEY, null, LocaleContextHolder.getLocale());
+		Map<String, Object> body = Map.of("msg", msg, "data", Map.of("loginUrl", this.loginUrl));
 		try (PrintWriter writer = response.getWriter()) {
 			writer.write(this.jsonMapper.writeValueAsString(body));
 			writer.flush();

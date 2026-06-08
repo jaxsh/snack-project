@@ -16,6 +16,7 @@
 
 package org.jax.snack.framework.oauth2.client.config;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +48,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
@@ -194,14 +197,29 @@ public class OAuth2ClientAutoConfiguration {
 			.sessionConcurrency((concurrency) -> {
 				concurrency.maximumSessions(properties.getMaxSessions()).sessionRegistry(sessionRegistry);
 				if (properties.getMaxSessions() > 0) {
-					concurrency.expiredSessionStrategy(new JsonExpiredSessionStrategy(loginUrl, jsonMapper));
+					concurrency.expiredSessionStrategy(
+							new JsonExpiredSessionStrategy(loginUrl, jsonMapper, oauth2ClientMessageSource()));
 				}
 			}));
 
 		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(),
-				jsonMapper, sessionRefreshLock), SecurityContextHolderFilter.class);
+				jsonMapper, sessionRefreshLock, oauth2ClientMessageSource()), SecurityContextHolderFilter.class);
 
 		return http.build();
+	}
+
+	/**
+	 * OAuth2 Client 专属消息源.
+	 * <p>
+	 * 独立于应用消息源，应用无需修改任何配置.
+	 * @return MessageSource
+	 */
+	@Bean("oauth2ClientMessageSource")
+	public MessageSource oauth2ClientMessageSource() {
+		ReloadableResourceBundleMessageSource ms = new ReloadableResourceBundleMessageSource();
+		ms.setBasename("classpath:i18n/oauth2-client");
+		ms.setDefaultEncoding(StandardCharsets.UTF_8.name());
+		return ms;
 	}
 
 	/**

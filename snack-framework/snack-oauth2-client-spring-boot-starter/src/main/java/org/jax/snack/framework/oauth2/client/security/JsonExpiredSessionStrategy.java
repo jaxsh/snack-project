@@ -25,6 +25,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.session.SessionInformationExpiredEvent;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
@@ -32,16 +34,20 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
 /**
  * 并发 Session 过期时返回 JSON 响应.
  * <p>
- * 响应格式与 {@link SessionStateCheckFilter} 一致，前端 401 处理逻辑可直接识别并跳转登录.
+ * 响应包含 {@code msg} 字段，由 {@link MessageSource} 按请求 locale 解析，支持国际化.
  *
  * @author Jax Jiang
  */
 @RequiredArgsConstructor
 public class JsonExpiredSessionStrategy implements SessionInformationExpiredStrategy {
 
+	private static final String CONCURRENT_SESSION_KEY = "oauth2.client.error.concurrentSession";
+
 	private final String loginUrl;
 
 	private final JsonMapper jsonMapper;
+
+	private final MessageSource messageSource;
 
 	@Override
 	public void onExpiredSessionDetected(SessionInformationExpiredEvent event) throws IOException {
@@ -49,7 +55,8 @@ public class JsonExpiredSessionStrategy implements SessionInformationExpiredStra
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		Map<String, Object> body = Map.of("data", Map.of("loginUrl", this.loginUrl));
+		String msg = this.messageSource.getMessage(CONCURRENT_SESSION_KEY, null, LocaleContextHolder.getLocale());
+		Map<String, Object> body = Map.of("msg", msg, "data", Map.of("loginUrl", this.loginUrl));
 		try (PrintWriter writer = response.getWriter()) {
 			writer.write(this.jsonMapper.writeValueAsString(body));
 			writer.flush();
