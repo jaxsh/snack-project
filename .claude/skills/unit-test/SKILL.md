@@ -1,7 +1,6 @@
 ---
-name: unit_testing
+name: unit-test
 description: Standards for writing unit and integration tests using JUnit 5, Mockito, and AssertJ. Use when writing or reviewing test code.
-# Mirrors .claude/skills/unit-test/SKILL.md — keep in sync when updating.
 ---
 
 # Unit Testing Standards
@@ -47,17 +46,17 @@ Merge multiple assertions with `SoftAssertions` or `andExpectAll`:
 
 ```java
 // MockMvc — use andExpectAll, not chained andExpect
-mockMvc.perform(post(“/users”).contentType(APPLICATION_JSON).content(body))
+mockMvc.perform(post("/users").contentType(APPLICATION_JSON).content(body))
         .andDo(print())   // add when debugging complex scenarios
         .andExpectAll(
             status().isOk(),
-            jsonPath(“$.code”).value(0),
-            jsonPath(“$.data.username”).value(“testUser”)
+            jsonPath("$.code").value(0),
+            jsonPath("$.data.username").value("testUser")
         );
 
 // Service/Unit — use SoftAssertions
 SoftAssertions soft = new SoftAssertions();
-soft.assertThat(result.getUsername()).isEqualTo(“testUser”);
+soft.assertThat(result.getUsername()).isEqualTo("testUser");
 soft.assertThat(result.getStatus()).isEqualTo(Status.ENABLED.getCode());
 soft.assertAll();
 ```
@@ -103,13 +102,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 Forbidden: same string literal repeated across multiple test methods.
 
 ```java
-// Wrong — “username” repeated
-void test1() { assertThat(result.get(“username”)).isEqualTo(“Alice”); }
-void test2() { assertThat(result.get(“username”)).isEqualTo(“Bob”); }
+// Wrong — "username" repeated
+void test1() { assertThat(result.get("username")).isEqualTo("Alice"); }
+void test2() { assertThat(result.get("username")).isEqualTo("Bob"); }
 
 // Correct — diversify literals naturally
-void test1() { assertThat(result.get(“username”)).isEqualTo(“Alice”); }
-void test2() { assertThat(result.get(“email”)).isEqualTo(“bob@example.com”); }
+void test1() { assertThat(result.get("username")).isEqualTo("Alice"); }
+void test2() { assertThat(result.get("email")).isEqualTo("bob@example.com"); }
 ```
 
 Private static constants are allowed only for config keys reused across multiple tests.
@@ -118,7 +117,7 @@ Forbidden: constants for simple test data values.
 ## 8. Static Constants
 
 Allowed:
-- API URL paths (e.g., `private static final String URL = “/api/users”;`)
+- API URL paths (e.g., `private static final String URL = "/api/users";`)
 - Config keys used across multiple tests
 
 Not recommended:

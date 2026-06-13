@@ -1,7 +1,6 @@
 ---
-name: backend_development
+name: backend-dev
 description: Backend implementation patterns for CRUD operations, validation groups, converter mapping, and DDL standards. Use when implementing a new feature or entity.
-# Mirrors .claude/skills/backend-dev/SKILL.md — keep in sync when updating.
 ---
 
 # Backend Development Patterns
