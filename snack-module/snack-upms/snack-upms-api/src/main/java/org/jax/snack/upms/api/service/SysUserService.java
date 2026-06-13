@@ -25,6 +25,7 @@ import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
+import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 
 /**
@@ -108,6 +109,20 @@ public interface SysUserService {
 	 * @param id 用户 ID
 	 */
 	void revokeTokens(Long id);
+
+	/**
+	 * 查询用户的活跃 Session 列表.
+	 * @param id 用户 ID
+	 * @return Session 列表
+	 */
+	List<SysSessionVO> getSessions(Long id);
+
+	/**
+	 * 踢出用户的指定 Session.
+	 * @param id 用户 ID
+	 * @param sessionId Session ID
+	 */
+	void revokeSession(Long id, String sessionId);
 
 	/**
 	 * 独立更新用户的角色关联关系.

@@ -16,7 +16,10 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
+import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.exception.BusinessException;
@@ -24,12 +27,9 @@ import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.upms.api.service.SysSessionService;
 import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.biz.converter.SysSessionConverter;
-import org.jspecify.annotations.Nullable;
 
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,32 +46,41 @@ public class SysSessionServiceImpl implements SysSessionService {
 	private final SysSessionConverter converter;
 
 	@Override
-	public List<SysSessionVO> getSessions(@Nullable String username) {
-		return this.sessionRegistry.getAllPrincipals()
-			.stream()
-			.filter((p) -> username == null || username.equals(extractUsername(p)))
-			.flatMap((p) -> this.sessionRegistry.getAllSessions(p, false).stream())
-			.map(this.converter::toVO)
-			.toList();
+	public List<SysSessionVO> getSessions(String username) {
+		return sessionsOf(username).stream().map(this.converter::toVO).toList();
 	}
 
 	@Override
-	public void revokeSession(String sessionId) {
-		SessionInformation info = this.sessionRegistry.getSessionInformation(sessionId);
-		if (info == null) {
-			throw new BusinessException(ErrorCode.DATA_NOT_FOUND, "Session");
-		}
-		info.expireNow();
+	public void revokeSession(String username, String sessionId) {
+		sessionsOf(username).stream()
+			.filter((info) -> sessionId.equals(info.getSessionId()))
+			.findFirst()
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Session"))
+			.expireNow();
 	}
 
-	private static String extractUsername(Object principal) {
-		if (principal instanceof UserDetails u) {
-			return u.getUsername();
-		}
-		if (principal instanceof OAuth2AuthenticatedPrincipal o) {
-			return o.getName();
-		}
-		return String.valueOf(principal);
+	@Override
+	public void revokeSessionsByUsername(String username) {
+		sessionsOf(username).forEach(SessionInformation::expireNow);
+	}
+
+	@Override
+	public Map<String, ZonedDateTime> getLastActiveTimes() {
+		Map<String, ZonedDateTime> result = new HashMap<>();
+		this.sessionRegistry.getAllPrincipals()
+			.stream()
+			.flatMap((p) -> this.sessionRegistry.getAllSessions(p, false).stream())
+			.map(this.converter::toVO)
+			.forEach((vo) -> result.merge(vo.getUsername(), vo.getLastRequest(), (a, b) -> a.isAfter(b) ? a : b));
+		return result;
+	}
+
+	private List<SessionInformation> sessionsOf(String username) {
+		return this.sessionRegistry.getAllPrincipals()
+			.stream()
+			.flatMap((p) -> this.sessionRegistry.getAllSessions(p, false).stream())
+			.filter((info) -> username.equals(this.converter.toVO(info).getUsername()))
+			.toList();
 	}
 
 }

@@ -106,4 +106,9 @@ public class SysUserVO {
 	 */
 	private String email;
 
+	/**
+	 * 最后活跃时间(无活跃 Session 时为 null).
+	 */
+	private ZonedDateTime lastActiveTime;
+
 }

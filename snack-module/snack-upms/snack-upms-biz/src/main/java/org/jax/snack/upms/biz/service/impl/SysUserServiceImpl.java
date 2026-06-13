@@ -16,7 +16,9 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,8 +33,10 @@ import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.service.SysSessionService;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.SysResourceVO;
+import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 import org.jax.snack.upms.biz.client.OAuth2UserClient;
 import org.jax.snack.upms.biz.converter.SysResourceConverter;
@@ -86,6 +90,8 @@ public class SysUserServiceImpl implements SysUserService {
 	private final SysResourceConverter resourceConverter;
 
 	private final OAuth2UserClient oAuth2UserClient;
+
+	private final SysSessionService sessionService;
 
 	private final TransactionTemplate transactionTemplate;
 
@@ -175,12 +181,23 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Override
 	public PageResult<SysUserVO> queryByDsl(QueryCondition condition) {
+		PageResult<SysUserVO> result;
 		if (!ObjectUtils.isEmpty(condition.getSize())) {
-			return this.converter.toPageResult(this.repository.queryPageByDsl(condition));
+			result = this.converter.toPageResult(this.repository.queryPageByDsl(condition));
 		}
 		else {
-			return this.converter.toPageResult(this.repository.queryListByDsl(condition));
+			result = this.converter.toPageResult(this.repository.queryListByDsl(condition));
 		}
+		fillLastActiveTime(result.getRecords());
+		return result;
+	}
+
+	private void fillLastActiveTime(List<SysUserVO> records) {
+		if (CollectionUtils.isEmpty(records)) {
+			return;
+		}
+		Map<String, ZonedDateTime> lastActiveTimes = this.sessionService.getLastActiveTimes();
+		records.forEach((vo) -> vo.setLastActiveTime(lastActiveTimes.get(vo.getUsername())));
 	}
 
 	@Override
@@ -242,6 +259,21 @@ public class SysUserServiceImpl implements SysUserService {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 		this.oAuth2UserClient.revokeTokens(current.getUsername());
+		this.sessionService.revokeSessionsByUsername(current.getUsername());
+	}
+
+	@Override
+	public List<SysSessionVO> getSessions(Long id) {
+		SysUser current = this.repository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+		return this.sessionService.getSessions(current.getUsername());
+	}
+
+	@Override
+	public void revokeSession(Long id, String sessionId) {
+		SysUser current = this.repository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+		this.sessionService.revokeSession(current.getUsername(), sessionId);
 	}
 
 	@Override
