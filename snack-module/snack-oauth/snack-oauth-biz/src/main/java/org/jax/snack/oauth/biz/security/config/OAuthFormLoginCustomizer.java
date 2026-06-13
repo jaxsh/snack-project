@@ -16,8 +16,11 @@
 
 package org.jax.snack.oauth.biz.security.config;
 
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
+import org.jax.snack.framework.oauth2.client.security.RememberMeAwareSuccessHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
 import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
@@ -30,6 +33,7 @@ import org.springframework.core.Ordered;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -74,13 +78,19 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 		String changePasswordUrl = toAbsoluteUrl(this.securityProperties.getChangePasswordPage(),
 				this.clientProperties.getDefaultSuccessUrl());
 		String defaultUrl = this.clientProperties.getDefaultSuccessUrl();
-		return (req, res, auth) -> {
+		AuthenticationSuccessHandler inner = (req, res, auth) -> {
 			boolean hasRestriction = auth.getAuthorities()
 				.stream()
-				.anyMatch((a) -> a.getAuthority().equals(restrictedAuthority));
-			String target = hasRestriction ? changePasswordUrl : defaultUrl;
-			new SimpleUrlAuthenticationSuccessHandler(target).onAuthenticationSuccess(req, res, auth);
+				.anyMatch((a) -> Objects.equals(a.getAuthority(), restrictedAuthority));
+			if (hasRestriction) {
+				new SimpleUrlAuthenticationSuccessHandler(changePasswordUrl).onAuthenticationSuccess(req, res, auth);
+				return;
+			}
+			SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler();
+			handler.setDefaultTargetUrl(defaultUrl);
+			handler.onAuthenticationSuccess(req, res, auth);
 		};
+		return new RememberMeAwareSuccessHandler(inner);
 	}
 
 	private static String toAbsoluteUrl(String path, String baseUrl) {

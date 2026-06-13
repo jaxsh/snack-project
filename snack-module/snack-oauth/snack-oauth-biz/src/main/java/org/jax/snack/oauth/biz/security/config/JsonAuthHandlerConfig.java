@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * JSON 认证处理器配置.
  * <p>
- * 无条件注册 JSON 认证成功/失败处理器 Bean，单体和分布式模式下均生效. 当 oauth2-client-starter 存在时，额外注册
+ * 无条件注册 JSON 认证成功/失败处理器 Bean. 当 oauth2-client-starter 存在时，额外注册
  * {@link OAuthFormLoginCustomizer}.
  *
  * @author Jax Jiang
