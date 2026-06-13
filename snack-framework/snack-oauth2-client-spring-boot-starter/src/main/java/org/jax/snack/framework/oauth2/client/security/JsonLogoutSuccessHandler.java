@@ -39,9 +39,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * 登出成功处理器.
  * <p>
- * 单体模式（{@code endSessionEndpointUri} 未配或与当前服务同 origin）：返回 BFF OAuth2 授权入口地址。<br>
- * 分布式模式：返回 SAS 的 OIDC RP-Initiated Logout 地址（含 post_logout_redirect_uri 和 id_token_hint），
- * SAS 清除会话后按参数跳回 BFF 授权入口重走授权码流程。<br>
+ * {@code endSessionEndpointUri} 未配置或与当前服务同 origin：返回 BFF OAuth2 授权入口地址。<br>
+ * 跨 origin：返回 SAS 的 OIDC RP-Initiated Logout 地址（含 post_logout_redirect_uri 和
+ * id_token_hint）， SAS 清除会话后按参数跳回 BFF 授权入口重走授权码流程。<br>
  * {@code endSessionEndpointUri} 通过 {@code snack.oauth2.client.end-session-endpoint-uri}
  * 配置， 与其他 SAS 端点地址格式一致。
  *
@@ -79,6 +79,19 @@ public class JsonLogoutSuccessHandler implements LogoutSuccessHandler {
 			.fragment(null)
 			.build()
 			.toUriString();
+		// SAS 与 BFF 同源时共用同一 HttpSession：
+		// SecurityContextLogoutHandler.session.invalidate() 先于客户端跳转执行，
+		// SAS 收到 /connect/logout 时 session 已销毁，无法找到关联 session 而返回 400。
+		// 故同源时直接走重授权流程，无需 OIDC RP-Initiated Logout。
+		String sasBase = UriComponentsBuilder.fromUriString(this.endSessionEndpointUri)
+			.replacePath(null)
+			.replaceQuery(null)
+			.fragment(null)
+			.build()
+			.toUriString();
+		if (bffBase.equals(sasBase)) {
+			return this.loginUrl;
+		}
 		String postLogoutRedirectUri = bffBase + this.loginUrl;
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(this.endSessionEndpointUri)
 			.queryParam("post_logout_redirect_uri", postLogoutRedirectUri);
