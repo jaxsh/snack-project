@@ -37,6 +37,7 @@ import org.jax.snack.oauth.biz.entity.OAuthAuthorization;
 import org.jax.snack.oauth.biz.entity.OAuthUser;
 import org.jax.snack.oauth.biz.repository.OAuthAuthorizationRepository;
 import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
+import org.jax.snack.oauth.biz.security.OAuthSessionInvalidator;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,6 +63,8 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 	private final OAuthUserConverter converter;
 
 	private final OAuthAuthorizationRepository authorizationRepository;
+
+	private final OAuthSessionInvalidator sessionInvalidator;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -157,6 +160,7 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 			.eq(OAuthAuthorization.Fields.principalName, username)
 			.build();
 		this.authorizationRepository.deleteByDsl(condition);
+		this.sessionInvalidator.invalidateByUsername(username);
 	}
 
 }

@@ -37,13 +37,14 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 /**
  * 默认安全配置.
  * <p>
  * 处理 Authorization Server 端点以外的请求, 包括表单登录.
  * <p>
- * 仅在独立运行模式下生效 (无 OAuth2 Client 安全链时).
+ * 仅在无 {@code oauth2ClientSecurityFilterChain} Bean 时生效 (即 oauth2-client-starter 未接管安全链).
  *
  * @author Jax Jiang
  */
@@ -93,6 +94,19 @@ public class DefaultSecurityConfig {
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
 
 		return http.build();
+	}
+
+	/**
+	 * 发布 HttpSession 生命周期 Spring 事件，供
+	 * {@link org.jax.snack.oauth.biz.security.OAuthSessionInvalidator} 监听.
+	 * <p>
+	 * 仅随本配置类生效（受 {@code @ConditionalOnMissingBean} 保护）；oauth2-client-starter 存在时由其提供同名
+	 * Bean.
+	 * @return HttpSessionEventPublisher
+	 */
+	@Bean
+	public HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
 	}
 
 }
