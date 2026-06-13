@@ -40,10 +40,13 @@ import org.jax.snack.upms.biz.entity.SysResource;
 import org.jax.snack.upms.biz.entity.SysRoleResource;
 import org.jax.snack.upms.biz.repository.SysResourceRepository;
 import org.jax.snack.upms.biz.repository.SysRoleResourceRepository;
+import org.jax.snack.upms.biz.security.UpmsSecurityMetadataManager;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -60,6 +63,8 @@ public class SysResourceServiceImpl implements SysResourceService {
 	private final SysRoleResourceRepository roleResourceRepository;
 
 	private final SysResourceConverter converter;
+
+	private final UpmsSecurityMetadataManager metadataManager;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -80,6 +85,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 		SysResource entity = this.converter.toEntity(dto);
 		this.repository.save(entity);
+		refreshPermissionRulesAfterCommit();
 	}
 
 	@Override
@@ -107,6 +113,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 				this.repository.updateByDsl(updateParams, where);
 			}
 		}
+		refreshPermissionRulesAfterCommit();
 	}
 
 	@Override
@@ -128,6 +135,21 @@ public class SysResourceServiceImpl implements SysResourceService {
 				.build();
 			this.repository.deleteByDsl(deleteCondition);
 		});
+		refreshPermissionRulesAfterCommit();
+	}
+
+	private void refreshPermissionRulesAfterCommit() {
+		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					SysResourceServiceImpl.this.metadataManager.refresh();
+				}
+			});
+		}
+		else {
+			this.metadataManager.refresh();
+		}
 	}
 
 	private Set<Long> getDescendantIds(Long parentId) {
