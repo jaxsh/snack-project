@@ -18,6 +18,7 @@ server:
   port: ${SERVER_PORT:8080}
   servlet:
     session:
+      timeout: 8h
       cookie:
         name: UPMS_SESSION
 

@@ -16,7 +16,7 @@ snack:
       login-page: http://localhost:8000/user/login
       default-success-url: http://localhost:8000/
       end-session-endpoint-uri: ${snack.oauth2.client.server-url}/connect/logout
-
+      max-sessions: 1
 spring:
   security:
     oauth2:

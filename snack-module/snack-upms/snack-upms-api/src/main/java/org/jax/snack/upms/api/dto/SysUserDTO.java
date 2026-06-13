@@ -42,7 +42,7 @@ public class SysUserDTO {
 	 * 用户名.
 	 */
 	@NotBlank(groups = Create.class)
-	@Size(min = 1, max = 64)
+	@Size(min = 2, max = 64)
 	private String username;
 
 	/**
