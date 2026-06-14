@@ -12,11 +12,11 @@ snack:
       fail-fast: false
   oauth2:
     client:
-      server-url: ${OAUTH_SERVER_URL:http://localhost:${server.port:8080}}
-      login-page: http://localhost:8000/user/login
-      default-success-url: http://localhost:8000/
+      server-url: ${OAUTH_SERVER_URL}
+      login-page: ${OAUTH_LOGIN_PAGE:/user/login}
+      default-success-url: ${OAUTH_DEFAULT_SUCCESS_URL:/}
       end-session-endpoint-uri: ${snack.oauth2.client.server-url}/connect/logout
-      max-sessions: 1
+      max-sessions: -1
 spring:
   security:
     oauth2:
@@ -45,3 +45,15 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${snack.oauth2.client.server-url}/oauth2/jwks
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+snack:
+  oauth2:
+    client:
+      server-url: ${OAUTH_SERVER_URL:http://localhost:9000}
+      login-page: http://localhost:8000/user/login
+      default-success-url: http://localhost:8000/
