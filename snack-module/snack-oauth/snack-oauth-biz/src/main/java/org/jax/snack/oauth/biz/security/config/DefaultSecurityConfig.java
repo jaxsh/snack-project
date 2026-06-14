@@ -88,7 +88,7 @@ public class DefaultSecurityConfig {
 			.exceptionHandling(
 					(exceptions) -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage))
 						.accessDeniedHandler(accessDeniedHandler))
-			.csrf((csrf) -> csrf.ignoringRequestMatchers("/login")
+			.csrf((csrf) -> csrf.ignoringRequestMatchers("/login", "/oauth2/account/change-password")
 				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));

@@ -80,6 +80,14 @@ public class SecurityProperties {
 	private String changePasswordPage = "/account/change-password";
 
 	/**
+	 * 改密后触发 OAuth2 授权流程的地址.
+	 * <p>
+	 * 由 {@code OAuthFormLoginCustomizer} 在启动时根据 registrationId 自动填充；
+	 * 改密成功且无 savedRequest 时，前端跳转至此以完成 token 颁发并获取完整权限.
+	 */
+	private String authorizationUri = "";
+
+	/**
 	 * 判断凭证是否已过期.
 	 * @param lastPasswordResetTime 最近一次密码重置时间
 	 * @return 是否过期

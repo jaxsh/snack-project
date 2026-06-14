@@ -63,6 +63,7 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 	public void customize(HttpSecurity http) {
 		http.formLogin((form) -> form.successHandler(this.successHandler).failureHandler(this.failureHandler));
 		String oauthEntryPoint = "/oauth2/authorization/" + this.clientProperties.getDefaultRegistrationId();
+		this.securityProperties.setAuthorizationUri(oauthEntryPoint);
 		http.exceptionHandling((ex) -> ex
 			.defaultAuthenticationEntryPointFor(new BizAuthenticationEntryPoint(this.jsonMapper, oauthEntryPoint),
 					(request) -> request.getRequestURI().startsWith("/api/"))
