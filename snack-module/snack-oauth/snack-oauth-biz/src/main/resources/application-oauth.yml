@@ -17,7 +17,17 @@ snack:
             active: true
   security:
     policy:
-      login-page: http://localhost:8000/user/login
+      login-page: ${OAUTH_LOGIN_PAGE:/user/login}
       pre-auth-pages:
         pre_auth_reset: /account/change-password
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+snack:
+  security:
+    policy:
+      login-page: http://localhost:8000/user/login
 

@@ -23,6 +23,7 @@ import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jax.snack.oauth.biz.security.PreAuthRestriction;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -104,6 +105,21 @@ public class SecurityProperties {
 		int port = uri.getPort();
 		return uri.getScheme() + "://" + uri.getHost() + ((port > 0) ? ":" + port : "");
 	}
+
+	/**
+	 * 无需认证即可访问的路径列表.
+	 */
+	private List<String> permitAllPaths = List.of("/error", "/actuator/health");
+
+	/**
+	 * CSRF 校验豁免路径.
+	 */
+	private List<String> csrfIgnorePaths = List.of("/login", "/oauth2/account/**");
+
+	/**
+	 * 退出登录触发路径.
+	 */
+	private String logoutUrl = "/logout";
 
 	/**
 	 * 各预授权限制对应的前端页面路径.

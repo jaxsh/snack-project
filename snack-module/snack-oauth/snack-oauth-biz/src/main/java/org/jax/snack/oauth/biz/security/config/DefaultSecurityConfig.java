@@ -78,17 +78,20 @@ public class DefaultSecurityConfig {
 		String loginPage = securityProperties.getLoginPage();
 
 		http.authorizeHttpRequests((authorize) -> {
-			authorize.requestMatchers("/error", "/actuator/health").permitAll();
+			for (String path : securityProperties.getPermitAllPaths()) {
+				authorize.requestMatchers(path).permitAll();
+			}
 			OAuth2SecurityPolicy.configureAuthorization(authorize, securityPolicies);
 			authorize.anyRequest().authenticated();
 		})
 			.formLogin((form) -> form.successHandler(successHandler).failureHandler(failureHandler))
-			.logout((logout) -> logout.logoutRequestMatcher((request) -> "/logout".equals(request.getRequestURI()))
+			.logout((logout) -> logout
+				.logoutRequestMatcher((request) -> securityProperties.getLogoutUrl().equals(request.getRequestURI()))
 				.logoutSuccessUrl(loginPage))
 			.exceptionHandling(
 					(exceptions) -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(loginPage))
 						.accessDeniedHandler(accessDeniedHandler))
-			.csrf((csrf) -> csrf.ignoringRequestMatchers("/login", "/oauth2/account/**")
+			.csrf((csrf) -> csrf.ignoringRequestMatchers(securityProperties.getCsrfIgnorePaths().toArray(String[]::new))
 				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
