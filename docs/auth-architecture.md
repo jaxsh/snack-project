@@ -1,6 +1,6 @@
 # 认证授权架构文档
 
-> 审计日期：2026-05-24 | 最后更新：2026-06-14（Phase 1：pre-auth restriction 策略模式；`PreAuthRestrictionFilter` 在 `/oauth2/authorize` 层统一拦截重定向，替代原 `OAuthFormLoginCustomizer` 检测；`PreAuthAuthorizationManager` 替代 `PasswordRestrictionAuthorizationManager`；`PasswordChangeRestriction` 实现 `PreAuthRestriction` 接口；`SecurityProperties.getFrontendBaseUrl()` 自动从 `loginPage` 提取，无需显式配置）
+> 审计日期：2026-05-24 | 最后更新：2026-06-15（Phase 1：pre-auth restriction 策略模式；配置收敛：所有硬编码 localhost 地址和安全路径移入可配置属性，dev 覆盖通过各模块 profile YAML 多文档块内嵌，不再依赖独立 `application-dev.yml`）
 > 审计范围：snack-oauth、snack-upms、oauth2 starter、snack-project-web
 
 ---
@@ -820,7 +820,8 @@ sys_user ──(username)──> sys_user_role ──(roleCode)──> sys_role
 | 维度                      | 分离部署（正式目标）                               | 合并部署（当前开发）                              |
 |-------------------------|------------------------------------------|-----------------------------------------|
 | 进程数                     | 2：snack-oauth-server + snack-upms-server | 1：snack-upms-server 同时承担 SAS + BFF + RS |
-| `OAUTH_SERVER_URL`      | 指向独立 oauth-server                        | 不设置，默认 `localhost:${server.port}`       |
+| `OAUTH_SERVER_URL`      | 指向独立 oauth-server                        | dev profile 下默认 `http://localhost:9000`；非 dev 须显式设置 |
+| `OAUTH_LOGIN_PAGE`      | 指向前端登录页绝对 URL                            | dev profile 下默认 `http://localhost:8000/user/login`；非 dev 须显式设置 |
 | `DefaultSecurityConfig` | 在 oauth-server 进程生效（无 Client Starter）    | 不生效（Order 2 Client 链已存在）                |
 | OAuth2UserClient 调用     | 跨进程 HTTP                                 | 进程内 loopback HTTP（仍需携带有效 Bearer Token）  |
 
@@ -874,12 +875,19 @@ snack:
       lock-durations: [5, 30, 0]          # 阶梯锁定（分钟），0=永久
       force-change-initial-password: true
       default-password: Snack@123
-      login-page: http://localhost:8000/user/login   # SPA 登录页；frontendBaseUrl 从此自动提取
+      login-page: ${OAUTH_LOGIN_PAGE:/user/login}    # SAS 未认证时重定向的登录页；frontendBaseUrl 从此自动提取
+      permit-all-paths:                              # 无需认证的路径（默认值）
+        - /error
+        - /actuator/health
+      csrf-ignore-paths:                             # CSRF 豁免路径（默认值）
+        - /login
+        - /oauth2/account/**
+      logout-url: /logout                            # 触发登出的路径（默认值）
       pre-auth-pages:
         pre_auth_reset: /account/change-password     # PasswordChangeRestriction 对应的前端处理页
 ```
 
-> `frontendBaseUrl` 无需显式配置——`SecurityProperties.getFrontendBaseUrl()` 自动从 `login-page` 提取 scheme + host + port（如 `http://localhost:8000`）。`pre-auth-pages` 中的 key 对应各 `PreAuthRestriction` 实现的 scope key，value 为前端相对路径。
+> `login-page` 通过环境变量 `OAUTH_LOGIN_PAGE` 注入（生产/测试环境），dev profile 下由 `application-oauth.yml` 多文档块自动覆盖为 `http://localhost:8000/user/login`，无需手动设置。`frontendBaseUrl` 无需显式配置——`SecurityProperties.getFrontendBaseUrl()` 自动从 `login-page` 提取 scheme + host + port。
 
 ### Session 配置（`snack-upms-server/src/main/resources/application.yml`）
 
@@ -900,10 +908,19 @@ server:
 snack:
   oauth2:
     client:
-      server-url: ${OAUTH_SERVER_URL:http://localhost:${server.port:8080}}
-      login-page: http://localhost:8000/account/login   # SPA 登录页地址
-      default-success-url: http://localhost:8000/      # 登录成功后默认跳转
+      server-url: ${OAUTH_SERVER_URL}                  # 必须设置；dev profile 下默认 http://localhost:9000
+      login-page: ${OAUTH_LOGIN_PAGE:/user/login}      # OAuth2 客户端侧登录页；dev 下自动覆盖为绝对 URL
+      default-success-url: ${OAUTH_DEFAULT_SUCCESS_URL:/}  # 登录成功跳转；dev 下覆盖为 http://localhost:8000/
       max-sessions: -1                                 # 并发 Session 数，-1 不限制，1 = 单设备登录
+      permit-all-paths:                                # 无需认证的路径（默认值）
+        - /error
+        - /actuator/health
+        - /logout
+        - /login/oauth2/**
+      csrf-ignore-paths:                               # CSRF 豁免路径（默认值）
+        - /login
+        - /logout
+      api-path-pattern: /api/                          # 未认证时返回 401 JSON 的路径前缀（默认值）
 
 spring:
   security:
@@ -917,6 +934,8 @@ spring:
             authorization-grant-type: client_credentials
             scope: upms
 ```
+
+> 所有 localhost 地址均通过环境变量注入；dev profile 下各模块 `application-{profile}.yml` 多文档块自动提供默认值，无需手动配置环境变量。
 
 ### Token 配置（`oauth_registered_client.token_settings`）
 
