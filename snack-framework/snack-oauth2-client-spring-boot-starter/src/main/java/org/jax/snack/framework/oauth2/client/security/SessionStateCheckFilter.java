@@ -70,10 +70,10 @@ public class SessionStateCheckFilter extends OncePerRequestFilter {
 	private final MessageSource messageSource;
 
 	public SessionStateCheckFilter(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId,
-			JsonMapper jsonMapper, SessionRefreshLock sessionRefreshLock, MessageSource messageSource) {
+			String loginUrl, JsonMapper jsonMapper, SessionRefreshLock sessionRefreshLock, MessageSource messageSource) {
 		this.authorizedClientManager = authorizedClientManager;
 		this.registrationId = registrationId;
-		this.loginUrl = "/oauth2/authorization/" + registrationId;
+		this.loginUrl = loginUrl;
 		this.jsonMapper = jsonMapper;
 		this.sessionRefreshLock = sessionRefreshLock;
 		this.messageSource = messageSource;

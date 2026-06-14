@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 
 /**
  * OAuth2 Client 配置属性.
@@ -97,7 +98,30 @@ public class OAuth2ClientProperties {
 	/**
 	 * 允许匿名访问的路径.
 	 */
-	private List<String> permitAllPaths = List.of("/error", "/actuator/health");
+	private List<String> permitAllPaths = List.of("/error", "/actuator/health", "/logout", "/login/oauth2/**");
+
+	/**
+	 * CSRF 校验豁免路径.
+	 */
+	private List<String> csrfIgnorePaths = List.of("/login", "/logout");
+
+	/**
+	 * REST API 路径前缀，未认证请求匹配此前缀时返回 401 JSON，其余路径重定向至登录.
+	 */
+	private String apiPathPattern = "/api/";
+
+	/**
+	 * OAuth2 授权端点基础路径.
+	 */
+	private String oauth2AuthorizationBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/";
+
+	/**
+	 * 获取 OAuth2 登录入口 URL（授权请求跳转地址）.
+	 * @return 授权请求 URL，如 {@code /oauth2/authorization/snack-upms-server}
+	 */
+	public String getLoginUrl() {
+		return this.oauth2AuthorizationBaseUri + getDefaultRegistrationId();
+	}
 
 	/**
 	 * 外部登录页面地址.

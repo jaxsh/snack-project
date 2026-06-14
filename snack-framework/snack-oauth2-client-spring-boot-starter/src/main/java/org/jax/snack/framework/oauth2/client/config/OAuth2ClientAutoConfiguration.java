@@ -44,17 +44,18 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -153,8 +154,6 @@ public class OAuth2ClientAutoConfiguration {
 			for (String path : properties.getPermitAllPaths()) {
 				authorize.requestMatchers(path).permitAll();
 			}
-			authorize.requestMatchers("/logout").permitAll();
-			authorize.requestMatchers("/login/oauth2/**").permitAll();
 			for (OAuth2ClientSecurityCustomizer customizer : sortedCustomizers) {
 				customizer.configureAuthorization(authorize);
 			}
@@ -163,7 +162,7 @@ public class OAuth2ClientAutoConfiguration {
 			.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
 			.csrf((csrf) -> csrf.csrfTokenRepository(cookieCsrfTokenRepository)
 				.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-				.ignoringRequestMatchers("/login", "/logout"))
+				.ignoringRequestMatchers(properties.getCsrfIgnorePaths().toArray(String[]::new)))
 			.cors(Customizer.withDefaults())
 			.formLogin(Customizer.withDefaults())
 			.oauth2Login((oauth2Login) -> {
@@ -184,7 +183,7 @@ public class OAuth2ClientAutoConfiguration {
 		logoutHandlers.orderedStream().forEach(allLogoutHandlers::add);
 		allLogoutHandlers.add(defaultLogoutHandler(cookieCsrfTokenRepository));
 
-		String loginUrl = "/oauth2/authorization/" + properties.getDefaultRegistrationId();
+		String loginUrl = properties.getLoginUrl();
 		http.logout((logout) -> {
 			for (LogoutHandler handler : allLogoutHandlers) {
 				logout.addLogoutHandler(handler);
@@ -193,7 +192,8 @@ public class OAuth2ClientAutoConfiguration {
 					new JsonLogoutSuccessHandler(loginUrl, properties.getEndSessionEndpointUri(), jsonMapper));
 		});
 
-		http.sessionManagement((session) -> session.sessionFixation((fixation) -> fixation.changeSessionId())
+		http.sessionManagement((session) -> session
+			.sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
 			.sessionConcurrency((concurrency) -> {
 				concurrency.maximumSessions(properties.getMaxSessions()).sessionRegistry(sessionRegistry);
 				if (properties.getMaxSessions() > 0) {
@@ -203,7 +203,7 @@ public class OAuth2ClientAutoConfiguration {
 			}));
 
 		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(),
-				jsonMapper, sessionRefreshLock, oauth2ClientMessageSource()), SecurityContextHolderFilter.class);
+				loginUrl, jsonMapper, sessionRefreshLock, oauth2ClientMessageSource()), SecurityContextHolderFilter.class);
 
 		return http.build();
 	}
@@ -233,19 +233,6 @@ public class OAuth2ClientAutoConfiguration {
 	@ConditionalOnMissingBean(SessionRefreshLock.class)
 	public SessionRefreshLock sessionRefreshLock(ObjectProvider<CacheManager> cacheManagerProvider) {
 		return new CacheSessionRefreshLock(cacheManagerProvider.getIfAvailable());
-	}
-
-	/**
-	 * Session 注册表（本地模式）.
-	 * <p>
-	 * spring-session 不在 classpath 时使用内存实现.
-	 * @return SessionRegistry
-	 */
-	@Bean
-	@ConditionalOnMissingBean(SessionRegistry.class)
-	@ConditionalOnMissingClass("org.springframework.session.FindByIndexNameSessionRepository")
-	public SessionRegistry sessionRegistry() {
-		return new UsernameBasedSessionRegistry();
 	}
 
 	/**
@@ -343,11 +330,11 @@ public class OAuth2ClientAutoConfiguration {
 	}
 
 	/**
-	 * Spring Session 模式下的 Session 注册表.
+	 * Session 注册表（Spring Session 分布式模式）.
 	 * <p>
 	 * 仅当 spring-session 存在时生效，切换到分布式实现，代码无需改动.
 	 */
-	@org.springframework.context.annotation.Configuration(proxyBeanMethods = false)
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(name = "org.springframework.session.FindByIndexNameSessionRepository")
 	static class SpringSessionRegistryConfiguration {
 
@@ -360,6 +347,26 @@ public class OAuth2ClientAutoConfiguration {
 		@ConditionalOnMissingBean(SessionRegistry.class)
 		SessionRegistry sessionRegistry(FindByIndexNameSessionRepository<?> sessionRepository) {
 			return new SpringSessionBackedSessionRegistry<>(sessionRepository);
+		}
+
+	}
+
+	/**
+	 * Session 注册表（本地模式）.
+	 * <p>
+	 * spring-session 不在 classpath 时使用内存实现.
+	 */
+	@Configuration(proxyBeanMethods = false)
+	static class LocalSessionRegistryConfiguration {
+
+		/**
+		 * Session 注册表（本地内存实现）.
+		 * @return SessionRegistry
+		 */
+		@Bean
+		@ConditionalOnMissingBean(SessionRegistry.class)
+		SessionRegistry sessionRegistry() {
+			return new UsernameBasedSessionRegistry();
 		}
 
 	}
