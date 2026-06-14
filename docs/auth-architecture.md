@@ -1,6 +1,6 @@
 # 认证授权架构文档
 
-> 审计日期：2026-05-24 | 最后更新：2026-06-11（RT rotation + 8h TTL、并发 AT 刷新锁、并发 Session 控制、活跃 Session 管理接口、i18n 错误消息、记住我 30 天持久化 Session、强制踢人修复——SAS 自管理 Session 失效，不依赖部署形态）
+> 审计日期：2026-05-24 | 最后更新：2026-06-14（Phase 1：pre-auth restriction 策略模式；`PreAuthRestrictionFilter` 在 `/oauth2/authorize` 层统一拦截重定向，替代原 `OAuthFormLoginCustomizer` 检测；`PreAuthAuthorizationManager` 替代 `PasswordRestrictionAuthorizationManager`；`PasswordChangeRestriction` 实现 `PreAuthRestriction` 接口；`SecurityProperties.getFrontendBaseUrl()` 自动从 `loginPage` 提取，无需显式配置）
 > 审计范围：snack-oauth、snack-upms、oauth2 starter、snack-project-web
 
 ---
@@ -66,20 +66,22 @@
 - 执行 OAuth2 授权码流程，验证用户凭证（委托 `LockCheckingUserDetailsService` → `UserDetailsServiceImpl`）
 - 颁发 JWT AccessToken / RefreshToken / ID Token，通过 `JdbcOAuth2AuthorizationService` 持久化
 - 通过 `OAuth2TokenCustomizerImpl` 注入业务语义：
-  - `authorization_code` grant：检测初始密码/密码过期 → 权限降级为 `pre_auth_reset`，TTL 压缩至 5 分钟
+  - `authorization_code` grant：检测 authorities 含 `SCOPE_pre_auth_reset`（由 `PasswordChangeRestriction.appliesTo()` → `UserDetailsServiceImpl` 注入）→ 权限降级，TTL 压缩至 5 分钟
   - `refresh_token` grant：重新从 DB 加载用户状态，状态异常（密码过期/禁用/锁定）则拒绝续发
+- 通过 `PreAuthRestrictionFilter`（注册于 `AuthorizationServerSecurityFilterChain`）拦截 `/oauth2/authorize`：已认证但持有受限权限的用户保存请求后重定向至前端处理页，改密完成后原路返回
 - 支持 Token 撤销（`/oauth2/revoke`）
 
 **关键端点**：
 
 | 端点                      | 作用                                    |
 |-------------------------|---------------------------------------|
-| `GET /oauth2/authorize` | 授权码流程入口，重定向至登录页                       |
-| `POST /login`           | 表单登录（前端 SPA 经 `/auth-api/login` 代理访问） |
-| `POST /oauth2/token`    | 授权码 / refresh_token 换 AT              |
-| `GET /oauth2/jwks`      | RSA 公钥，Resource Server 用于验签           |
-| `POST /oauth2/revoke`   | 撤销 AT 或 RT                            |
-| `GET /userinfo`         | OIDC 用户信息                             |
+| `GET /oauth2/authorize`                | 授权码流程入口，重定向至登录页                             |
+| `POST /login`                          | 表单登录（前端 SPA 经 `/auth-api/login` 代理访问）       |
+| `POST /oauth2/token`                   | 授权码 / refresh_token 换 AT                      |
+| `GET /oauth2/jwks`                     | RSA 公钥，Resource Server 用于验签                   |
+| `POST /oauth2/revoke`                  | 撤销 AT 或 RT                                    |
+| `GET /userinfo`                        | OIDC 用户信息                                     |
+| `POST /oauth2/account/change-password` | 受限用户就地改密 + session 升级，返回 `{"redirectUrl":"..."}` |
 
 ---
 
@@ -113,8 +115,8 @@
 ```
 /api/oauth/user/**      → hasAuthority("SCOPE_client")  仅服务客户端可访问
 /api/**                  → securityPolicies 链
-    ├─ [Order   1] PasswordRestrictionAuthorizationManager（oauth-biz）
-    │               含 SCOPE_pre_auth_reset → 403
+    ├─ [Order   1] PreAuthAuthorizationManager（oauth-biz）
+    │               含任意 pre-auth restriction 权限（如 SCOPE_pre_auth_reset）→ 403
     ├─ [Order 100] UpmsDynamicAuthorizationManager（upms-biz）
     │               ROLE_ADMIN → 放行；URL 不在 sys_resource → 403；否则校验权限串
     └─ fallback    AuthenticatedAuthorizationManager → 已认证则放行
@@ -401,8 +403,8 @@ snack.security.policy.rsa.keys:
     普通用户 AT scope 仅含 openid/profile，SAS 不会颁发 SCOPE_client，永远无法匹配
 
 /api/**（其余） → securityPolicies 链（OrderedStream 注入）
-    ├─ [Order 1]   PasswordRestrictionAuthorizationManager
-    │               含 SCOPE_pre_auth_reset → AuthorizationDecision(false) → 403
+    ├─ [Order 1]   PreAuthAuthorizationManager
+    │               含任意 pre-auth restriction 权限 → AuthorizationDecision(false) → 403
     ├─ [Order 100] UpmsDynamicAuthorizationManager（snack-upms-biz 同进程时注册）
     │               ROLE_ADMIN → 直接放行
     │               URL 不在 sys_resource → 403（deny-by-default）
@@ -452,7 +454,7 @@ oauth_user 与 sys_user 双写，OAuth2UserClient 调用失败时通过 `transac
 
 ### 5.2 初始密码强制改密 / 密码过期（登录前）
 
-两种情形触发路径相同，均通过 `UserDetailsServiceImpl.getAuthorities()` 检测：
+两种情形触发路径相同，均通过 `PasswordChangeRestriction.appliesTo()` 检测：
 
 | 触发条件      | 字段                                                                               |
 |-----------|----------------------------------------------------------------------------------|
@@ -461,28 +463,44 @@ oauth_user 与 sys_user 双写，OAuth2UserClient 调用失败时通过 `transac
 
 ```
 ① SAS 颁发受限 AT：
-   getAuthorities() 检测到需改密 → authorities=[SCOPE_pre_auth_reset]
+   PasswordChangeRestriction.appliesTo(user) = true
+   UserDetailsServiceImpl → authorities=[SCOPE_pre_auth_reset]
    OAuth2TokenCustomizerImpl → scope={openid, pre_auth_reset}, authorities=[], TTL=5min
 
-② 授权码回调成功 → BFF 触发 OAuth2 成功重定向（OAuthFormLoginCustomizer.buildOAuth2SuccessHandler）
-   检测到包含 SCOPE_pre_auth_reset 权限 → 强制将跳转 URL 定位到 /account/change-password
+② 用户表单登录成功 → JsonAuthenticationSuccessHandler
+   返回 {"redirectUrl": "/oauth2/authorize?..."}（SAS 在重定向至登录页前已保存此请求）
 
-③ 前端页面直接渲染 /account/change-password，并由于其处于路由白名单而不加载业务接口（免受 403 限制）
+③ 前端 window.location.href = "/oauth2/authorize?..."
+   [PreAuthRestrictionFilter] 用户已认证且含 SCOPE_pre_auth_reset：
+   → requestCache.saveRequest()  ← 保存 /oauth2/authorize?... 至 HttpSession
+   → response.sendRedirect(frontendBaseUrl + "/account/change-password")
+   （frontendBaseUrl 由 SecurityProperties.getFrontendBaseUrl() 自动从 loginPage 提取）
 
-④ 用户提交新密码 → PUT /api/upms/users/password
-   UpmsSecurityConfiguration（Order -100）：PUT /api/upms/users/password → authenticated()
-   先于 securityPolicies 链匹配，pre_auth_reset 用户已认证即可访问
+④ 用户提交新密码 → POST /oauth2/account/change-password（SAS）
+   @PreAuthorize("hasAuthority('SCOPE_pre_auth_reset')")
+   OAuthUserController.changePassword()：
+   ① oAuthUserService.update()：更新密码、清除 initialPassword 标记
+   ② 重新加载 UserDetails，构建升级后的 Authentication：
+      authorities = [ROLE_USER, FactorGrantedAuthority(PASSWORD)]
+      （Spring Security 7.x JwtGenerator.getAuthenticationTime() 需要 FactorGrantedAuthority
+        填充 ID Token 的 auth_time claim；缺失时抛 IllegalArgumentException → 500）
+   ③ 持久化新 SecurityContext 至 HttpSession
+   ④ requestCache.getRequest() 直接取回 PreAuthRestrictionFilter 保存的 /oauth2/authorize?...
+   返回：{"redirectUrl": "/oauth2/authorize?..."}
 
-⑥ 前端：
-   await changePassword(values.password)         // PUT /api/upms/users/password
-                                                  // OAuthUserServiceImpl 只更新用户字段，不删 oauth_authorization
-   const { redirectUrl } = await logout()         // RevokeTokenLogoutHandler 软撤销 AT/RT（记录保留）
-                                                  // JsonLogoutSuccessHandler 返回 OIDC logout URL
-   message.success('密码修改成功，请重新登录')      // 等 1.5 秒
-   window.location.href = redirectUrl             // → §5.7 OIDC logout → 重走 §2.1 登录流程
+⑤ 前端 window.location.href = "/oauth2/authorize?..."
+   PreAuthRestrictionFilter：session 已升级，无 pre-auth restriction 权限 → 跳过
+   SAS 正常颁发授权码 → /login/oauth2/code?code=xxx
+   BFF：code 换 AT/RT → UpmsGrantedAuthoritiesMapper → RememberMeAwareSuccessHandler
+   → SimpleUrlAuthenticationSuccessHandler → defaultSuccessUrl（http://localhost:8000/）
+   → 进入系统
 ```
 
-**关键设计**：`credentialsExpired=false` 是有意为之——若设为 `true`，框架在认证阶段抛异常，用户无法获得任何 Token，也就无法调用改密接口。权限降级方案让用户持有受限 Token，在 OAuth2 登录回调成功时由后端直接重定向到 `/account/change-password` 完成改密，是正确的设计选择。
+**关键设计**：
+- `credentialsExpired=false` 是有意为之——若设为 `true`，框架在认证阶段抛异常，用户无法获得任何 Token，也就无法调用改密接口。权限降级方案让用户持有受限 Token，由 `PreAuthRestrictionFilter` 在 `/oauth2/authorize` 层面统一拦截重定向，是正确的设计选择。
+- 改密后 **session 就地升级**，不再需要 logout + OIDC logout + re-login。`PreAuthRestrictionFilter` 在改密前已将 `/oauth2/authorize` 保存至 `HttpSessionRequestCache`，改密接口直接取回，无需 `authorizationUri` 兜底。前端跟随 redirectUrl 一次跳转即可完成完整 token 颁发流程，用户无感知。
+- `frontendBaseUrl` 由 `SecurityProperties.getFrontendBaseUrl()` 自动从 `loginPage` 提取（如 `http://localhost:8000/user/login` → `http://localhost:8000`），分离/合并部署均可自适应，无需显式配置。
+- `preAuthPages` Map 由 `snack.security.policy.pre-auth-pages` 配置，各 `PreAuthRestriction` 实现通过 scope key 查询自身的前端页面路径，扩展新限制类型时增加对应 Bean 和配置项即可。
 
 **闭环状态**：✅
 
@@ -856,7 +874,12 @@ snack:
       lock-durations: [5, 30, 0]          # 阶梯锁定（分钟），0=永久
       force-change-initial-password: true
       default-password: Snack@123
+      login-page: http://localhost:8000/user/login   # SPA 登录页；frontendBaseUrl 从此自动提取
+      pre-auth-pages:
+        pre_auth_reset: /account/change-password     # PasswordChangeRestriction 对应的前端处理页
 ```
+
+> `frontendBaseUrl` 无需显式配置——`SecurityProperties.getFrontendBaseUrl()` 自动从 `login-page` 提取 scheme + host + port（如 `http://localhost:8000`）。`pre-auth-pages` 中的 key 对应各 `PreAuthRestriction` 实现的 scope key，value 为前端相对路径。
 
 ### Session 配置（`snack-upms-server/src/main/resources/application.yml`）
 
@@ -962,7 +985,7 @@ spring:
 |-----------------------------------|---------|-------------------------------------------------------------------|-------------------------------------------|
 | 有权限                               | **200** | 业务数据                                                              | Controller                                |
 | 已认证但无 RBAC 权限                     | **403** | `{"code":"2003","msg":"Access Denied"}`                           | `BizAccessDeniedHandler`                  |
-| `pre_auth_reset` 用户访问非 profile 接口 | **403** | `{"code":"2003","msg":"Access Denied"}`                           | `PasswordRestrictionAuthorizationManager` |
+| `pre_auth_reset` 用户访问非 profile 接口 | **403** | `{"code":"2003","msg":"Access Denied"}`                           | `PreAuthAuthorizationManager`             |
 | AT 未过期，会话中密码到期（5min 窗口内）          | **200** | 业务数据（缓存 AT 有效）                                                    | Controller                                |
 | AT 过期，SAS 刷新时检测到密码 / 账号异常         | **401** | `{"data":{"loginUrl":"/oauth2/authorization/snack-upms-server"}}` | `SessionStateCheckFilter`                 |
 
@@ -1015,13 +1038,17 @@ spring:
 | 组件                      | 文件路径                                                                            | 关键方法                                                          |
 |-------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------|
 | **SAS**                 |                                                                                 |                                                               |
-| SAS 安全链配置               | `snack-oauth-biz/.../security/config/AuthorizationServerConfig.java`            | `authorizationServerSecurityFilterChain()`                    |
+| 用户自助改密（SAS）             | `snack-oauth-biz/.../controller/OAuthUserController.java`                       | `changePassword()`（改密 + session 升级 + 取 savedRequest 返回 redirectUrl） |
+| SAS 安全链配置               | `snack-oauth-biz/.../security/config/AuthorizationServerConfig.java`            | `authorizationServerSecurityFilterChain()`（注册 `PreAuthRestrictionFilter`） |
+| pre-auth 限制接口           | `snack-oauth-biz/.../security/PreAuthRestriction.java`                          | `getAuthority()`, `getPagePath()`, `appliesTo()`              |
+| pre-auth 限制过滤器           | `snack-oauth-biz/.../security/PreAuthRestrictionFilter.java`                    | `doFilterInternal()`（拦截 `/oauth2/authorize`，保存请求，重定向至限制页）     |
+| 强制改密限制策略               | `snack-oauth-biz/.../security/restriction/PasswordChangeRestriction.java`       | `appliesTo()`（初始密码 / 密码过期检测）                                  |
 | 默认安全配置（分布式）             | `snack-oauth-biz/.../security/config/DefaultSecurityConfig.java`                | `defaultSecurityFilterChain()`                                |
 | JWT Token 定制器           | `snack-oauth-biz/.../security/config/OAuth2TokenCustomizerImpl.java`            | `customize()`（权限降级 + refresh_token 重验用户状态）                    |
-| UserDetailsService      | `snack-oauth-biz/.../service/impl/UserDetailsServiceImpl.java`                  | `loadUserByUsername()`, `getAuthorities()`（含时间过期检测）           |
+| UserDetailsService      | `snack-oauth-biz/.../service/impl/UserDetailsServiceImpl.java`                  | `loadUserByUsername()`, `getAuthorities()`（委托 `List<PreAuthRestriction>` 检测） |
 | 缓存锁定检查                  | `snack-oauth-biz/.../security/LockCheckingUserDetailsService.java`              | `loadUserByUsername()`                                        |
 | 认证事件（锁定）                | `snack-oauth-biz/.../security/OAuth2AuthenticationEvents.java`                  | `onAuthenticationFailure/Success()`                           |
-| 安全策略配置                  | `snack-oauth-biz/.../security/config/SecurityProperties.java`                   | `isCredentialsExpired()`                                      |
+| 安全策略配置                  | `snack-oauth-biz/.../security/config/SecurityProperties.java`                   | `getFrontendBaseUrl()`（自动从 `loginPage` 提取）, `isCredentialsExpired()` |
 | OAuth2 用户服务             | `snack-oauth-biz/.../service/impl/OAuthUserServiceImpl.java`                    | `create()`, `update()`, `revokeTokens()`（删 authorization + 失效 SAS session） |
 | SAS Session 失效器          | `snack-oauth-biz/.../security/OAuthSessionInvalidator.java`                     | `invalidateByUsername()`（session 事件维护映射，直接 invalidate principal 为 `UserDetails` 的 SAS HttpSession，跳过 BFF session） |
 | **OAuth2 Client / BFF** |                                                                                 |                                                               |
@@ -1034,12 +1061,12 @@ spring:
 | 登出成功处理器                 | `snack-oauth2-client-starter/.../security/JsonLogoutSuccessHandler.java`        | `onLogoutSuccess()`                                           |
 | 记住我成功处理器装饰器             | `snack-oauth2-client-starter/.../security/RememberMeAwareSuccessHandler.java`   | `onAuthenticationSuccess()`（读取意图 cookie → 延长 Session → 删 cookie → 委托） |
 | OAuth2 安全规则             | `snack-oauth-biz/.../security/OAuth2SecurityCustomizer.java`                    | `configureAuthorization()`（Order 0）                           |
-| 表单登录注入                  | `snack-oauth-biz/.../security/config/OAuthFormLoginCustomizer.java`             | `customize(http)`（Order=LOWEST，路径分派 EntryPoint，包装 `RememberMeAwareSuccessHandler`） |
+| 表单登录注入                  | `snack-oauth-biz/.../security/config/OAuthFormLoginCustomizer.java`             | `customize(http)`（Order=LOWEST，路径分派 EntryPoint，`SimpleUrlAuthenticationSuccessHandler` 包装 `RememberMeAwareSuccessHandler`） |
 | 登录成功处理器                 | `snack-oauth-biz/.../security/handler/JsonAuthenticationSuccessHandler.java`    | `onAuthenticationSuccess()`（返回 redirectUrl JSON）              |
 | 登录失败处理器                 | `snack-oauth-biz/.../security/handler/JsonAuthenticationFailureHandler.java`    | `onAuthenticationFailure()`（返回 401 JSON）                      |
 | **Resource Server**     |                                                                                 |                                                               |
 | RS 自动配置                 | `snack-oauth2-resource-server-starter/.../ResourceServerAutoConfiguration.java` | —                                                             |
-| 密码强制改密管理器               | `snack-oauth-biz/.../security/PasswordRestrictionAuthorizationManager.java`     | `authorize()`                                                 |
+| pre-auth 限制授权管理器        | `snack-oauth-biz/.../security/PreAuthAuthorizationManager.java`                 | `authorize()`（Order 1，持有任意 pre-auth 权限 → 403）                 |
 | RBAC 授权管理器              | `snack-upms-biz/.../security/UpmsDynamicAuthorizationManager.java`              | `authorize()`（Order 100，deny-by-default）                      |
 | UPMS 权限映射器              | `snack-upms-biz/.../security/UpmsGrantedAuthoritiesMapper.java`                 | `mapAuthorities()`（OAuth2 回调时加载权限）                            |
 | 401 处理器                 | `snack-oauth-biz/.../security/handler/BizAuthenticationEntryPoint.java`         | `commence()`（`/api/**` 未认证返回 JSON）                            |
