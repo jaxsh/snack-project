@@ -18,4 +18,6 @@ snack:
   security:
     policy:
       login-page: http://localhost:8000/user/login
+      pre-auth-pages:
+        pre_auth_reset: /account/change-password
 

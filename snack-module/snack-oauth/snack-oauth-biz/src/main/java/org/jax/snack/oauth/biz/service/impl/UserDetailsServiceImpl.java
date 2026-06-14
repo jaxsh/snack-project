@@ -30,7 +30,7 @@ import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.biz.entity.OAuthUser;
 import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
-import org.jax.snack.oauth.biz.security.config.SecurityProperties;
+import org.jax.snack.oauth.biz.security.PreAuthRestriction;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 import org.jspecify.annotations.NullMarked;
 
@@ -56,7 +56,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	private final OAuthUserRepository userRepository;
 
-	private final SecurityProperties securityProperties;
+	private final List<PreAuthRestriction> restrictions;
 
 	private final LoginAttemptService loginAttemptService;
 
@@ -113,36 +113,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	/**
 	 * 获取用户权限列表.
 	 * <p>
-	 * 初始密码用户或密码过期用户只拥有 SCOPE_pre_auth_reset 权限.
+	 * 按优先级遍历已注册的 {@link PreAuthRestriction}，返回第一个适用限制的权限. 无限制时返回 {@code ROLE_USER}.
 	 * @param user 用户实体
 	 * @return 集合
 	 */
 	private Collection<? extends GrantedAuthority> getAuthorities(OAuthUser user) {
-		boolean needsPasswordChange = isInitialPasswordUser(user) || isCredentialsExpired(user);
-		if (needsPasswordChange) {
-			return List.of(new SimpleGrantedAuthority(
-					OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE));
-		}
-		return List.of(new SimpleGrantedAuthority(OAuth2SecurityConstants.ROLE_USER));
-	}
-
-	/**
-	 * 检查是否为初始密码用户.
-	 * @param user 用户
-	 * @return 是否为初始密码
-	 */
-	private boolean isInitialPasswordUser(OAuthUser user) {
-		return this.securityProperties.isForceChangeInitialPassword()
-				&& Objects.equals(user.getInitialPassword(), YesNoStatus.YES.getCode());
-	}
-
-	/**
-	 * 检查凭证是否过期.
-	 * @param user 用户
-	 * @return 是否过期
-	 */
-	private boolean isCredentialsExpired(OAuthUser user) {
-		return this.securityProperties.isCredentialsExpired(user.getLastPasswordResetTime());
+		return this.restrictions.stream()
+			.filter((r) -> r.appliesTo(user))
+			.findFirst()
+			.map((r) -> List.<GrantedAuthority>of(new SimpleGrantedAuthority(r.getAuthority())))
+			.orElseGet(() -> List.of(new SimpleGrantedAuthority(OAuth2SecurityConstants.ROLE_USER)));
 	}
 
 }

@@ -29,6 +29,9 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * OAuth 表单登录自动配置.
@@ -83,6 +86,9 @@ public class OAuthFormLoginAutoConfiguration {
 	 * 通过 {@code OAuth2ClientSecurityCustomizer} SPI 注入到
 	 * {@code oauth2ClientSecurityFilterChain}， 配置 JSON 认证处理器和路径分派入口点（/api/** → 401
 	 * JSON，其他路径 → 302 OAuth2 授权）。
+	 * <p>
+	 * 同时将前端 base URL 写入 {@link SecurityProperties}，供 {@code PreAuthRestrictionFilter}
+	 * 在请求时读取.
 	 * @param clientProperties OAuth2 Client 配置
 	 * @param securityProperties 安全策略属性
 	 * @param successHandler 认证成功处理器
@@ -97,8 +103,24 @@ public class OAuthFormLoginAutoConfiguration {
 			SecurityProperties securityProperties, JsonAuthenticationSuccessHandler successHandler,
 			JsonAuthenticationFailureHandler failureHandler, BizAccessDeniedHandler accessDeniedHandler,
 			JsonMapper jsonMapper) {
-		return new OAuthFormLoginCustomizer(clientProperties, securityProperties, successHandler, failureHandler,
-				accessDeniedHandler, jsonMapper);
+		if (!StringUtils.hasText(securityProperties.getFrontendBaseUrl())) {
+			String baseUrl = extractBaseUrl(clientProperties.getDefaultSuccessUrl());
+			if (!StringUtils.hasText(baseUrl)) {
+				baseUrl = extractBaseUrl(securityProperties.getLoginPage());
+			}
+			securityProperties.setFrontendBaseUrl(baseUrl);
+		}
+		return new OAuthFormLoginCustomizer(clientProperties, successHandler, failureHandler, accessDeniedHandler,
+				jsonMapper);
+	}
+
+	private static String extractBaseUrl(String url) {
+		UriComponents uri = UriComponentsBuilder.fromUriString(url).build();
+		if (uri.getScheme() == null) {
+			return "";
+		}
+		int port = uri.getPort();
+		return uri.getScheme() + "://" + uri.getHost() + ((port > 0) ? ":" + port : "");
 	}
 
 }

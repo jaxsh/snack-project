@@ -17,13 +17,18 @@
 package org.jax.snack.oauth.biz.security.config;
 
 import java.time.ZonedDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * 安全策略配置属性.
@@ -75,17 +80,39 @@ public class SecurityProperties {
 	private String loginPage = "/login";
 
 	/**
-	 * 外部改密页面地址.
+	 * 前端应用 base URL，用于 pre-auth restriction 重定向.
+	 * <p>
+	 * 未显式配置时自动从 {@link #loginPage} 提取（如 {@code http://localhost:8000/user/login} → {@code
+	 * http://localhost:8000}）；{@code loginPage} 为相对路径时返回空字符串，过滤器以相对路径重定向.
 	 */
-	private String changePasswordPage = "/account/change-password";
+	private String frontendBaseUrl = "";
 
 	/**
-	 * 改密后触发 OAuth2 授权流程的地址.
+	 * 获取前端应用 base URL.
 	 * <p>
-	 * 由 {@code OAuthFormLoginCustomizer} 在启动时根据 registrationId 自动填充；
-	 * 改密成功且无 savedRequest 时，前端跳转至此以完成 token 颁发并获取完整权限.
+	 * 未显式配置时从 {@link #loginPage} 自动提取.
+	 * @return base URL，如 {@code http://localhost:8000}，或空字符串
 	 */
-	private String authorizationUri = "";
+	public String getFrontendBaseUrl() {
+		if (StringUtils.hasText(this.frontendBaseUrl)) {
+			return this.frontendBaseUrl;
+		}
+		UriComponents uri = UriComponentsBuilder.fromUriString(this.loginPage).build();
+		if (uri.getScheme() == null) {
+			return "";
+		}
+		int port = uri.getPort();
+		return uri.getScheme() + "://" + uri.getHost() + ((port > 0) ? ":" + port : "");
+	}
+
+	/**
+	 * 各预授权限制对应的前端页面路径.
+	 * <p>
+	 * key 为 restriction 的 scope key（如 {@code "pre_auth_reset"}），value 为前端相对路径（如
+	 * {@code "/account/change-password"}）. 各 {@link PreAuthRestriction} 实现通过 scope key 在此
+	 * Map 中查询自身的处理页路径. 通过 {@code snack.security.policy.pre-auth-pages} 配置.
+	 */
+	private Map<String, String> preAuthPages = new LinkedHashMap<>();
 
 	/**
 	 * 判断凭证是否已过期.

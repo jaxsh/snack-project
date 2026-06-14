@@ -16,13 +16,10 @@
 
 package org.jax.snack.oauth.biz.security.config;
 
-import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.framework.oauth2.client.security.RememberMeAwareSuccessHandler;
 import org.jax.snack.framework.oauth2.client.spi.OAuth2ClientSecurityCustomizer;
-import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
 import org.jax.snack.oauth.biz.security.handler.BizAccessDeniedHandler;
 import org.jax.snack.oauth.biz.security.handler.BizAuthenticationEntryPoint;
 import org.jax.snack.oauth.biz.security.handler.JsonAuthenticationFailureHandler;
@@ -31,16 +28,16 @@ import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.core.Ordered;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * 表单登录定制器.
  * <p>
  * 挂载 JSON 认证处理器，并按路径分派未认证入口点：/api/** 返回 401 JSON，其他路径重定向至 OAuth2 授权端点.
+ * <p>
+ * pre-auth restriction 的重定向逻辑已统一移至 {@code PreAuthRestrictionFilter}， OAuth2 登录成功后始终跳转至
+ * {@code defaultSuccessUrl}，不跟随 saved request.
  *
  * @author Jax Jiang
  */
@@ -48,8 +45,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer {
 
 	private final OAuth2ClientProperties clientProperties;
-
-	private final SecurityProperties securityProperties;
 
 	private final JsonAuthenticationSuccessHandler successHandler;
 
@@ -63,7 +58,6 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 	public void customize(HttpSecurity http) {
 		http.formLogin((form) -> form.successHandler(this.successHandler).failureHandler(this.failureHandler));
 		String oauthEntryPoint = "/oauth2/authorization/" + this.clientProperties.getDefaultRegistrationId();
-		this.securityProperties.setAuthorizationUri(oauthEntryPoint);
 		http.exceptionHandling((ex) -> ex
 			.defaultAuthenticationEntryPointFor(new BizAuthenticationEntryPoint(this.jsonMapper, oauthEntryPoint),
 					(request) -> request.getRequestURI().startsWith("/api/"))
@@ -73,40 +67,10 @@ public class OAuthFormLoginCustomizer implements OAuth2ClientSecurityCustomizer 
 		http.oauth2Login((oauth2) -> oauth2.successHandler(buildOAuth2SuccessHandler()));
 	}
 
-	private AuthenticationSuccessHandler buildOAuth2SuccessHandler() {
-		String restrictedAuthority = OAuth2SecurityConstants.SCOPE_PREFIX
-				+ OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE;
-		String changePasswordUrl = toAbsoluteUrl(this.securityProperties.getChangePasswordPage(),
+	private RememberMeAwareSuccessHandler buildOAuth2SuccessHandler() {
+		SimpleUrlAuthenticationSuccessHandler inner = new SimpleUrlAuthenticationSuccessHandler(
 				this.clientProperties.getDefaultSuccessUrl());
-		String defaultUrl = this.clientProperties.getDefaultSuccessUrl();
-		AuthenticationSuccessHandler inner = (req, res, auth) -> {
-			boolean hasRestriction = auth.getAuthorities()
-				.stream()
-				.anyMatch((a) -> Objects.equals(a.getAuthority(), restrictedAuthority));
-			if (hasRestriction) {
-				new SimpleUrlAuthenticationSuccessHandler(changePasswordUrl).onAuthenticationSuccess(req, res, auth);
-				return;
-			}
-			SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler();
-			handler.setDefaultTargetUrl(defaultUrl);
-			handler.onAuthenticationSuccess(req, res, auth);
-		};
 		return new RememberMeAwareSuccessHandler(inner);
-	}
-
-	private static String toAbsoluteUrl(String path, String baseUrl) {
-		if (UriComponentsBuilder.fromUriString(path).build().getScheme() != null) {
-			return path;
-		}
-		if (UriComponentsBuilder.fromUriString(baseUrl).build().getScheme() == null) {
-			return path;
-		}
-		return UriComponentsBuilder.fromUriString(baseUrl)
-			.replacePath(null)
-			.replaceQuery(null)
-			.fragment(null)
-			.build()
-			.toUriString() + path;
 	}
 
 	@Override

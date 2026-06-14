@@ -16,11 +16,12 @@
 
 package org.jax.snack.oauth.biz.security;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NullMarked;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -31,33 +32,35 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.stereotype.Component;
 
 /**
- * 强制改密授权管理器.
+ * 预授权限制授权管理器.
  * <p>
- * 检查用户是否持有 SCOPE_pre_auth_reset 权限. 如果持有且访问非豁免路径, 则拒绝访问.
+ * 检查用户是否持有任意 {@link PreAuthRestriction} 对应的权限. 如果持有且访问非豁免路径，则拒绝访问. 通过
+ * {@code List<PreAuthRestriction>} 注入动态构建受限权限集合， 新增限制类型时无需修改此类.
  *
  * @author Jax Jiang
  */
 @Slf4j
 @Order(1)
 @Component
-@NullMarked
-public class PasswordRestrictionAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
+public class PreAuthAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
+
+	private final Set<String> restrictionAuthorities;
+
+	public PreAuthAuthorizationManager(List<PreAuthRestriction> restrictions) {
+		this.restrictionAuthorities = restrictions.stream()
+			.map(PreAuthRestriction::getAuthority)
+			.collect(Collectors.toUnmodifiableSet());
+	}
 
 	@Override
 	public AuthorizationDecision authorize(Supplier<? extends Authentication> authentication,
 			RequestAuthorizationContext context) {
 		Authentication auth = authentication.get();
-
-		Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-		boolean hasRestriction = authorities.stream()
+		boolean hasRestriction = auth.getAuthorities()
+			.stream()
 			.map(GrantedAuthority::getAuthority)
-			.anyMatch((OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)::equals);
-
-		if (hasRestriction) {
-			return new AuthorizationDecision(false);
-		}
-
-		return new AuthorizationDecision(true);
+			.anyMatch(this.restrictionAuthorities::contains);
+		return new AuthorizationDecision(!hasRestriction);
 	}
 
 }

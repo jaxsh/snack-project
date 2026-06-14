@@ -25,6 +25,8 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import org.jax.snack.oauth.biz.security.PreAuthRestriction;
+import org.jax.snack.oauth.biz.security.PreAuthRestrictionFilter;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +42,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
@@ -59,12 +62,13 @@ public class AuthorizationServerConfig {
 	 * 授权服务器安全过滤链.
 	 * @param http HttpSecurity
 	 * @param securityProperties SecurityProperties
+	 * @param restrictions 已注册的预授权限制策略列表（按 Order 排序）
 	 * @return SecurityFilterChain
 	 */
 	@Bean
 	@Order(1)
 	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
-			SecurityProperties securityProperties) {
+			SecurityProperties securityProperties, List<PreAuthRestriction> restrictions) {
 		OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
 
 		String loginPage = securityProperties.getLoginPage();
@@ -72,6 +76,8 @@ public class AuthorizationServerConfig {
 		http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
 			.with(authorizationServerConfigurer,
 					(authorizationServer) -> authorizationServer.oidc(Customizer.withDefaults()))
+			.addFilterBefore(new PreAuthRestrictionFilter(restrictions, securityProperties),
+					AnonymousAuthenticationFilter.class)
 			.authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated())
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new LoginUrlAuthenticationEntryPoint(loginPage), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
