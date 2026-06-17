@@ -14,36 +14,27 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.biz.security;
+package org.jax.snack.oauth.api.mfa;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * OAuth2 安全相关常量.
+ * MFA 登录验证请求 DTO.
  *
  * @author Jax Jiang
  */
-public final class OAuth2SecurityConstants {
-
-	private OAuth2SecurityConstants() {
-	}
-
-	/**
-	 * Spring Security Scope 前缀.
-	 */
-	public static final String SCOPE_PREFIX = "SCOPE_";
+@Getter
+@Setter
+public class MfaVerifyDTO {
 
 	/**
-	 * OAuth2 Scope: 受限改密.
+	 * 6 位数字验证码.
 	 */
-	public static final String PRE_AUTH_RESET_SCOPE = "pre_auth_reset";
-
-	/**
-	 * OAuth2 Scope: MFA 验证.
-	 */
-	public static final String PRE_AUTH_MFA_SCOPE = "pre_auth_mfa";
-
-	/**
-	 * 基础用户角色.
-	 */
-	public static final String ROLE_USER = "ROLE_USER";
+	@NotBlank
+	@Pattern(regexp = "^[0-9]{6}$")
+	private String code;
 
 }

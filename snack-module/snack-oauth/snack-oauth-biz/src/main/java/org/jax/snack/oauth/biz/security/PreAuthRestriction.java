@@ -22,9 +22,6 @@ import org.springframework.core.Ordered;
 
 /**
  * 预授权限制策略.
- * <p>
- * 每种登录限制（强制改密、MFA 验证等）实现此接口并注册为 Spring Bean.
- * 消费方（过滤器、授权管理器、UserDetailsService）面向此接口，不感知具体类型. 新增限制类型时只需实现此接口并注册 Bean，无需修改已有代码.
  *
  * @author Jax Jiang
  */
@@ -48,5 +45,12 @@ public interface PreAuthRestriction extends Ordered {
 	 * @return 是否适用
 	 */
 	boolean appliesTo(OAuthUser user);
+
+	/**
+	 * 限制首次触发时服务端回调（如 SMS/邮件发送验证码）. TOTP 默认空操作.
+	 * @param username 用户名
+	 */
+	default void onApplied(String username) {
+	}
 
 }

@@ -104,6 +104,12 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 			setData.put(OAuthUser.Fields.lockUntil, null);
 			this.userRepository.updateByDsl(setData, where);
 		}
+		else if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.NO.getCode())) {
+			Map<String, Object> setData = new HashMap<>();
+			setData.put(OAuthUser.Fields.mfaEnabled, YesNoStatus.NO.getCode());
+			setData.put(OAuthUser.Fields.mfaSecret, null);
+			this.userRepository.updateByDsl(setData, where);
+		}
 		else {
 			OAuthUser user = this.converter.toEntity(dto);
 			user.setId(existing.getId());

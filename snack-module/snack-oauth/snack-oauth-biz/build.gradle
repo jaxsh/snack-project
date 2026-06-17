@@ -16,6 +16,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'tools.jackson.core:jackson-databind'
 	implementation 'com.github.ben-manes.caffeine:caffeine'
+	implementation 'dev.samstevens.totp:totp'
 
 	annotationProcessor 'org.mapstruct:mapstruct-processor'
 

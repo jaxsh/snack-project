@@ -20,12 +20,15 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
+import org.jax.snack.oauth.biz.security.PreAuthRestriction;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -58,6 +61,8 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 
 	private final UserDetailsService userDetailsService;
 
+	private final List<PreAuthRestriction> restrictions;
+
 	@Override
 	public void customize(JwtEncodingContext context) {
 		if (!isAccessTokenOrIdToken(context)) {
@@ -77,9 +82,9 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 			return;
 		}
 
-		if (requiresPasswordChange(context.getPrincipal())) {
-			context.getClaims()
-				.claim("scope", new HashSet<>(Set.of("openid", OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)));
+		Optional<String> activeScope = findActiveRestrictionScope(context.getPrincipal());
+		if (activeScope.isPresent()) {
+			context.getClaims().claim("scope", new HashSet<>(Set.of("openid", activeScope.get())));
 			context.getClaims().claim("authorities", Collections.emptyList());
 			context.getClaims().expiresAt(Instant.now().plus(RESTRICTED_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
 		}
@@ -96,26 +101,33 @@ public class OAuth2TokenCustomizerImpl implements OAuth2TokenCustomizer<JwtEncod
 		}
 		boolean invalidState = !freshUser.isEnabled() || !freshUser.isAccountNonLocked()
 				|| !freshUser.isAccountNonExpired();
-		boolean passwordExpired = freshUser.getAuthorities()
+		Set<String> restrictionAuthorities = this.restrictions.stream()
+			.map(PreAuthRestriction::getAuthority)
+			.collect(Collectors.toSet());
+		boolean hasRestriction = freshUser.getAuthorities()
 			.stream()
-			.anyMatch((a) -> Objects.equals(a.getAuthority(),
-					OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE));
-		if (invalidState || passwordExpired) {
+			.map(GrantedAuthority::getAuthority)
+			.anyMatch(restrictionAuthorities::contains);
+		if (invalidState || hasRestriction) {
 			log.debug("User {} is in invalid state during token refresh, denying", username);
 			throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.ACCESS_DENIED));
 		}
 	}
 
 	/**
-	 * 检查用户是否需要修改密码.
+	 * 查找当前认证中激活的预授权限制 scope 名称（去掉 SCOPE_ 前缀）.
 	 * @param principal 认证信息
-	 * @return 是否需要修改密码
+	 * @return 限制 scope（如 pre_auth_reset、pre_auth_mfa），无则 empty
 	 */
-	private boolean requiresPasswordChange(Authentication principal) {
-		return principal.getAuthorities()
+	private Optional<String> findActiveRestrictionScope(Authentication principal) {
+		Set<String> authorities = principal.getAuthorities()
 			.stream()
 			.map(GrantedAuthority::getAuthority)
-			.anyMatch((OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE)::equals);
+			.collect(Collectors.toSet());
+		return this.restrictions.stream()
+			.filter((r) -> authorities.contains(r.getAuthority()))
+			.findFirst()
+			.map((r) -> r.getAuthority().substring(OAuth2SecurityConstants.SCOPE_PREFIX.length()));
 	}
 
 	private boolean isAccessTokenOrIdToken(JwtEncodingContext context) {

@@ -25,10 +25,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.enums.YesNoStatus;
+import org.jax.snack.framework.core.exception.BusinessException;
+import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.mfa.MfaVerifyDTO;
 import org.jax.snack.oauth.api.service.OAuthUserService;
 import org.jax.snack.oauth.biz.security.OAuth2SecurityConstants;
+import org.jax.snack.oauth.biz.security.mfa.MfaProvider;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -51,7 +56,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * OAuth 用户自助服务控制器.
  * <p>
- * 处理用户自助改密等操作，使用 session cookie 认证.
+ * 处理用户自助改密及 MFA 登录验证，使用 session cookie 认证.
  *
  * @author Jax Jiang
  */
@@ -64,6 +69,8 @@ public class OAuthUserController {
 
 	private final UserDetailsService userDetailsService;
 
+	private final ObjectProvider<MfaProvider> mfaProviderProvider;
+
 	private final HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
 
 	private final HttpSessionSecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
@@ -71,11 +78,11 @@ public class OAuthUserController {
 	/**
 	 * 修改密码.
 	 * <p>
-	 * 受限用户（初始密码或过期密码）改密后升级 session 并返回 redirectUrl，前端跟随跳回 OAuth2 授权流程.
+	 * 受限用户（初始密码或过期密码）改密后升级 session 并返回 redirectUrl.
 	 * @param body 请求体
 	 * @param request HttpServletRequest
 	 * @param response HttpServletResponse
-	 * @return 重定向信息（含 redirectUrl 时前端需跳转）
+	 * @return 含 redirectUrl 的 map
 	 */
 	@PostMapping("/change-password")
 	@ResponseBody
@@ -86,6 +93,34 @@ public class OAuthUserController {
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
 		body.setInitialPassword(YesNoStatus.NO.getCode());
 		this.oAuthUserService.update(username, body);
+		return Map.of("redirectUrl", upgradeSessionAndGetRedirectUrl(request, response));
+	}
+
+	/**
+	 * MFA 登录验证.
+	 * <p>
+	 * 校验 6 位动态码，通过后升级 session 并返回 redirectUrl.
+	 * @param body 请求体
+	 * @param request HttpServletRequest
+	 * @param response HttpServletResponse
+	 * @return 含 redirectUrl 的 map
+	 */
+	@PostMapping("/verify-mfa")
+	@ResponseBody
+	@PreAuthorize("hasAuthority('" + OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_MFA_SCOPE
+			+ "')")
+	public Map<String, String> verifyMfa(@RequestBody @Validated MfaVerifyDTO body, HttpServletRequest request,
+			HttpServletResponse response) {
+		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+		MfaProvider provider = this.mfaProviderProvider.getIfAvailable();
+		if (provider == null || !provider.verify(username, body.getCode())) {
+			throw new BusinessException(ErrorCode.PARAM_INVALID, "MFA code");
+		}
+		return Map.of("redirectUrl", upgradeSessionAndGetRedirectUrl(request, response));
+	}
+
+	private String upgradeSessionAndGetRedirectUrl(HttpServletRequest request, HttpServletResponse response) {
+		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
 		UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 		List<GrantedAuthority> authorities = new ArrayList<>();
 		authorities.add(new SimpleGrantedAuthority(OAuth2SecurityConstants.ROLE_USER));
@@ -100,7 +135,7 @@ public class OAuthUserController {
 		if (savedRequest == null) {
 			throw new IllegalStateException("No saved OAuth2 authorization request found in session.");
 		}
-		return Map.of("redirectUrl", savedRequest.getRedirectUrl());
+		return savedRequest.getRedirectUrl();
 	}
 
 }

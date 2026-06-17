@@ -14,36 +14,29 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.biz.security;
+package org.jax.snack.oauth.biz.security.mfa;
 
 /**
- * OAuth2 安全相关常量.
+ * MFA 验证渠道 SPI.
+ * <p>
+ * TOTP：{@link #send} 为空操作；{@link #verify} 读本地 DB 完成时间算法验证.
  *
  * @author Jax Jiang
  */
-public final class OAuth2SecurityConstants {
-
-	private OAuth2SecurityConstants() {
-	}
+public interface MfaProvider {
 
 	/**
-	 * Spring Security Scope 前缀.
+	 * 发送 MFA 挑战. TOTP 为空操作；SMS/邮件：生成码 → Spring Cache → 通知投递.
+	 * @param username 用户名
 	 */
-	public static final String SCOPE_PREFIX = "SCOPE_";
+	void send(String username);
 
 	/**
-	 * OAuth2 Scope: 受限改密.
+	 * 校验用户提交的验证码.
+	 * @param username 用户名
+	 * @param code 6 位验证码
+	 * @return 校验通过返回 {@code true}
 	 */
-	public static final String PRE_AUTH_RESET_SCOPE = "pre_auth_reset";
-
-	/**
-	 * OAuth2 Scope: MFA 验证.
-	 */
-	public static final String PRE_AUTH_MFA_SCOPE = "pre_auth_mfa";
-
-	/**
-	 * 基础用户角色.
-	 */
-	public static final String ROLE_USER = "ROLE_USER";
+	boolean verify(String username, String code);
 
 }

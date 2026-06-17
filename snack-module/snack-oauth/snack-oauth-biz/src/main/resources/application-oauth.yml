@@ -20,6 +20,9 @@ snack:
       login-page: ${OAUTH_LOGIN_PAGE:/user/login}
       pre-auth-pages:
         pre_auth_reset: /account/change-password
+        pre_auth_mfa: /account/verify-mfa
+  mfa:
+    type: TOTP
 
 ---
 spring:

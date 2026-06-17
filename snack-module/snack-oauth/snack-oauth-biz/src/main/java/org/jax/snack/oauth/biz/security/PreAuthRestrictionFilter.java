@@ -37,11 +37,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * 预授权限制过滤器.
- * <p>
- * 拦截 {@code /oauth2/authorize}，检测已注册的 {@link PreAuthRestriction}， 将请求保存至 session
- * 后重定向至对应限制处理页.
- * <p>
- * 此设计使所有限制类型（改密、MFA 等）的重定向逻辑集中于此， 无需在登录成功处理器中逐一判断.
  *
  * @author Jax Jiang
  */
@@ -77,6 +72,7 @@ public class PreAuthRestrictionFilter extends OncePerRequestFilter {
 			.collect(Collectors.toSet());
 		for (PreAuthRestriction restriction : this.restrictions) {
 			if (userAuthorities.contains(restriction.getAuthority())) {
+				restriction.onApplied(auth.getName());
 				this.requestCache.saveRequest(request, response);
 				response.sendRedirect(this.securityProperties.getFrontendBaseUrl() + restriction.getPagePath());
 				return;

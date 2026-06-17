@@ -19,6 +19,8 @@ package org.jax.snack.oauth.api.dto;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -89,5 +91,17 @@ public class OAuthUserDTO {
 	 * null 表示永不到期.
 	 */
 	private LocalDate expireDate;
+
+	/**
+	 * 是否启用MFA(0:未启用, 1:已启用).
+	 */
+	@Min(0)
+	@Max(1)
+	private Integer mfaEnabled;
+
+	/**
+	 * MFA TOTP 密钥(Base32编码).
+	 */
+	private String mfaSecret;
 
 }

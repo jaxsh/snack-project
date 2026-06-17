@@ -107,6 +107,16 @@ public class OAuthUser extends BaseEntity implements Serializable {
 	 */
 	private LocalDate expireDate;
 
+	/**
+	 * 是否启用MFA(0:未启用, 1:已启用).
+	 */
+	private Integer mfaEnabled;
+
+	/**
+	 * MFA TOTP 密钥(Base32编码). 仅TOTP模式使用，停用时保留.
+	 */
+	private String mfaSecret;
+
 	public static final class Fields extends BaseEntity.Fields {
 
 	}

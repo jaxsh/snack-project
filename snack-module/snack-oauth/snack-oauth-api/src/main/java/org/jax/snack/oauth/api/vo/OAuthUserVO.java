@@ -100,4 +100,9 @@ public class OAuthUserVO {
 	 */
 	private String initialPasswordLabel;
 
+	/**
+	 * 是否启用 MFA(0:未启用, 1:已启用).
+	 */
+	private Integer mfaEnabled;
+
 }
