@@ -24,6 +24,7 @@ import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
@@ -137,6 +138,13 @@ public interface SysUserService {
 	 * @param orgCodes 组织机构编码集合
 	 */
 	void updateUserOrgs(String username, Set<String> orgCodes);
+
+	/**
+	 * 生成 MFA TOTP 密钥和二维码 URI.
+	 * @param username 用户名
+	 * @return MFA 初始化信息
+	 */
+	MfaSetupVO mfaSetup(String username);
 
 	/**
 	 * 创建用户及其角色、组织关联关系 (管理员级联创建).

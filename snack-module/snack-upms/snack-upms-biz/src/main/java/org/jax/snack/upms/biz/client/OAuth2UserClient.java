@@ -16,6 +16,7 @@
 
 package org.jax.snack.upms.biz.client;
 
+import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
@@ -53,10 +54,10 @@ public interface OAuth2UserClient {
 	/**
 	 * 根据用户名获取用户信息.
 	 * @param username 用户名
-	 * @return 用户信息 VO
+	 * @return 用户信息 VO（含 ApiResponse 包装）
 	 */
 	@GetExchange("/{username}")
-	OAuthUserVO getByUsername(@PathVariable String username);
+	ApiResponse<OAuthUserVO> getByUsername(@PathVariable String username);
 
 	/**
 	 * 删除用户.

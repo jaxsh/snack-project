@@ -15,6 +15,7 @@ dependencies {
 	implementation project(':snack-framework:snack-utils')
 	implementation project(':snack-framework:snack-oauth2-client-spring-boot-starter')
 
+	implementation 'dev.samstevens.totp:totp'
 	implementation 'org.zalando:logbook-spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-quartz'
 	implementation 'org.mapstruct:mapstruct'

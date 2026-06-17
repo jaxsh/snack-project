@@ -111,4 +111,9 @@ public class SysUserVO {
 	 */
 	private ZonedDateTime lastActiveTime;
 
+	/**
+	 * 是否启用 MFA(0:未启用, 1:已启用).
+	 */
+	private Integer mfaEnabled;
+
 }

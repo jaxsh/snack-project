@@ -28,6 +28,7 @@ import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.service.SysUserService;
+import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
@@ -184,6 +185,16 @@ public class SysUserController {
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
 		SysUserVO current = this.service.getByUsername(username);
 		this.service.update(current.getId(), dto);
+	}
+
+	/**
+	 * 获取当前用户 MFA 初始化信息.
+	 * @return MFA 初始化信息
+	 */
+	@GetMapping("/mfa/setup")
+	public MfaSetupVO mfaSetup() {
+		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+		return this.service.mfaSetup(username);
 	}
 
 	/**

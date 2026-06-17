@@ -124,4 +124,22 @@ public class SysUserDTO {
 	 */
 	private LocalDate expireDate;
 
+	/**
+	 * 是否启用MFA(0:未启用, 1:已启用).
+	 */
+	@Min(0)
+	@Max(1)
+	private Integer mfaEnabled;
+
+	/**
+	 * MFA TOTP 密钥(Base32编码，开启时传入).
+	 */
+	private String mfaSecret;
+
+	/**
+	 * MFA 验证码（开启时用于服务端校验，不存储）.
+	 */
+	@Pattern(regexp = "^[0-9]{6}$")
+	private String mfaCode;
+
 }

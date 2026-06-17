@@ -23,6 +23,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
+import dev.samstevens.totp.time.SystemTimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
@@ -31,10 +36,13 @@ import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
+import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.service.SysSessionService;
 import org.jax.snack.upms.api.service.SysUserService;
+import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
@@ -59,6 +67,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * 用户服务实现.
@@ -95,6 +104,9 @@ public class SysUserServiceImpl implements SysUserService {
 
 	private final TransactionTemplate transactionTemplate;
 
+	private final DefaultCodeVerifier mfaCodeVerifier = new DefaultCodeVerifier(new DefaultCodeGenerator(),
+			new SystemTimeProvider());
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	@CacheEvict(value = CACHE_NAME, allEntries = true)
@@ -120,6 +132,12 @@ public class SysUserServiceImpl implements SysUserService {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 
+		if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.YES.getCode())
+				&& (!StringUtils.hasText(dto.getMfaSecret()) || !StringUtils.hasText(dto.getMfaCode())
+						|| !this.mfaCodeVerifier.isValidCode(dto.getMfaSecret(), dto.getMfaCode()))) {
+			throw new BusinessException(ErrorCode.PARAM_INVALID, "MFA code");
+		}
+
 		SysUser entity = this.converter.toEntity(dto);
 		entity.setId(id);
 		entity.setUsername(current.getUsername());
@@ -128,20 +146,27 @@ public class SysUserServiceImpl implements SysUserService {
 
 		OAuthUserDTO oAuthPatch = new OAuthUserDTO();
 		boolean needSync = false;
-		if (dto.getStatus() != null && !Objects.equals(dto.getStatus(), current.getStatus())) {
+		if (!ObjectUtils.isEmpty(dto.getStatus()) && !Objects.equals(dto.getStatus(), current.getStatus())) {
 			oAuthPatch.setEnabled(dto.getStatus());
 			needSync = true;
 		}
-		if (dto.getMobile() != null && !Objects.equals(dto.getMobile(), current.getMobile())) {
+		if (StringUtils.hasText(dto.getMobile()) && !Objects.equals(dto.getMobile(), current.getMobile())) {
 			oAuthPatch.setMobile(dto.getMobile());
 			needSync = true;
 		}
-		if (dto.getEmail() != null && !Objects.equals(dto.getEmail(), current.getEmail())) {
+		if (StringUtils.hasText(dto.getEmail()) && !Objects.equals(dto.getEmail(), current.getEmail())) {
 			oAuthPatch.setEmail(dto.getEmail());
 			needSync = true;
 		}
-		if (dto.getExpireDate() != null) {
+		if (!ObjectUtils.isEmpty(dto.getExpireDate())) {
 			oAuthPatch.setExpireDate(dto.getExpireDate());
+			needSync = true;
+		}
+		if (!ObjectUtils.isEmpty(dto.getMfaEnabled())) {
+			oAuthPatch.setMfaEnabled(dto.getMfaEnabled());
+			if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.YES.getCode())) {
+				oAuthPatch.setMfaSecret(dto.getMfaSecret());
+			}
 			needSync = true;
 		}
 		if (needSync) {
@@ -230,7 +255,12 @@ public class SysUserServiceImpl implements SysUserService {
 		if (CollectionUtils.isEmpty(list)) {
 			return null;
 		}
-		return this.converter.toVO(list.get(0));
+		SysUserVO vo = this.converter.toVO(list.get(0));
+		ApiResponse<OAuthUserVO> oauthResponse = this.oAuth2UserClient.getByUsername(username);
+		if (!ObjectUtils.isEmpty(oauthResponse) && !ObjectUtils.isEmpty(oauthResponse.getData())) {
+			vo.setMfaEnabled(oauthResponse.getData().getMfaEnabled());
+		}
+		return vo;
 	}
 
 	@Override
@@ -322,12 +352,24 @@ public class SysUserServiceImpl implements SysUserService {
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
 
 		this.update(id, dto);
-		if (dto.getRoleCodes() != null) {
+		if (!CollectionUtils.isEmpty(dto.getRoleCodes())) {
 			this.updateUserRoles(current.getUsername(), dto.getRoleCodes());
 		}
-		if (dto.getOrgCodes() != null) {
+		if (!CollectionUtils.isEmpty(dto.getOrgCodes())) {
 			this.updateUserOrgs(current.getUsername(), dto.getOrgCodes());
 		}
+	}
+
+	@Override
+	public MfaSetupVO mfaSetup(String username) {
+		String secret = new DefaultSecretGenerator().generate();
+		QrData qrData = new QrData.Builder().label(username)
+			.secret(secret)
+			.issuer("snack")
+			.digits(6)
+			.period(30)
+			.build();
+		return new MfaSetupVO(secret, qrData.getUri());
 	}
 
 	private void validateRoleStatus(Set<String> roleCodes) {
