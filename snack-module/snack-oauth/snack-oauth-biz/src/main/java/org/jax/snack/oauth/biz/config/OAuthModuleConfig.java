@@ -16,8 +16,14 @@
 
 package org.jax.snack.oauth.biz.config;
 
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.time.SystemTimeProvider;
 import org.mybatis.spring.annotation.MapperScan;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -34,5 +40,11 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("org.jax.snack.oauth")
 @MapperScan("org.jax.snack.oauth.biz.mapper")
 public class OAuthModuleConfig {
+
+	@Bean
+	@ConditionalOnProperty(name = "snack.mfa.type", havingValue = "TOTP", matchIfMissing = true)
+	public CodeVerifier totpCodeVerifier() {
+		return new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
+	}
 
 }

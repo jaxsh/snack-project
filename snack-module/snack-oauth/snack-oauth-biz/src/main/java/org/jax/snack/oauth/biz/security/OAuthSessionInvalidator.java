@@ -78,16 +78,6 @@ public class OAuthSessionInvalidator {
 				}
 			}
 		});
-		this.sessions.forEach((sessionId, session) -> {
-			if (matchesUsername(session, username)) {
-				try {
-					session.invalidate();
-				}
-				catch (IllegalStateException ex) {
-					log.debug("Session already invalidated on second pass: {}", sessionId);
-				}
-			}
-		});
 	}
 
 	private static boolean matchesUsername(HttpSession session, String username) {

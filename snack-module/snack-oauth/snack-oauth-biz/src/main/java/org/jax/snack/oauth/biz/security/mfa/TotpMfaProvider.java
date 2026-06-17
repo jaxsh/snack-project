@@ -17,9 +17,6 @@
 package org.jax.snack.oauth.biz.security.mfa;
 
 import dev.samstevens.totp.code.CodeVerifier;
-import dev.samstevens.totp.code.DefaultCodeGenerator;
-import dev.samstevens.totp.code.DefaultCodeVerifier;
-import dev.samstevens.totp.time.SystemTimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.oauth.biz.entity.OAuthUser;
@@ -43,8 +40,7 @@ public class TotpMfaProvider implements MfaProvider {
 
 	private final OAuthUserRepository oauthUserRepository;
 
-	private final CodeVerifier codeVerifier = new DefaultCodeVerifier(new DefaultCodeGenerator(),
-			new SystemTimeProvider());
+	private final CodeVerifier codeVerifier;
 
 	@Override
 	public void send(String username) {

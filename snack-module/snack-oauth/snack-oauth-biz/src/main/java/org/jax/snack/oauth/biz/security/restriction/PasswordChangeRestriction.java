@@ -24,7 +24,6 @@ import org.jax.snack.oauth.biz.entity.OAuthUser;
 import org.jax.snack.oauth.biz.security.PreAuthRestriction;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Component;
  * @author Jax Jiang
  */
 @Component
-@Order(1)
 @RequiredArgsConstructor
 public class PasswordChangeRestriction implements PreAuthRestriction {
 

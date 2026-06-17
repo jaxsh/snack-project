@@ -24,7 +24,6 @@ import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.security.mfa.MfaProvider;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Component;
  * @author Jax Jiang
  */
 @Component
-@Order(2)
 @RequiredArgsConstructor
 public class MfaVerificationRestriction implements PreAuthRestriction {
 
