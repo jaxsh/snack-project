@@ -130,7 +130,7 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 			LowcodeSchemaControllerTests.this.schemaService.create(dto);
 
 			postJson(API_SCHEMAS, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
 		}
 
@@ -275,14 +275,14 @@ class LowcodeSchemaControllerTests extends LowcodeIntegrationTests {
 			LowcodeSchemaVO published = queryPublishedBySchemaName(schemaName);
 
 			postJsonNoBody(API_SCHEMAS_PUBLISH, published.getId()).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_STATUS_ERROR));
 		}
 
 		@Test
 		void shouldFailWhenNotFound() throws Exception {
 			postJsonNoBody(API_SCHEMAS_PUBLISH, 99999L).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 
