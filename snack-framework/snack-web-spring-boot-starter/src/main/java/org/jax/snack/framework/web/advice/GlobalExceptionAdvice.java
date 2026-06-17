@@ -73,7 +73,7 @@ public class GlobalExceptionAdvice {
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(BusinessException.class)
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
 	public ApiResponse<Object> handleBusinessException(BusinessException e) {
 		return ApiResponse.error(e.getErrorCode(), getLocalizedMessage(e.getErrorCode(), e.getMessageArgs()));
 	}
@@ -98,7 +98,7 @@ public class GlobalExceptionAdvice {
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(InterfaceBusinessException.class)
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
 	public ApiResponse<Object> handleInterfaceBusinessException(InterfaceBusinessException e) {
 		return ApiResponse.error(ErrorCode.INTERFACE_ERROR, e.getMessage());
 	}

@@ -92,7 +92,7 @@ class GlobalExceptionAdviceTests {
 		@Test
 		void shouldHandleBusinessExceptionWithDefaultLocale() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc.perform(get(URL_BUSINESS_EXCEPTION))
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.SYSTEM_ERROR),
 						jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.SYSTEM_ERROR)),
 						jsonPath(JSON_PATH_DATA).doesNotExist());
@@ -102,7 +102,7 @@ class GlobalExceptionAdviceTests {
 		void shouldHandleBusinessExceptionWithEnglishLocale() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc
 				.perform(get(URL_BUSINESS_EXCEPTION).header(HEADER_ACCEPT_LANGUAGE, "en-US"))
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.SYSTEM_ERROR),
 						jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.SYSTEM_ERROR, Locale.US)),
 						jsonPath(JSON_PATH_DATA).doesNotExist());
@@ -134,7 +134,7 @@ class GlobalExceptionAdviceTests {
 		@Test
 		void shouldHandleInterfaceBusinessException() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc.perform(get("/test/interface-business-exception"))
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpectAll(jsonPath(JSON_PATH_CODE).value(ErrorCode.INTERFACE_ERROR),
 						jsonPath(JSON_PATH_MSG).value("External API returned business error"),
 						jsonPath(JSON_PATH_DATA).doesNotExist());
@@ -205,7 +205,7 @@ class GlobalExceptionAdviceTests {
 		void shouldSupportChineseViaAcceptLanguageHeader() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc
 				.perform(get(URL_BUSINESS_EXCEPTION).header(HEADER_ACCEPT_LANGUAGE, "zh-CN"))
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.SYSTEM_ERROR, Locale.CHINA)));
 		}
 
@@ -213,7 +213,7 @@ class GlobalExceptionAdviceTests {
 		void shouldSupportEnglishViaAcceptLanguageHeader() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc
 				.perform(get(URL_BUSINESS_EXCEPTION).header(HEADER_ACCEPT_LANGUAGE, "en-US"))
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.SYSTEM_ERROR, Locale.US)));
 		}
 
@@ -221,7 +221,7 @@ class GlobalExceptionAdviceTests {
 		void shouldPrioritizeQueryParameterOverAcceptLanguageHeader() throws Exception {
 			GlobalExceptionAdviceTests.this.mockMvc
 				.perform(get(URL_BUSINESS_EXCEPTION).header(HEADER_ACCEPT_LANGUAGE, "en-US").param("locale", "zh-CN"))
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(jsonPath(JSON_PATH_MSG).value(getMessage(ErrorCode.SYSTEM_ERROR, Locale.CHINA)));
 		}
 
