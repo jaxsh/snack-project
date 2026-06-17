@@ -96,7 +96,7 @@ class SysRoleControllerTests extends UpmsIntegrationTests {
 			SysRoleControllerTests.this.sysRoleService.create(dto);
 
 			postJson(API_ROLES, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
 		}
 
@@ -144,7 +144,7 @@ class SysRoleControllerTests extends UpmsIntegrationTests {
 			updateDto.setRoleName("Updated Role Name");
 
 			putJson(API_ROLES_ID, updateDto, created.getId()).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.PARAM_INVALID));
 		}
 

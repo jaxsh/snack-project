@@ -138,7 +138,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.sysUserService.create(dto);
 
 			postJson(API_USERS, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
 		}
 
@@ -392,7 +392,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 			SysUserControllerTests.this.mockMvc
 				.perform(patch("/api/upms/users/{id}/unlock", 99999L).with(defaultJwt()).with(csrf()))
 				.andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 

@@ -78,7 +78,7 @@ class SysResourceControllerTests extends UpmsIntegrationTests {
 			SysResourceDTO dto = buildDto("menu_fail", 9999L);
 
 			postJson(API_RESOURCES, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 
@@ -120,7 +120,7 @@ class SysResourceControllerTests extends UpmsIntegrationTests {
 			SysResourceDTO updateDto = buildDto("menu_self", id);
 
 			putJson(API_RESOURCES_ID, updateDto, id).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.PARAM_INVALID));
 		}
 

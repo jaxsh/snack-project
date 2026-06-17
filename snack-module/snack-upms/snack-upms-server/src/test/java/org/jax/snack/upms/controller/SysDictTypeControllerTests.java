@@ -129,7 +129,7 @@ class SysDictTypeControllerTests extends UpmsIntegrationTests {
 			SysDictTypeDTO dto = buildDto("重复测试", dictType, Status.ENABLED.getCode(), 0);
 
 			postJson(API_DICT_TYPES, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
 		}
 
@@ -232,7 +232,7 @@ class SysDictTypeControllerTests extends UpmsIntegrationTests {
 			dto.setDictName("更新后的名称");
 
 			putJson(API_DICT_TYPES_ID, dto, 99999L).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 

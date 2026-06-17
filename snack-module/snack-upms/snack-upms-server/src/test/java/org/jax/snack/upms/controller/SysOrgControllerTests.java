@@ -172,7 +172,7 @@ class SysOrgControllerTests extends UpmsIntegrationTests {
 			SysOrgDTO dto = buildDto("NON_EXISTENT_CODE");
 
 			postJson(API_ORGS, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 
@@ -417,7 +417,7 @@ class SysOrgControllerTests extends UpmsIntegrationTests {
 			dto.setOrgName("更新后的名称");
 
 			putJson(API_ORGS_ID, dto, 99999L).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 

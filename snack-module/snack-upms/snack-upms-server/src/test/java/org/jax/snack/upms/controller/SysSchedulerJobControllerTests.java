@@ -145,7 +145,7 @@ class SysSchedulerJobControllerTests extends UpmsIntegrationTests {
 			SysSchedulerJobDTO dto = buildDto(jobName, "0 0/10 * * * ?", Status.ENABLED.getCode());
 
 			postJson(API_SCHEDULER_JOBS, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
 		}
 
@@ -228,7 +228,7 @@ class SysSchedulerJobControllerTests extends UpmsIntegrationTests {
 			dto.setDescription("Updated description");
 
 			putJson(API_SCHEDULER_JOBS_ID, dto, 99999L).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 

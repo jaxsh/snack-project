@@ -154,7 +154,7 @@ class SysFileControllerTests extends UpmsIntegrationTests {
 
 			mockMvc.perform(delete(API_FILES_ID, id).with(defaultJwt())).andExpect(status().isOk());
 
-			mockMvc.perform(get(API_FILES_ID, id).with(defaultJwt())).andExpect(status().isInternalServerError());
+			mockMvc.perform(get(API_FILES_ID, id).with(defaultJwt())).andExpect(status().is(422));
 		}
 
 	}

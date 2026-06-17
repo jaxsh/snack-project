@@ -154,7 +154,7 @@ class SysDictDataControllerTests extends UpmsIntegrationTests {
 			dto.setDictValue("1");
 
 			postJson(API_DICT_DATA, dto).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_ALREADY_EXISTS));
 		}
 
@@ -298,7 +298,7 @@ class SysDictDataControllerTests extends UpmsIntegrationTests {
 			dto.setDictLabel("更新");
 
 			putJson(API_DICT_DATA_ID, dto, 99999L).andDo(print())
-				.andExpect(status().isInternalServerError())
+				.andExpect(status().is(422))
 				.andExpect(ExceptionMatchers.code(ErrorCode.DATA_NOT_FOUND));
 		}
 
