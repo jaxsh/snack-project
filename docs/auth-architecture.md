@@ -1,6 +1,6 @@
 # 认证授权架构文档
 
-> 审计日期：2026-05-24 | 最后更新：2026-06-15（Phase 1：pre-auth restriction 策略模式；配置收敛：所有硬编码 localhost 地址和安全路径移入可配置属性，dev 覆盖通过各模块 profile YAML 多文档块内嵌，不再依赖独立 `application-dev.yml`）
+> 审计日期：2026-05-24 | 最后更新：2026-06-18（Phase 2：MFA TOTP 双因素认证（§5.10、§3.2、§6.1、§8、§10）；BusinessException / InterfaceBusinessException HTTP 状态从 500 改为 422（§9-F）；新增集群安全已知缺口 GAP-9/GAP-10（§11））
 > 审计范围：snack-oauth、snack-upms、oauth2 starter、snack-project-web
 
 ---
@@ -323,11 +323,21 @@ SysUserServiceImpl              OAuth2UserClient                oauth-server /ap
 }
 ```
 
-**受限用户**（初始密码 / 密码过期）：
+**受限用户 — 改密**（初始密码 / 密码过期）：
 ```json
 {
   "sub": "username",
   "scope": ["openid", "pre_auth_reset"],
+  "authorities": [],
+  "exp": "<签发后5分钟>"
+}
+```
+
+**受限用户 — MFA 待验证**（`mfa_enabled=1`，已完成账密认证，尚未通过二次验证）：
+```json
+{
+  "sub": "username",
+  "scope": ["openid", "pre_auth_mfa"],
   "authorities": [],
   "exp": "<签发后5分钟>"
 }
@@ -752,6 +762,68 @@ snack.oauth2.client.max-sessions: 1    # 1 = 同时只允许一个设备登录
 
 ---
 
+### 5.10 MFA 二次验证登录
+
+当用户已在账户设置中绑定 TOTP（`oauth_user.mfa_enabled=1`）时，账密认证通过后须完成二次验证方可获得正式 Token。触发条件：`MfaVerificationRestriction.appliesTo(user)` = `mfa_enabled == YesNoStatus.YES`。
+
+```
+前端登录页                                     SAS (OAuthUserController)
+  │                                                    │
+  │ [用户提交账密，登录成功]                              │
+  │                                                    │
+  │ ① SAS 颁发受限 AT：                                │
+  │   MfaVerificationRestriction.appliesTo(user) = true │
+  │   UserDetailsServiceImpl → authorities=[SCOPE_pre_auth_mfa]
+  │   OAuth2TokenCustomizerImpl：                       │
+  │     scope={openid, pre_auth_mfa}, authorities=[], TTL=5min
+  │                                                    │
+  │ ② JsonAuthenticationSuccessHandler                 │
+  │   返回 {"redirectUrl": "/oauth2/authorize?..."}     │
+  │                                                    │
+  │ window.location.href = "/oauth2/authorize?..."      │
+  │──────────────────────────────────────────────────> │
+  │                                                    │
+  │ ③ PreAuthRestrictionFilter：含 SCOPE_pre_auth_mfa  │
+  │   requestCache.saveRequest() ← 保存 /oauth2/authorize?...
+  │   MfaVerificationRestriction.onApplied(username)   │
+  │     MfaProvider.send() → TOTP 为 no-op             │
+  │     （码由 Authenticator App 本地生成，无需服务端推送）│
+  │   response.sendRedirect(frontendBaseUrl + "/account/mfa-verify")
+  │<── 302 → /account/mfa-verify                       │
+  │                                                    │
+  │ [用户打开 Authenticator App，读取当前 6 位 TOTP 码]   │
+  │ POST /oauth2/account/verify-mfa {"code":"123456"}  │
+  │──────────────────────────────────────────────────> │
+  │   @PreAuthorize("hasAuthority('SCOPE_pre_auth_mfa')")
+  │   MfaProvider.verify(username, code)               │
+  │     → oauthUserRepository 查询 mfa_secret          │
+  │     → codeVerifier.isValidCode(secret, code)       │
+  │       （SHA1 / 6位 / 30秒步长，dev.samstevens.totp）│
+  │   验证通过 → session 就地升级（同 §5.2 改密后升级逻辑）│
+  │   requestCache.getRequest() 取回 /oauth2/authorize?...
+  │<── 200 {"redirectUrl": "/oauth2/authorize?..."}    │
+  │                                                    │
+  │ window.location.href = "/oauth2/authorize?..."      │
+  │   PreAuthRestrictionFilter → session 已升级 → 跳过   │
+  │   SAS 正常颁发授权码 → BFF 换取 AT/RT → 进入系统     │
+```
+
+**MFA 设备管理**：
+
+| 接口 | 说明 |
+|------|------|
+| `GET /api/upms/users/mfa/setup` | 返回 TOTP 二维码及 Base32 密钥（`MfaSetupVO`），引导用户绑定 Authenticator App |
+| 管理员重置 MFA | 管理员通过 UPMS 端点清除 `mfa_secret`、关闭 `mfa_enabled`，用户下次登录无需二次验证 |
+
+**关键设计说明**：
+- `MfaProvider` 是 SPI，`TotpMfaProvider` 通过 `@ConditionalOnProperty(name = "snack.mfa.type", havingValue = "TOTP", matchIfMissing = true)` 条件装配，可替换为短信/邮件 OTP 实现。
+- `send()` 对 TOTP 为空实现，扩展其他类型时在此推送一次性码。
+- `MfaVerificationRestriction.getOrder() = 2`，在 `PasswordChangeRestriction`（order=1）之后执行；同一登录流程两个限制互斥（先改密、改密完成后才能触发 MFA，反之亦然）。
+
+**闭环状态**：✅
+
+---
+
 ### 闭环状态汇总
 
 | 场景            | 状态 | 说明                                                 |
@@ -768,6 +840,7 @@ snack.oauth2.client.max-sessions: 1    # 1 = 同时只允许一个设备登录
 | 登出 / Token 撤销 | ✅  | 审计 + 撤销 + Session 销毁链完整                            |
 | 并发 Session 控制  | ✅  | `maxSessions` 可配置；新设备登录踢出旧会话，i18n 提示，Session 注册表自动适配内存/Redis |
 | 记住我登录         | ✅  | 意图 cookie 跨 OAuth2 重定向边界；`RememberMeAwareSuccessHandler` 延长 Session 至 30 天 |
+| MFA 双因素认证     | ✅  | TOTP 受限 Token + `PreAuthRestrictionFilter` + `POST /oauth2/account/verify-mfa` session 升级 |
 
 ---
 
@@ -787,6 +860,8 @@ snack.oauth2.client.max-sessions: 1    # 1 = 同时只允许一个设备登录
 | lock_until               | datetime   | 临时锁定截止；null+locked=1 = 永久                | null             |
 | last_password_reset_time | datetime   | 用于 90 天过期计算                              | —                |
 | expire_date              | date       | 账号到期日；null=永不到期；登录时与 `expired=1` 做 OR 判断 | null             |
+| mfa_enabled              | tinyint(1) | **YesNo 语义**                             | 0=关闭, 1=已开启 MFA |
+| mfa_secret               | varchar    | TOTP 密钥（Base32）；`mfa_enabled=0` 时为 null | —                |
 
 > ⚠️ `enabled` 使用 `Status` 枚举（ENABLED=1），其余布尔字段使用 `YesNo` 枚举（NO=0=正常）。语义不统一，赋值必须使用正确的枚举常量。
 
@@ -885,6 +960,16 @@ snack:
       logout-url: /logout                            # 触发登出的路径（默认值）
       pre-auth-pages:
         pre_auth_reset: /account/change-password     # PasswordChangeRestriction 对应的前端处理页
+        pre_auth_mfa: /account/mfa-verify            # MfaVerificationRestriction 对应的前端处理页
+```
+
+### MFA 配置（前缀 `snack.mfa`）
+
+```yaml
+snack:
+  mfa:
+    type: TOTP    # MFA 类型（当前仅支持 TOTP）；条件装配 TotpMfaProvider 和 CodeVerifier Bean
+                  # 不配置或配置为 TOTP 时默认启用（matchIfMissing=true）
 ```
 
 > `login-page` 通过环境变量 `OAUTH_LOGIN_PAGE` 注入（生产/测试环境），dev profile 下由 `application-oauth.yml` 多文档块自动覆盖为 `http://localhost:8000/user/login`，无需手动设置。`frontendBaseUrl` 无需显式配置——`SecurityProperties.getFrontendBaseUrl()` 自动从 `login-page` 提取 scheme + host + port。
@@ -1041,14 +1126,14 @@ spring:
 
 ### F. 应用层异常（Controller 层，`@RestControllerAdvice`）
 
-| 场景                        | Status     | `code`   |
-|---------------------------|------------|----------|
-| 参数校验失败                    | **400**    | `"1002"` |
-| 路径不存在                     | **404**    | `"1003"` |
-| 业务异常（`BusinessException`） | **500** ⚠️ | 异常携带的错误码 |
-| 系统错误                      | **500**    | `"1000"` |
-
-> ⚠️ `BusinessException` 返回 HTTP 500 语义不准，建议改为 4xx。
+| 场景                                             | Status  | `code`   |
+|--------------------------------------------------|---------|----------|
+| 参数校验失败                                       | **400** | `"1002"` |
+| 路径不存在                                         | **404** | `"1003"` |
+| 业务异常（`BusinessException`）                    | **422** | 异常携带的错误码 |
+| 下游业务拒绝（`InterfaceBusinessException`）        | **422** | `"1001"` |
+| 下游网络 / 服务器异常（`InterfaceException`）        | **500** | `"1001"` |
+| 系统错误                                           | **500** | `"1000"` |
 
 ---
 
@@ -1058,6 +1143,11 @@ spring:
 |-------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------|
 | **SAS**                 |                                                                                 |                                                               |
 | 用户自助改密（SAS）             | `snack-oauth-biz/.../controller/OAuthUserController.java`                       | `changePassword()`（改密 + session 升级 + 取 savedRequest 返回 redirectUrl） |
+| MFA 二次验证（SAS）            | `snack-oauth-biz/.../controller/OAuthUserController.java`                       | `verifyMfa()`（`POST /oauth2/account/verify-mfa`，TOTP 验证 + session 升级） |
+| MFA 设备绑定（UPMS）           | `snack-upms-biz/.../controller/SysUserController.java`                          | `getMfaSetup()`（`GET /api/upms/users/mfa/setup`，生成 TOTP 二维码与 Base32 密钥） |
+| MFA 提供者接口                 | `snack-oauth-biz/.../security/mfa/MfaProvider.java`                             | `send(username)`（推送一次性码）, `verify(username, code)` |
+| TOTP MFA 实现                 | `snack-oauth-biz/.../security/mfa/TotpMfaProvider.java`                         | `verify()`（读 `mfa_secret` + `CodeVerifier.isValidCode()`） |
+| MFA 验证限制策略               | `snack-oauth-biz/.../security/restriction/MfaVerificationRestriction.java`      | `appliesTo()`（`mfa_enabled=1` 判断）, `getOrder()=2` |
 | SAS 安全链配置               | `snack-oauth-biz/.../security/config/AuthorizationServerConfig.java`            | `authorizationServerSecurityFilterChain()`（注册 `PreAuthRestrictionFilter`） |
 | pre-auth 限制接口           | `snack-oauth-biz/.../security/PreAuthRestriction.java`                          | `getAuthority()`, `getPagePath()`, `appliesTo()`              |
 | pre-auth 限制过滤器           | `snack-oauth-biz/.../security/PreAuthRestrictionFilter.java`                    | `doFilterInternal()`（拦截 `/oauth2/authorize`，保存请求，重定向至限制页）     |
@@ -1210,3 +1300,78 @@ spring:
 2. `OAuthUserServiceImpl.update()`：改密时**不再硬删** oauth_authorization，由 BFF 的 `RevokeTokenLogoutHandler` 软撤销（标记 invalidated，记录保留）
 3. `JsonLogoutSuccessHandler`：SAS 与 BFF 跨源时构造 OIDC 标准登出 URL（`/connect/logout?post_logout_redirect_uri=...&id_token_hint=...`）
 4. `oauth_registered_client.post_logout_redirect_uris`：注册允许的登出回调 URI（`http://localhost:8080/oauth2/authorization/snack-upms-server`），Spring AS 7.x 强制校验此字段
+
+---
+
+### GAP-9：LoginAttemptService 单节点内存，多节点部署失效
+
+**当前实现**：`LoginAttemptServiceImpl` 使用 Spring Cache（单节点 Caffeine，`expireAfterWrite=10m`）维护失败计数和临时锁定状态。
+
+**多节点问题**：攻击者轮询不同节点可绕过失败次数限制——节点 A 记 4 次失败，节点 B 记 0 次，第 5 次打到节点 B 不触发锁定。DB 侧锁定（`oauth_user.locked/lockUntil`）是持久的，但到达锁定阈值的那次计数本身可被绕过。
+
+**改造方案**：
+
+```
+方案 A（最小改动，推荐）：Redis 替换 Caffeine Cache
+  条件：classpath 已有 spring-data-redis（Session/CacheSessionRefreshLock 共用）
+
+  1. 将 spring.cache.type 改为 redis（或保持 auto，Redis 在 classpath 时自动选择）
+  2. 配置 loginFailCount / loginLockStatus 两个 cache 的 TTL：
+       spring.cache.redis.time-to-live: 10m  # 全局 TTL
+     或通过 RedisCacheManagerBuilderCustomizer 单独配置
+  3. LoginAttemptServiceImpl 无需任何代码改动（依赖 Spring Cache 抽象）
+
+  ⚠️ synchronized 关键字在分布式环境无效：
+     需改为 Redis 原子操作，将 incrementFailCount 改用 RedisTemplate.opsForValue().increment()
+     或引入 RedissonClient 分布式锁
+
+方案 B（强一致）：所有失败计数直接写 DB
+  优点：无额外中间件依赖；缺点：高频登录失败场景下 DB 写压力上升
+
+当前状态：待实施。单节点部署时不受影响。
+```
+
+---
+
+### GAP-10：OAuthSessionInvalidator 单节点内存，多节点部署失效
+
+**当前实现**：`OAuthSessionInvalidator` 用 `ConcurrentHashMap<String, HttpSession>` 维护 sessionId→HttpSession 映射，`invalidateByUsername()` 只能使当前 JVM 内的 session 失效。
+
+**多节点问题**：管理员踢人（`DELETE /api/upms/users/{id}/tokens`）触发 `revokeTokens()` → `OAuthSessionInvalidator.invalidateByUsername()`，但用户的 SAS 侧 session 可能在另一台节点，本节点 HashMap 中找不到，session 依然有效，用户可在 SAS 静默重新授权获得新 AT/RT。
+
+**改造方案**：
+
+```
+方案 A（推荐）：Spring Session + FindByIndexNameSessionRepository
+  将 SAS 侧 session 存储迁移至 Redis（Spring Session）：
+
+  1. 引入 spring-session-data-redis（BFF 侧可能已引入）
+  2. SAS 安全链开启 Spring Session：在 AuthorizationServerConfig 中加
+       http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+     并确保 HttpSessionSecurityContextRepository 使用 Spring Session 的实现
+  3. 替换 OAuthSessionInvalidator 实现：
+       @Autowired FindByIndexNameSessionRepository<? extends Session> sessionRepo;
+
+       public void invalidateByUsername(String username) {
+           sessionRepo.findByPrincipalName(username)
+               .forEach((id, session) -> sessionRepo.deleteById(id));
+       }
+     无需监听 HttpSessionCreatedEvent / HttpSessionDestroyedEvent，
+     sessionRepo 本身是跨节点的分布式视图
+
+  ⚠️ 注意合并部署场景：SAS 与 BFF 共用同一 Spring Session Store 时，
+     findByPrincipalName 会同时返回 principal=UserDetails（SAS）和 principal=OidcUser（BFF）的 session。
+     必须保留 matchesUsername() 中 principal instanceof UserDetails 的过滤，
+     只 delete SAS session，BFF session 留给 SessionRegistry.expireNow() 处理（步骤 2 串行执行，见 §5.7）。
+
+方案 B（轻量）：Redis Pub/Sub 广播失效信号
+  不迁移 session 存储，仅通过广播协调各节点本地 HashMap：
+
+  1. invalidateByUsername() 同时 publish 到 Redis channel（key = username）
+  2. 每个节点订阅该 channel，收到信号后调用本地 invalidateLocal(username)
+  3. 原 ConcurrentHashMap 逻辑保持不变，只在集群广播层面新增 RedisMessageListenerContainer
+
+  ⚠️ Pub/Sub 不保证送达（节点宕机时消息丢失），适合"最终一致"容忍度较高的场景
+
+当前状态：待实施。单节点部署时不受影响。
+```
