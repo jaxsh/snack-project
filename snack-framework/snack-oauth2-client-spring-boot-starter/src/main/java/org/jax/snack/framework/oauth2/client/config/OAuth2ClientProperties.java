@@ -113,7 +113,8 @@ public class OAuth2ClientProperties {
 	/**
 	 * OAuth2 授权端点基础路径.
 	 */
-	private String oauth2AuthorizationBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/";
+	private String oauth2AuthorizationBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
+			+ "/";
 
 	/**
 	 * 获取 OAuth2 登录入口 URL（授权请求跳转地址）.

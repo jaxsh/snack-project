@@ -202,8 +202,10 @@ public class OAuth2ClientAutoConfiguration {
 				}
 			}));
 
-		http.addFilterAfter(new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(),
-				loginUrl, jsonMapper, sessionRefreshLock, oauth2ClientMessageSource()), SecurityContextHolderFilter.class);
+		http.addFilterAfter(
+				new SessionStateCheckFilter(authorizedClientManager, properties.getDefaultRegistrationId(), loginUrl,
+						jsonMapper, sessionRefreshLock, oauth2ClientMessageSource()),
+				SecurityContextHolderFilter.class);
 
 		return http.build();
 	}
