@@ -18,6 +18,7 @@ package org.jax.snack.upms.api.vo;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -115,5 +116,10 @@ public class SysUserVO {
 	 * 是否启用 MFA(0:未启用, 1:已启用).
 	 */
 	private Integer mfaEnabled;
+
+	/**
+	 * 角色编码列表.
+	 */
+	private List<String> roleCodes;
 
 }

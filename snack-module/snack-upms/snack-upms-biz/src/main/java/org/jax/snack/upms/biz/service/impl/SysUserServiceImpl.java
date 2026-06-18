@@ -214,6 +214,7 @@ public class SysUserServiceImpl implements SysUserService {
 			result = this.converter.toPageResult(this.repository.queryListByDsl(condition));
 		}
 		fillLastActiveTime(result.getRecords());
+		fillRoleCodes(result.getRecords());
 		return result;
 	}
 
@@ -223,6 +224,20 @@ public class SysUserServiceImpl implements SysUserService {
 		}
 		Map<String, ZonedDateTime> lastActiveTimes = this.sessionService.getLastActiveTimes();
 		records.forEach((vo) -> vo.setLastActiveTime(lastActiveTimes.get(vo.getUsername())));
+	}
+
+	private void fillRoleCodes(List<SysUserVO> records) {
+		if (CollectionUtils.isEmpty(records)) {
+			return;
+		}
+		List<String> usernames = records.stream().map(SysUserVO::getUsername).toList();
+		WhereCondition whereCondition = WhereCondition.builder().in(SysUserRole.Fields.username, usernames).build();
+		QueryCondition queryCondition = QueryCondition.builder().where(whereCondition.getWhere()).build();
+		List<SysUserRole> userRoles = this.userRoleRepository.queryListByDsl(queryCondition);
+		Map<String, List<String>> rolesByUser = userRoles.stream()
+			.collect(Collectors.groupingBy(SysUserRole::getUsername,
+					Collectors.mapping(SysUserRole::getRoleCode, Collectors.toList())));
+		records.forEach((vo) -> vo.setRoleCodes(rolesByUser.getOrDefault(vo.getUsername(), List.of())));
 	}
 
 	@Override
@@ -236,7 +251,12 @@ public class SysUserServiceImpl implements SysUserService {
 	@Cacheable(value = CACHE_NAME, key = "'id:' + #id", unless = UNLESS_NULL)
 	public SysUserVO queryById(Long id) {
 		SysUser user = this.repository.findById(id).orElse(null);
-		return this.converter.toVO(user);
+		if (ObjectUtils.isEmpty(user)) {
+			return null;
+		}
+		SysUserVO vo = this.converter.toVO(user);
+		vo.setRoleCodes(getUserRoles(user.getUsername()));
+		return vo;
 	}
 
 	@Override
