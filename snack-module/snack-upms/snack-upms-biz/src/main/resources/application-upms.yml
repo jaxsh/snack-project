@@ -25,14 +25,14 @@ spring:
           snack-upms-server:
             provider: snack-oauth
             client-id: snack-upms-server
-            client-secret: secret
+            client-secret: ${OAUTH_CLIENT_SECRET}
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope: openid,profile
           snack-upms-service:
             provider: snack-oauth
             client-id: snack-upms-service
-            client-secret: secret
+            client-secret: ${OAUTH_CLIENT_SECRET}
             authorization-grant-type: client_credentials
             scope: client
         provider:
@@ -51,6 +51,14 @@ spring:
   config:
     activate:
       on-profile: dev
+  security:
+    oauth2:
+      client:
+        registration:
+          snack-upms-server:
+            client-secret: secret
+          snack-upms-service:
+            client-secret: secret
 snack:
   oauth2:
     client:

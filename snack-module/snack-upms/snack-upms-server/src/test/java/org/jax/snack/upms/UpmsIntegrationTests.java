@@ -43,8 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Jax Jiang
  */
-@SpringBootTest(
-		properties = { "spring.profiles.active=upms,oauth", "snack.oauth2.client.server-url=http://localhost:9000" })
+@SpringBootTest(properties = { "spring.profiles.active=upms,oauth,dev",
+		"snack.oauth2.client.server-url=http://localhost:9000" })
 @AutoConfigureMockMvc
 @Transactional
 @Import(UpmsIntegrationTests.CacheTestConfiguration.class)
