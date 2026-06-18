@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Jax Jiang
  */
-@SpringBootTest(properties = { "spring.profiles.active=oauth" })
+@SpringBootTest(properties = { "spring.profiles.active=oauth,dev" })
 @AutoConfigureMockMvc
 @Transactional
 public abstract class OAuthIntegrationTests extends MockMvcTestSupport {
