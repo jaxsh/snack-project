@@ -180,7 +180,8 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	public List<TreeNode<SysResourceVO>> buildTree() {
-		List<SysResource> all = this.repository.queryListByDsl(null);
+		QueryCondition condition = QueryCondition.builder().orderByAsc(SysResource.Fields.sortOrder).build();
+		List<SysResource> all = this.repository.queryListByDsl(condition);
 		List<SysResourceVO> voList = all.stream().map(this.converter::toVO).toList();
 		return TreeBuilder.build(voList, 0L, SysResourceVO::getId, SysResourceVO::getParentId);
 	}

@@ -186,7 +186,7 @@ public class SysOrgServiceImpl implements SysOrgService {
 	}
 
 	private List<SysOrg> findAll() {
-		return this.repository.queryListByDsl(QueryCondition.builder().build());
+		return this.repository.queryListByDsl(QueryCondition.builder().orderByAsc(SysOrg.Fields.sortOrder).build());
 	}
 
 	private List<SysOrg> findByAncestorsPrefix(String ancestorsPrefix) {
