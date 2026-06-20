@@ -49,26 +49,6 @@ public class WhereCondition {
 	protected Map<String, Object> where;
 
 	/**
-	 * 原子自增更新字段.
-	 * <p>
-	 * 键为字段名, 值为增量 (正数).
-	 * <p>
-	 * 示例: { "refCount": 1 }
-	 */
-	@Setter(AccessLevel.PROTECTED)
-	protected Map<String, Number> incrBy;
-
-	/**
-	 * 原子自减更新字段.
-	 * <p>
-	 * 键为字段名, 值为减量 (正数).
-	 * <p>
-	 * 示例: { "refCount": 1 }
-	 */
-	@Setter(AccessLevel.PROTECTED)
-	protected Map<String, Number> decrBy;
-
-	/**
 	 * 追加到 SQL 末尾的自定义片段.
 	 * <p>
 	 * 示例: "FOR UPDATE", "LIMIT 1"
@@ -80,7 +60,7 @@ public class WhereCondition {
 	 * 创建 Builder 实例.
 	 * @return 新的 Builder 实例
 	 */
-	public static Builder builder() {
+	public static AbstractBuilder<?> builder() {
 		return new Builder();
 	}
 
@@ -88,29 +68,24 @@ public class WhereCondition {
 	 * 将当前条件转换为 Builder 以进行修改.
 	 * @return Builder 实例
 	 */
-	public Builder toBuilder() {
+	public AbstractBuilder<?> toBuilder() {
 		Builder builder = new Builder();
 		if (this.where != null) {
 			builder.conditions.putAll(this.where);
 		}
-		builder.incrByMap = this.incrBy;
-		builder.decrByMap = this.decrBy;
 		builder.lastSql = this.last;
 		return builder;
 	}
 
 	/**
-	 * WhereCondition 流式构建器.
+	 * WhereCondition 流式构建器抽象基类.
 	 *
+	 * @param <B> 具体 Builder 类型
 	 * @author Jax Jiang
 	 */
-	public static class Builder {
+	public abstract static class AbstractBuilder<B extends AbstractBuilder<B>> {
 
 		protected final Map<String, Object> conditions = new HashMap<>();
-
-		protected Map<String, Number> incrByMap;
-
-		protected Map<String, Number> decrByMap;
 
 		protected String lastSql;
 
@@ -119,15 +94,38 @@ public class WhereCondition {
 		private List<Map<String, Object>> andConditions;
 
 		/**
+		 * 返回具体 Builder 自身.
+		 * @return 具体 Builder
+		 */
+		protected abstract B self();
+
+		/**
 		 * 设置查询条件 Map.
 		 * @param where 条件 Map
 		 * @return Builder
 		 */
-		public Builder where(Map<String, Object> where) {
+		public B where(Map<String, Object> where) {
 			if (where != null) {
 				this.conditions.putAll(where);
 			}
-			return this;
+			return self();
+		}
+
+		/**
+		 * 从已有 WhereCondition 整体导入 WHERE 与 last 片段.
+		 * @param condition WHERE 条件
+		 * @return Builder
+		 */
+		public B where(WhereCondition condition) {
+			if (condition != null) {
+				if (condition.getWhere() != null) {
+					this.conditions.putAll(condition.getWhere());
+				}
+				if (condition.getLast() != null) {
+					this.lastSql = condition.getLast();
+				}
+			}
+			return self();
 		}
 
 		/**
@@ -136,9 +134,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder eq(String field, Object value) {
+		public B eq(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.EQ.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -148,11 +146,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder eqIf(boolean condition, String field, Object value) {
+		public B eqIf(boolean condition, String field, Object value) {
 			if (condition) {
 				eq(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -161,9 +159,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder ne(String field, Object value) {
+		public B ne(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.NE.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -173,11 +171,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder neIf(boolean condition, String field, Object value) {
+		public B neIf(boolean condition, String field, Object value) {
 			if (condition) {
 				ne(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -186,9 +184,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder gt(String field, Object value) {
+		public B gt(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.GT.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -198,11 +196,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder gtIf(boolean condition, String field, Object value) {
+		public B gtIf(boolean condition, String field, Object value) {
 			if (condition) {
 				gt(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -211,9 +209,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder gte(String field, Object value) {
+		public B gte(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.GTE.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -223,11 +221,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder gteIf(boolean condition, String field, Object value) {
+		public B gteIf(boolean condition, String field, Object value) {
 			if (condition) {
 				gte(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -236,9 +234,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder lt(String field, Object value) {
+		public B lt(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.LT.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -248,11 +246,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder ltIf(boolean condition, String field, Object value) {
+		public B ltIf(boolean condition, String field, Object value) {
 			if (condition) {
 				lt(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -261,9 +259,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder lte(String field, Object value) {
+		public B lte(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.LTE.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -273,11 +271,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder lteIf(boolean condition, String field, Object value) {
+		public B lteIf(boolean condition, String field, Object value) {
 			if (condition) {
 				lte(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -286,9 +284,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder like(String field, Object value) {
+		public B like(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.LIKE.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -298,11 +296,11 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder likeIf(boolean condition, String field, Object value) {
+		public B likeIf(boolean condition, String field, Object value) {
 			if (condition) {
 				like(field, value);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -311,9 +309,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder likeLeft(String field, Object value) {
+		public B likeLeft(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.LIKE_LEFT.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -322,9 +320,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder likeRight(String field, Object value) {
+		public B likeRight(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.LIKE_RIGHT.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -333,9 +331,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder notLike(String field, Object value) {
+		public B notLike(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.NOT_LIKE.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -344,9 +342,9 @@ public class WhereCondition {
 		 * @param values 值集合
 		 * @return Builder
 		 */
-		public Builder in(String field, Collection<?> values) {
+		public B in(String field, Collection<?> values) {
 			this.conditions.put(field, Map.of(QueryOperator.IN.getValue(), values));
-			return this;
+			return self();
 		}
 
 		/**
@@ -356,11 +354,11 @@ public class WhereCondition {
 		 * @param values 值集合
 		 * @return Builder
 		 */
-		public Builder inIf(boolean condition, String field, Collection<?> values) {
+		public B inIf(boolean condition, String field, Collection<?> values) {
 			if (condition) {
 				in(field, values);
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -369,9 +367,9 @@ public class WhereCondition {
 		 * @param values 值集合
 		 * @return Builder
 		 */
-		public Builder nin(String field, Collection<?> values) {
+		public B nin(String field, Collection<?> values) {
 			this.conditions.put(field, Map.of(QueryOperator.NIN.getValue(), values));
-			return this;
+			return self();
 		}
 
 		/**
@@ -379,9 +377,9 @@ public class WhereCondition {
 		 * @param field 字段名
 		 * @return Builder
 		 */
-		public Builder isNull(String field) {
+		public B isNull(String field) {
 			this.conditions.put(field, Map.of(QueryOperator.IS_NULL.getValue(), true));
-			return this;
+			return self();
 		}
 
 		/**
@@ -389,9 +387,9 @@ public class WhereCondition {
 		 * @param field 字段名
 		 * @return Builder
 		 */
-		public Builder isNotNull(String field) {
+		public B isNotNull(String field) {
 			this.conditions.put(field, Map.of(QueryOperator.IS_NOT_NULL.getValue(), true));
-			return this;
+			return self();
 		}
 
 		/**
@@ -401,9 +399,9 @@ public class WhereCondition {
 		 * @param end 结束值
 		 * @return Builder
 		 */
-		public Builder between(String field, Object start, Object end) {
+		public B between(String field, Object start, Object end) {
 			this.conditions.put(field, Map.of(QueryOperator.BETWEEN.getValue(), List.of(start, end)));
-			return this;
+			return self();
 		}
 
 		/**
@@ -413,9 +411,9 @@ public class WhereCondition {
 		 * @param end 结束值
 		 * @return Builder
 		 */
-		public Builder notBetween(String field, Object start, Object end) {
+		public B notBetween(String field, Object start, Object end) {
 			this.conditions.put(field, Map.of(QueryOperator.NOT_BETWEEN.getValue(), List.of(start, end)));
-			return this;
+			return self();
 		}
 
 		/**
@@ -424,9 +422,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder notLikeLeft(String field, Object value) {
+		public B notLikeLeft(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.NOT_LIKE_LEFT.getValue(), value));
-			return this;
+			return self();
 		}
 
 		/**
@@ -435,37 +433,9 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder notLikeRight(String field, Object value) {
+		public B notLikeRight(String field, Object value) {
 			this.conditions.put(field, Map.of(QueryOperator.NOT_LIKE_RIGHT.getValue(), value));
-			return this;
-		}
-
-		/**
-		 * 原子自增字段.
-		 * @param field 字段名
-		 * @param delta 增量
-		 * @return Builder
-		 */
-		public Builder incrBy(String field, Number delta) {
-			if (this.incrByMap == null) {
-				this.incrByMap = new HashMap<>();
-			}
-			this.incrByMap.put(field, delta);
-			return this;
-		}
-
-		/**
-		 * 原子自减字段.
-		 * @param field 字段名
-		 * @param delta 减量
-		 * @return Builder
-		 */
-		public Builder decrBy(String field, Number delta) {
-			if (this.decrByMap == null) {
-				this.decrByMap = new HashMap<>();
-			}
-			this.decrByMap.put(field, delta);
-			return this;
+			return self();
 		}
 
 		/**
@@ -473,14 +443,14 @@ public class WhereCondition {
 		 * @param condition 子条件
 		 * @return Builder
 		 */
-		public Builder or(WhereCondition condition) {
+		public B or(WhereCondition condition) {
 			if (this.orConditions == null) {
 				this.orConditions = new ArrayList<>();
 			}
 			if (condition != null && condition.getWhere() != null) {
 				this.orConditions.add(condition.getWhere());
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -489,7 +459,7 @@ public class WhereCondition {
 		 * @param value 值
 		 * @return Builder
 		 */
-		public Builder or(String field, Object value) {
+		public B or(String field, Object value) {
 			return or(WhereCondition.builder().eq(field, value).build());
 		}
 
@@ -498,14 +468,14 @@ public class WhereCondition {
 		 * @param condition 子条件
 		 * @return Builder
 		 */
-		public Builder and(WhereCondition condition) {
+		public B and(WhereCondition condition) {
 			if (this.andConditions == null) {
 				this.andConditions = new ArrayList<>();
 			}
 			if (condition != null && condition.getWhere() != null) {
 				this.andConditions.add(condition.getWhere());
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -513,11 +483,11 @@ public class WhereCondition {
 		 * @param condition 子条件
 		 * @return Builder
 		 */
-		public Builder not(WhereCondition condition) {
+		public B not(WhereCondition condition) {
 			if (condition != null && condition.getWhere() != null) {
 				this.conditions.put(QueryOperator.NOT.getValue(), condition.getWhere());
 			}
-			return this;
+			return self();
 		}
 
 		/**
@@ -525,8 +495,47 @@ public class WhereCondition {
 		 * @param sql SQL 片段
 		 * @return Builder
 		 */
-		public Builder last(String sql) {
+		public B last(String sql) {
 			this.lastSql = sql;
+			return self();
+		}
+
+		/**
+		 * 将基类公共字段 (where/last) 填充到目标条件对象 (含子类).
+		 * @param condition 目标条件
+		 * @param <C> 条件类型
+		 * @return 已填充的条件
+		 */
+		protected <C extends WhereCondition> C fill(C condition) {
+			Map<String, Object> conditionMap = new HashMap<>(this.conditions);
+			if (this.orConditions != null) {
+				conditionMap.put(QueryOperator.OR.getValue(), this.orConditions);
+			}
+			if (this.andConditions != null) {
+				conditionMap.put(QueryOperator.AND.getValue(), this.andConditions);
+			}
+			condition.setWhere(conditionMap);
+			condition.setLast(this.lastSql);
+			return condition;
+		}
+
+		/**
+		 * 构建条件对象 (子类协变返回各自类型).
+		 * @return 条件对象
+		 */
+		public abstract WhereCondition build();
+
+	}
+
+	/**
+	 * WhereCondition 流式构建器.
+	 *
+	 * @author Jax Jiang
+	 */
+	public static class Builder extends AbstractBuilder<Builder> {
+
+		@Override
+		protected Builder self() {
 			return this;
 		}
 
@@ -534,20 +543,9 @@ public class WhereCondition {
 		 * 构建 WhereCondition 对象.
 		 * @return WhereCondition
 		 */
+		@Override
 		public WhereCondition build() {
-			WhereCondition condition = new WhereCondition();
-			Map<String, Object> where = new HashMap<>(this.conditions);
-			if (this.orConditions != null) {
-				where.put(QueryOperator.OR.getValue(), this.orConditions);
-			}
-			if (this.andConditions != null) {
-				where.put(QueryOperator.AND.getValue(), this.andConditions);
-			}
-			condition.setWhere(where);
-			condition.setIncrBy(this.incrByMap);
-			condition.setDecrBy(this.decrByMap);
-			condition.setLast(this.lastSql);
-			return condition;
+			return fill(new WhereCondition());
 		}
 
 	}
