@@ -30,6 +30,7 @@ import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.Status;
@@ -139,10 +140,9 @@ public class SysUserServiceImpl implements SysUserService {
 		}
 
 		SysUser entity = this.converter.toEntity(dto);
-		entity.setId(id);
 		entity.setUsername(current.getUsername());
 
-		this.repository.update(entity);
+		this.repository.updateByDsl(entity, UpdateCondition.builder().setNulls(dto).eq(SysUser.Fields.id, id).build());
 
 		OAuthUserDTO oAuthPatch = new OAuthUserDTO();
 		boolean needSync = false;
@@ -158,8 +158,8 @@ public class SysUserServiceImpl implements SysUserService {
 			oAuthPatch.setEmail(dto.getEmail());
 			needSync = true;
 		}
-		if (!ObjectUtils.isEmpty(dto.getExpireDate())) {
-			oAuthPatch.setExpireDate(dto.getExpireDate());
+		if (dto.getExpireDate().isPresent()) {
+			oAuthPatch.setExpireDate(dto.getExpireDate().get());
 			needSync = true;
 		}
 		if (!ObjectUtils.isEmpty(dto.getMfaEnabled())) {

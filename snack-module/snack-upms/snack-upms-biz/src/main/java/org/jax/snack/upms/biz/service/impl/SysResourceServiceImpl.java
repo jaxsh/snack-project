@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.Status;
@@ -110,7 +111,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 					.build();
 				SysResource updateParams = new SysResource();
 				updateParams.setStatus(Status.DISABLED.getCode());
-				this.repository.updateByDsl(updateParams, where);
+				this.repository.updateByDsl(updateParams, UpdateCondition.builder().where(where).build());
 			}
 		}
 		refreshPermissionRulesAfterCommit();

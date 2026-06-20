@@ -20,11 +20,13 @@ import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.upms.api.service.SysMessageLogService;
 import org.jax.snack.upms.api.vo.SysMessageLogVO;
 import org.jax.snack.upms.biz.converter.SysMessageLogConverter;
+import org.jax.snack.upms.biz.entity.SysMessageLog;
 import org.jax.snack.upms.biz.repository.SysMessageLogRepository;
 
 import org.springframework.stereotype.Service;
@@ -63,7 +65,8 @@ public class SysMessageLogServiceImpl implements SysMessageLogService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateByDsl(Map<String, Object> data, WhereCondition condition) {
-		this.repository.updateByDsl(data, condition);
+		this.repository.updateByDsl(new SysMessageLog(),
+				UpdateCondition.builder().setNulls(data).where(condition).build());
 	}
 
 }

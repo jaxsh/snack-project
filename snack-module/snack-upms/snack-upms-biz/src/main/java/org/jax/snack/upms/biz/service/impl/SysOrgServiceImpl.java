@@ -23,6 +23,7 @@ import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.Status;
@@ -122,7 +123,7 @@ public class SysOrgServiceImpl implements SysOrgService {
 			WhereCondition where = WhereCondition.builder().likeRight(SysOrg.Fields.ancestors, ancestorsPrefix).build();
 			SysOrg updateParams = new SysOrg();
 			updateParams.setStatus(Status.DISABLED.getCode());
-			this.repository.updateByDsl(updateParams, where);
+			this.repository.updateByDsl(updateParams, UpdateCondition.builder().where(where).build());
 		}
 
 		this.repository.update(entity);
