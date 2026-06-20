@@ -299,7 +299,8 @@ public final class WrapperBuilder {
 		groupByFields.stream().map(columnResolver).filter(Objects::nonNull).forEach(wrapper::groupBy);
 	}
 
-	private static <T> void applyWhere(T wrapper, Map<?, ?> where, Function<String, String> columnResolver) {
+	private static void applyWhere(AbstractWrapper<?, String, ?> wrapper, Map<?, ?> where,
+			Function<String, String> columnResolver) {
 		where.forEach((key, value) -> {
 			if (!(key instanceof String k)) {
 				return;
@@ -360,7 +361,8 @@ public final class WrapperBuilder {
 		});
 	}
 
-	private static <T> void applyOrConditions(T wrapper, List<?> list, Function<String, String> columnResolver) {
+	private static void applyOrConditions(AbstractWrapper<?, String, ?> wrapper, List<?> list,
+			Function<String, String> columnResolver) {
 		for (int i = 0; i < list.size(); i++) {
 			if (list.get(i) instanceof Map<?, ?> map) {
 				if (i == 0) {
@@ -383,21 +385,19 @@ public final class WrapperBuilder {
 		}
 	}
 
-	private static <T> void applyOperator(T wrapper, String column, String operatorStr, Object value) {
+	private static void applyOperator(AbstractWrapper<?, String, ?> wrapper, String column, String operatorStr,
+			Object value) {
 		QueryOperator operator = QueryOperator.fromValue(operatorStr);
 		if (operator == null) {
 			log.warn("Unknown operator: {}, ignored", operatorStr);
 			return;
 		}
 
-		if (wrapper instanceof AbstractWrapper<?, ?, ?> aw) {
-			applyOperatorToWrapper(aw, column, operator, value);
-		}
+		applyOperatorToWrapper(wrapper, column, operator, value);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static void applyOperatorToWrapper(AbstractWrapper wrapper, String column, QueryOperator operator,
-			Object value) {
+	private static void applyOperatorToWrapper(AbstractWrapper<?, String, ?> wrapper, String column,
+			QueryOperator operator, Object value) {
 		switch (operator) {
 			case EQ -> wrapper.eq(column, value);
 			case NE -> wrapper.ne(column, value);
