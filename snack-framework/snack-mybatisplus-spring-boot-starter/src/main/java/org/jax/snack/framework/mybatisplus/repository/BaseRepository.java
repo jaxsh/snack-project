@@ -19,11 +19,11 @@ package org.jax.snack.framework.mybatisplus.repository;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 
 /**
@@ -90,20 +90,12 @@ public interface BaseRepository<T, ID extends Serializable> {
 	List<T> queryListByDsl(QueryCondition condition);
 
 	/**
-	 * 根据 DSL 条件批量更新 (Map 驱动, 支持设置 null).
-	 * @param setData 要更新的字段 (key=字段名, value=值)
-	 * @param condition WHERE 条件
+	 * 根据 DSL 条件更新.
+	 * @param entity 实体对象 (非 null 字段会被更新)
+	 * @param condition 更新条件 (SET 置空列 + WHERE)
 	 * @return 影响行数
 	 */
-	int updateByDsl(Map<String, Object> setData, WhereCondition condition);
-
-	/**
-	 * 根据 DSL 条件批量更新 (DTO 驱动, 仅更新非 null 字段).
-	 * @param dto DTO 对象 (非 null 字段会被更新)
-	 * @param condition WHERE 条件
-	 * @return 影响行数
-	 */
-	int updateByDsl(Object dto, WhereCondition condition);
+	int updateByDsl(T entity, UpdateCondition condition);
 
 	/**
 	 * 删除数据 (DSL 模式).

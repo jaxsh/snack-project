@@ -21,7 +21,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -30,6 +29,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.mybatisplus.query.WrapperBuilder;
 
@@ -132,15 +132,9 @@ public abstract class AbstractRepository<T, ID extends Serializable, M extends B
 	}
 
 	@Override
-	public int updateByDsl(Map<String, Object> setData, WhereCondition condition) {
-		UpdateWrapper<T> wrapper = WrapperBuilder.update(setData, condition, this.entityClass);
-		return this.mapper.update(wrapper);
-	}
-
-	@Override
-	public int updateByDsl(Object dto, WhereCondition condition) {
-		UpdateWrapper<T> wrapper = WrapperBuilder.update(dto, condition, this.entityClass);
-		return this.mapper.update(wrapper);
+	public int updateByDsl(T entity, UpdateCondition condition) {
+		UpdateWrapper<T> wrapper = WrapperBuilder.update(condition, this.entityClass);
+		return this.mapper.update(entity, wrapper);
 	}
 
 	@Override

@@ -79,40 +79,32 @@ public void searchUsers(QueryCondition condition) {
 
 ## 🔄 更新操作说明
 
-模块通过 `updateByDsl` 提供两种风格的更新，其对 `null` 值的处理逻辑不同，请根据业务场景选择：
+模块通过单一方法 `int updateByDsl(T entity, UpdateCondition condition)` 提供 DSL 更新，与查询侧 `QueryCondition` 对称：
 
-### 1. DTO 驱动 (推荐 - 安全增量更新)
-直接使用 POJO/DTO 对象作为更新源。
-- **方法签名**：`int updateByDsl(Object dto, WhereCondition condition)`
-- **特性**：**自动忽略 null 字段**。
-- **适用场景**：绝大多数业务场景。仅同步前端传递的非空属性，防止因前端未传字段而导致数据库原值被意外清空。
+- **`entity`**：提供需更新的非 `null` 业务字段（由 MyBatis-Plus 原生写入），并触发审计字段 (`update_by`/`update_time`) 自动填充。
+- **`condition`**：仅承载"需显式置 `null` 的列"与原子操作 —— `setNull(field)` 单字段置空、`setNulls(dto)` 由 DTO 的 JsonNullable 解包出需置空字段，以及 `incrBy`/`decrBy`、`where`。
+- **不传的字段不更新**：实体中为 `null` 的字段不写入，未声明置空的列保持不变。
 
 ```java
-public void updateNickname(Long id, String newName) {
-    UserUpdateDTO dto = new UserUpdateDTO();
-    dto.setNickname(newName);
-    // dto.setEmail(null); // 此 null 会被自动忽略，不会覆盖数据库原有值
+public void updateExamples(SysUserDTO dto, Long id, WhereCondition where) {
+    // 增量更新 + 清空某列：实体提供新值，setNull 指定要置 NULL 的列
+    SysUser entity = converter.toEntity(dto);
+    userRepository.updateByDsl(entity, UpdateCondition.builder()
+        .setNull(SysUser.Fields.remark)
+        .eq(SysUser.Fields.id, id)
+        .build());
 
-    WhereCondition where = WhereCondition.builder()
-        .eq(User.Fields.id, id)
-        .build();
-    userRepository.updateByDsl(dto, where);
-}
-```
+    // 由 DTO 解包置空字段（JsonNullable 中显式传 null 的字段）
+    userRepository.updateByDsl(converter.toEntity(dto),
+        UpdateCondition.builder().setNulls(dto).eq(SysUser.Fields.id, id).build());
 
-### 2. Map 驱动 (全量/精确控制)
-使用 `Map<String, Object>` 传递更新字段。
-- **方法签名**：`int updateByDsl(Map<String, Object> setData, WhereCondition condition)`
-- **特性**：**支持将字段显式设置为 null**。
-- **适用场景**：需要“清空”数据库中某些字段的值时。
-
-```java
-public void clearUserEmail(WhereCondition where) {
-    Map<String, Object> setData = new HashMap<>();
-    setData.put("email", null); // 数据库对应字段将被强制更新为 NULL
-    setData.put("status", "DISABLED");
-
-    userRepository.updateByDsl(setData, where);
+    // 纯字段更新：非 null 值设在实体上，setNull 清空
+    SysUser patch = new SysUser();
+    patch.setStatus(Status.DISABLED.getCode());
+    userRepository.updateByDsl(patch, UpdateCondition.builder()
+        .setNull(SysUser.Fields.lockUntil)
+        .where(where)
+        .build());
 }
 ```
 
@@ -141,7 +133,7 @@ public void clearUserEmail(WhereCondition where) {
 ### 高级查询/更新特性
 - **原子更新**：`"incrBy": { "score": 10 }` (生成 SQL: `SET score = score + 10`)
   > [!TIP]
-  > 在更新场景下，只需在 `WhereCondition` 中传入 `incrBy` 映射，并调用 `userRepository.updateByDsl(dto/map, condition)` 即可触发。
+  > 在更新场景下，只需在 `UpdateCondition` 中传入 `incrBy` 映射，并调用 `userRepository.updateByDsl(entity, condition)` 即可触发。
 - **分组聚合**：`"groupBy": ["department"]` + `"having": "COUNT(*) > 5"` (仅适用于查询)
 - **自定义追加**：`"last": "FOR UPDATE"` (将片段追加到 SQL 末尾)
 - **自动映射**：前端使用 `camelCase`，后端自动映射为数据库 `snake_case`。
@@ -167,7 +159,7 @@ public void clearUserEmail(WhereCondition where) {
 
 1. **优先使用 Repository**：封装 DSL 逻辑，保持 Service 简洁。
 2. **LIKE 查询不传 `%`**：后端会自动添加（`_like` 对应 `%val%`）。
-3. **按需选择更新驱动**：清除数据用 Map，普通修改用 DTO。
+3. **更新语义分工**：业务新值放在 `entity` 上（非 `null` 才写入并触发审计填充），需置 `NULL` 的列用 `setNull(field)` 或 `setNulls(dto)`，原子增减用 `incrBy`/`decrBy`。
 4. **合理使用 `select`**：在大表查询时减少 I/O 压力。
 5. **`groupBy` 仅适用于查询**：`groupBy` 和 `having` 仅在 `QueryCondition` 中生效，不适用于更新/删除。
 6. **实体类常量定义**：为了支持 type-safe 查询且能访问父类（`BaseEntity`）字段，实体类必须手动定义 `Fields` 内部类：

@@ -16,7 +16,6 @@
 
 package org.jax.snack.framework.mybatisplus.query;
 
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -38,11 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.OrderByCondition;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.QueryOperator;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -149,44 +148,27 @@ public final class WrapperBuilder {
 	}
 
 	/**
-	 * 构建 UpdateWrapper (Map 驱动, 支持设置 null).
-	 * @param setData 要更新的字段 (key=字段名, value=值)
-	 * @param condition WHERE 条件
+	 * 构建 UpdateWrapper (基于 UpdateCondition).
+	 * @param condition 更新条件
 	 * @param entityClass 实体类
 	 * @param <T> 实体类型
 	 * @return UpdateWrapper
 	 */
-	public static <T> UpdateWrapper<T> update(Map<String, Object> setData, WhereCondition condition,
-			Class<T> entityClass) {
+	public static <T> UpdateWrapper<T> update(UpdateCondition condition, Class<T> entityClass) {
 		UpdateWrapper<T> wrapper = new UpdateWrapper<>();
 		wrapper.checkSqlInjection();
+		if (condition == null) {
+			return wrapper;
+		}
 		Set<String> validFields = getValidFields(entityClass);
 		Function<String, String> columnResolver = createColumnResolver(entityClass, validFields);
 
-		applySet(wrapper, setData, columnResolver);
-		applyIncrBy(wrapper, condition, columnResolver);
-		applyDecrBy(wrapper, condition, columnResolver);
-		applyWhereForUpdate(wrapper, condition, columnResolver);
-		applyLast(wrapper, condition);
-
-		return wrapper;
-	}
-
-	/**
-	 * 构建 UpdateWrapper (DTO 驱动, 仅更新非 null 字段).
-	 * @param dto DTO 对象
-	 * @param condition WHERE 条件
-	 * @param entityClass 实体类
-	 * @param <T> 实体类型
-	 * @return UpdateWrapper
-	 */
-	public static <T> UpdateWrapper<T> update(Object dto, WhereCondition condition, Class<T> entityClass) {
-		UpdateWrapper<T> wrapper = new UpdateWrapper<>();
-		wrapper.checkSqlInjection();
-		Set<String> validFields = getValidFields(entityClass);
-		Function<String, String> columnResolver = createColumnResolver(entityClass, validFields);
-
-		applySetFromDto(wrapper, dto, columnResolver);
+		if (!CollectionUtils.isEmpty(condition.getSet())) {
+			applySet(wrapper, condition.getSet(), columnResolver);
+		}
+		if (condition.getNulls() != null) {
+			applySet(wrapper, JsonNullableSupport.clearedFields(condition.getNulls()), columnResolver);
+		}
 		applyIncrBy(wrapper, condition, columnResolver);
 		applyDecrBy(wrapper, condition, columnResolver);
 		applyWhereForUpdate(wrapper, condition, columnResolver);
@@ -209,8 +191,6 @@ public final class WrapperBuilder {
 		Function<String, String> columnResolver = createColumnResolver(fieldMapping);
 
 		applySet(wrapper, setData, columnResolver);
-		applyIncrBy(wrapper, condition, columnResolver);
-		applyDecrBy(wrapper, condition, columnResolver);
 		applyWhereForUpdate(wrapper, condition, columnResolver);
 		applyLast(wrapper, condition);
 
@@ -247,21 +227,7 @@ public final class WrapperBuilder {
 		});
 	}
 
-	private static <T> void applySetFromDto(UpdateWrapper<T> wrapper, Object dto,
-			Function<String, String> columnResolver) {
-		ReflectionUtils.doWithFields(dto.getClass(), (field) -> {
-			ReflectionUtils.makeAccessible(field);
-			Object value = field.get(dto);
-			if (value != null) {
-				String column = columnResolver.apply(field.getName());
-				if (column != null) {
-					wrapper.set(column, value);
-				}
-			}
-		}, (field) -> !Modifier.isStatic(field.getModifiers()));
-	}
-
-	private static <T> void applyIncrBy(UpdateWrapper<T> wrapper, WhereCondition condition,
+	private static <T> void applyIncrBy(UpdateWrapper<T> wrapper, UpdateCondition condition,
 			Function<String, String> columnResolver) {
 		if (condition == null || CollectionUtils.isEmpty(condition.getIncrBy())) {
 			return;
@@ -274,7 +240,7 @@ public final class WrapperBuilder {
 		});
 	}
 
-	private static <T> void applyDecrBy(UpdateWrapper<T> wrapper, WhereCondition condition,
+	private static <T> void applyDecrBy(UpdateWrapper<T> wrapper, UpdateCondition condition,
 			Function<String, String> columnResolver) {
 		if (condition == null || CollectionUtils.isEmpty(condition.getDecrBy())) {
 			return;

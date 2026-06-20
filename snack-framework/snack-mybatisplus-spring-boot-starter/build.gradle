@@ -7,6 +7,7 @@ dependencies {
 	api project(':snack-framework:snack-core')
 	api 'com.baomidou:mybatis-plus-spring-boot4-starter'
 	api 'com.baomidou:mybatis-plus-jsqlparser'
+	api 'org.openapitools:jackson-databind-nullable'
 
 	compileOnly 'org.springframework.security:spring-security-core'
 	compileOnly 'org.mapstruct:mapstruct'
