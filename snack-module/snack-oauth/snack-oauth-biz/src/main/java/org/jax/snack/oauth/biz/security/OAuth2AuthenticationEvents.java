@@ -17,13 +17,12 @@
 package org.jax.snack.oauth.biz.security;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.oauth.biz.entity.OAuthUser;
@@ -123,7 +122,7 @@ public class OAuth2AuthenticationEvents {
 		user.setLockUntil(lockUntil);
 
 		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.username, username).build();
-		this.userRepository.updateByDsl(user, where);
+		this.userRepository.updateByDsl(user, UpdateCondition.builder().where(where).build());
 
 		this.loginAttemptService.setLockStatus(username, lockUntil);
 
@@ -161,11 +160,11 @@ public class OAuth2AuthenticationEvents {
 	private void resetLockStatus(String username) {
 		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.username, username).build();
 
-		Map<String, Object> setData = new HashMap<>();
-		setData.put(OAuthUser.Fields.locked, YesNoStatus.NO.getCode());
-		setData.put(OAuthUser.Fields.lockCount, 0);
-		setData.put(OAuthUser.Fields.lockUntil, null);
-		this.userRepository.updateByDsl(setData, where);
+		OAuthUser user = new OAuthUser();
+		user.setLocked(YesNoStatus.NO.getCode());
+		user.setLockCount(0);
+		this.userRepository.updateByDsl(user,
+				UpdateCondition.builder().setNull(OAuthUser.Fields.lockUntil).where(where).build());
 	}
 
 	/**

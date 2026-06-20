@@ -17,12 +17,11 @@
 package org.jax.snack.oauth.biz.service.impl;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.api.query.UpdateCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.enums.BaseEnum;
 import org.jax.snack.framework.core.enums.Status;
@@ -98,17 +97,17 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 		WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.id, existing.getId()).build();
 
 		if (Objects.equals(dto.getLocked(), YesNoStatus.NO.getCode())) {
-			Map<String, Object> setData = new HashMap<>();
-			setData.put(OAuthUser.Fields.locked, YesNoStatus.NO.getCode());
-			setData.put(OAuthUser.Fields.lockCount, 0);
-			setData.put(OAuthUser.Fields.lockUntil, null);
-			this.userRepository.updateByDsl(setData, where);
+			OAuthUser user = new OAuthUser();
+			user.setLocked(YesNoStatus.NO.getCode());
+			user.setLockCount(0);
+			this.userRepository.updateByDsl(user,
+					UpdateCondition.builder().setNull(OAuthUser.Fields.lockUntil).where(where).build());
 		}
 		else if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.NO.getCode())) {
-			Map<String, Object> setData = new HashMap<>();
-			setData.put(OAuthUser.Fields.mfaEnabled, YesNoStatus.NO.getCode());
-			setData.put(OAuthUser.Fields.mfaSecret, null);
-			this.userRepository.updateByDsl(setData, where);
+			OAuthUser user = new OAuthUser();
+			user.setMfaEnabled(YesNoStatus.NO.getCode());
+			this.userRepository.updateByDsl(user,
+					UpdateCondition.builder().setNull(OAuthUser.Fields.mfaSecret).where(where).build());
 		}
 		else {
 			OAuthUser user = this.converter.toEntity(dto);
@@ -124,7 +123,7 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 				}
 			}
 
-			this.userRepository.updateByDsl(user, where);
+			this.userRepository.updateByDsl(user, UpdateCondition.builder().where(where).build());
 		}
 
 		if (StringUtils.hasText(dto.getPassword())
