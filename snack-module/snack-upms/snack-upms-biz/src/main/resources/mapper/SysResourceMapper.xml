@@ -10,6 +10,7 @@
                  JOIN sys_role role ON ur.role_code = role.role_code AND role.status = 1
         WHERE ur.username = #{username}
           AND res.status = 1
+        ORDER BY res.sort_order ASC
     </select>
 
     <select id="selectResourcesByRoleCode" resultType="org.jax.snack.upms.biz.entity.SysResource">

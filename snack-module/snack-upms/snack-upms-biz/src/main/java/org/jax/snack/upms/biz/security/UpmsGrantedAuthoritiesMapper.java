@@ -76,8 +76,10 @@ public class UpmsGrantedAuthoritiesMapper implements GrantedAuthoritiesMapper {
 
 			List<SysResourceVO> resources = this.sysUserService.getUserResources(username);
 			for (SysResourceVO resource : resources) {
-				if (StringUtils.hasText(resource.getPermission())) {
-					mapped.add(new SimpleGrantedAuthority(resource.getPermission()));
+				if (Integer.valueOf(2).equals(resource.getType()) && StringUtils.hasText(resource.getMethod())
+						&& StringUtils.hasText(resource.getPath())) {
+					mapped.add(new SimpleGrantedAuthority(
+							resource.getMethod().toUpperCase(Locale.ROOT) + ":" + resource.getPath()));
 				}
 			}
 			log.debug("Loaded {} permissions for user '{}'", resources.size(), username);

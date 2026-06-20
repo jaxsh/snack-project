@@ -19,6 +19,7 @@ package org.jax.snack.upms.biz.security;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
@@ -86,19 +87,19 @@ public class UpmsSecurityMetadataManager {
 		Map<RequestMatcher, String> newRules = new LinkedHashMap<>();
 
 		for (SysResource resource : resources) {
-			if (StringUtils.hasText(resource.getPath()) && StringUtils.hasText(resource.getPermission())) {
+			if (StringUtils.hasText(resource.getPath()) && StringUtils.hasText(resource.getMethod())) {
 				String path = resource.getPath();
 				String method = resource.getMethod();
-				String permission = resource.getPermission();
+				String authority = method.toUpperCase(Locale.ROOT) + ":" + path;
 
 				RequestMatcher matcher = (request) -> {
-					if (StringUtils.hasText(method) && !method.equalsIgnoreCase(request.getMethod())) {
+					if (!method.equalsIgnoreCase(request.getMethod())) {
 						return false;
 					}
 					return this.pathMatcher.match(path, request.getServletPath());
 				};
 
-				newRules.put(matcher, permission);
+				newRules.put(matcher, authority);
 			}
 		}
 
