@@ -28,6 +28,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 /**
  * 用户 DTO.
@@ -60,8 +61,7 @@ public class SysUserDTO {
 	/**
 	 * 头像 URL.
 	 */
-	@Size(min = 1, max = 255)
-	private String avatar;
+	private JsonNullable<@Size(min = 1, max = 255) String> avatar = JsonNullable.undefined();
 
 	/**
 	 * 性别(0:未知, 1:男, 2:女).
@@ -73,13 +73,12 @@ public class SysUserDTO {
 	/**
 	 * 生日.
 	 */
-	private LocalDate birthday;
+	private JsonNullable<LocalDate> birthday = JsonNullable.undefined();
 
 	/**
 	 * 备注.
 	 */
-	@Size(max = 500)
-	private String remark;
+	private JsonNullable<@Size(max = 500) String> remark = JsonNullable.undefined();
 
 	/**
 	 * 关联角色编码集合.
@@ -122,7 +121,7 @@ public class SysUserDTO {
 	 * <p>
 	 * null 表示永不到期.
 	 */
-	private LocalDate expireDate;
+	private JsonNullable<LocalDate> expireDate = JsonNullable.undefined();
 
 	/**
 	 * 是否启用MFA(0:未启用, 1:已启用).
