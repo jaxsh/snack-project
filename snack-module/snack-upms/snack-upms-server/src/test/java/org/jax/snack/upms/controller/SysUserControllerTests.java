@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -93,7 +94,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 		dto.setRealName(realName);
 		dto.setNickname(username + "_nick");
 		dto.setGender(UserGender.MALE.getCode());
-		dto.setBirthday(LocalDate.of(1990, 1, 1));
+		dto.setBirthday(JsonNullable.of(LocalDate.of(1990, 1, 1)));
 		return dto;
 	}
 
@@ -306,7 +307,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 
 			LocalDate futureDate = LocalDate.now().plusDays(30);
 			SysUserDTO updateDto = new SysUserDTO();
-			updateDto.setExpireDate(futureDate);
+			updateDto.setExpireDate(JsonNullable.of(futureDate));
 
 			putJson(API_USERS_ID, updateDto, created.getId()).andDo(print())
 				.andExpect(status().isOk())

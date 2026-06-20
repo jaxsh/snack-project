@@ -26,6 +26,7 @@ import org.jax.snack.upms.biz.repository.SysFileRepository;
 import org.jax.snack.upms.biz.service.impl.SysUserServiceImpl;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -175,7 +176,7 @@ class SysFileControllerTests extends UpmsIntegrationTests {
 			SysUserDTO userDto = new SysUserDTO();
 			userDto.setUsername("lifecycle_mb_user");
 			userDto.setNickname("Mobile User");
-			userDto.setAvatar(urlA);
+			userDto.setAvatar(JsonNullable.of(urlA));
 
 			SysFileControllerTests.this.userService.create(userDto);
 			Long userId = SysFileControllerTests.this.userService.getByUsername("lifecycle_mb_user").getId();
@@ -191,7 +192,7 @@ class SysFileControllerTests extends UpmsIntegrationTests {
 			String urlB = JsonPath.read(resultB.getResponse().getContentAsString(), "$.data.url").toString();
 
 			SysUserDTO updateDto = new SysUserDTO();
-			updateDto.setAvatar(urlB);
+			updateDto.setAvatar(JsonNullable.of(urlB));
 			SysFileControllerTests.this.userService.update(userId, updateDto);
 
 			user = SysFileControllerTests.this.userService.queryById(userId);
