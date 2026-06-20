@@ -11,6 +11,7 @@ com-aliyun-dysmsapi = "4.4.0"
 com-github-ulisesbocchio-jasypt = '4.0.4'
 com-yomahub-liteflow = '2.13.0'
 dev-samstevens-totp = '1.5.1'
+org-openapitools-jackson-databind-nullable = '0.2.10'
 
 [libraries]
 spring-boot-dependencies = { module = 'org.springframework.boot:spring-boot-dependencies', version.ref = 'org-springframework-boot' }
@@ -24,6 +25,7 @@ com-aliyun-dysmsapi20170525 = { module = 'com.aliyun:dysmsapi20170525', version.
 com-github-ulisesbocchio-jasypt-spring-boot-starter = { module = 'com.github.ulisesbocchio:jasypt-spring-boot-starter', version.ref = 'com-github-ulisesbocchio-jasypt' }
 com-yomahub-liteflow-spring-boot-starter = { module = 'com.yomahub:liteflow-spring-boot-starter', version.ref = 'com-yomahub-liteflow' }
 dev-samstevens-totp-totp = { module = 'dev.samstevens.totp:totp', version.ref = 'dev-samstevens-totp' }
+org-openapitools-jackson-databind-nullable = { module = 'org.openapitools:jackson-databind-nullable', version.ref = 'org-openapitools-jackson-databind-nullable' }
 
 
 # buildSrc dependencies

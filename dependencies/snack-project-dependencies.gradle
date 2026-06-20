@@ -20,5 +20,6 @@ dependencies {
 		api libs.com.github.ulisesbocchio.jasypt.spring.boot.starter
 		api libs.com.yomahub.liteflow.spring.boot.starter
 		api libs.dev.samstevens.totp.totp
+		api libs.org.openapitools.jackson.databind.nullable
 	}
 }
