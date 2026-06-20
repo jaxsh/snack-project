@@ -22,6 +22,7 @@ import org.jax.snack.framework.web.advice.GlobalResponseBodyAdvice;
 import org.jax.snack.framework.web.advice.HttpExceptionAdvice;
 import org.jax.snack.framework.web.i18n.ParameterAwareAcceptHeaderLocaleResolver;
 import org.jax.snack.framework.web.i18n.TimeZoneInterceptor;
+import org.openapitools.jackson.nullable.JsonNullableJackson3Module;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -76,6 +77,15 @@ public class WebAutoConfiguration implements WebMvcConfigurer {
 	@Bean
 	public GlobalResponseBodyAdvice responseBodyAdvice(JsonMapper jsonMapper) {
 		return new GlobalResponseBodyAdvice(jsonMapper);
+	}
+
+	/**
+	 * JsonNullable 的 Jackson 3 模块. 支持 JsonNullable 字段的序列化与反序列化, 区分"未传"与"显式 null".
+	 * @return Jackson 3 模块实例
+	 */
+	@Bean
+	public JsonNullableJackson3Module jsonNullableModule() {
+		return new JsonNullableJackson3Module();
 	}
 
 	/**
