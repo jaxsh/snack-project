@@ -19,6 +19,7 @@ package org.jax.snack.framework.utils.mapstruct;
 import java.util.List;
 
 import org.jax.snack.framework.core.api.result.PageResult;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 /**
  * MapStruct 通用转换接口.
@@ -65,6 +66,19 @@ public interface BaseDtoConvert<D, E, V> {
 	 */
 	default PageResult<V> toPageVO(PageResult<E> pageResult) {
 		return pageResult.map(this::toVO);
+	}
+
+	/**
+	 * JsonNullable 通用解包. MapStruct 自动用于所有 JsonNullable&lt;T&gt; 到 T 的映射.
+	 * <p>
+	 * present 返回容器内的值(含 null), undefined 返回 null. 注意: "显式 null"与"未传"解包后都为 null, 无法区分,
+	 * 字段清空需由业务层另行处理.
+	 * @param value JsonNullable 包装值
+	 * @param <T> 值类型
+	 * @return 解包后的值
+	 */
+	default <T> T unwrap(JsonNullable<T> value) {
+		return (value != null) ? value.orElse(null) : null;
 	}
 
 }
