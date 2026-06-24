@@ -18,6 +18,10 @@ snack:
       end-session-endpoint-uri: ${snack.oauth2.client.server-url}/connect/logout
       max-sessions: -1
 spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=10m,maximumSize=10000
   security:
     oauth2:
       client:

@@ -60,6 +60,10 @@ databaseChangeLog:
                   type: varchar(100)
                   remarks: 邮箱
               - column:
+                  name: expire_date
+                  type: date
+                  remarks: "到期日(null:永不到期)"
+              - column:
                   name: create_by
                   type: varchar(64)
                   remarks: 创建人

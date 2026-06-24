@@ -1,0 +1,506 @@
+# 初始化 admin 角色与资源的关联关系
+databaseChangeLog:
+  - changeSet:
+      id: insert-sys_role_resource-admin
+      author: upms
+      changes:
+        # 用户管理
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 100 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 2 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 101 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 3 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 102 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 4 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 103 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 5 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 104 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 6 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 105 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 7 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 106 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 8 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 107 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 9 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 108 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 10 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 109 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 11 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 110 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 12 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 111 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 13 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 112 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 14 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 113 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 15 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 114 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 16 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 115 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 17 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 116 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        # 角色管理
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 18 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 200 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 19 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 201 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 20 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 202 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 21 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 203 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 22 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 204 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 23 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 205 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 24 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 206 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 25 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 207 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 26 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 208 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 27 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 209 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 28 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 210 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 29 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 211 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        # 权限管理
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 30 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 300 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 31 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 301 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 32 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 302 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 33 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 303 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 34 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 304 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 35 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 305 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 36 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 311 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 37 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 312 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 38 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 313 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 39 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 314 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 40 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 315 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 41 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 316 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 42 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 317 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 43 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 318 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+  - changeSet:
+      id: insert-sys_role_resource-admin-profile
+      author: upms
+      validCheckSum: any
+      changes:
+        # 系统管理
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 44 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 10 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        # 个人设置
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 45 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 400 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 46 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 401 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 47 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 402 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 48 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 403 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 49 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 404 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
