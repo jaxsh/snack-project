@@ -79,10 +79,6 @@ public class JsonLogoutSuccessHandler implements LogoutSuccessHandler {
 			.fragment(null)
 			.build()
 			.toUriString();
-		// SAS 与 BFF 同源时共用同一 HttpSession：
-		// SecurityContextLogoutHandler.session.invalidate() 先于客户端跳转执行，
-		// SAS 收到 /connect/logout 时 session 已销毁，无法找到关联 session 而返回 400。
-		// 故同源时直接走重授权流程，无需 OIDC RP-Initiated Logout。
 		String sasBase = UriComponentsBuilder.fromUriString(this.endSessionEndpointUri)
 			.replacePath(null)
 			.replaceQuery(null)
