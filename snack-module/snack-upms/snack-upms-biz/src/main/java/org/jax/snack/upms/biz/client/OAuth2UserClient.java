@@ -18,10 +18,12 @@ package org.jax.snack.upms.biz.client;
 
 import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.vo.MfaQrVO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.DeleteExchange;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
@@ -72,5 +74,14 @@ public interface OAuth2UserClient {
 	 */
 	@DeleteExchange("/{username}/tokens")
 	void revokeTokens(@PathVariable String username);
+
+	/**
+	 * 准备 MFA 绑定：确保密钥存在并返回 TOTP QR URI.
+	 * @param username 用户名
+	 * @param issuer TOTP 发行方名称
+	 * @return TOTP QR URI（含 ApiResponse 包装）
+	 */
+	@PostExchange("/{username}/mfa")
+	ApiResponse<MfaQrVO> getMfaQrUri(@PathVariable String username, @RequestParam String issuer);
 
 }

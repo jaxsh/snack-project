@@ -43,6 +43,7 @@ import org.jax.snack.upms.biz.repository.SysIdSequenceRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -133,7 +134,7 @@ public class SysIdRuleServiceImpl implements SysIdRuleService {
 		SysIdRule rule = findByRuleCode(ruleCode).orElseThrow(this::notFound);
 
 		List<SysIdRuleSegmentDTO> segments = rule.getSegments();
-		if (segments == null || segments.isEmpty()) {
+		if (CollectionUtils.isEmpty(segments)) {
 			throw new BusinessException(ErrorCode.PARAM_INVALID, "ID Rule has no segments configuration");
 		}
 
