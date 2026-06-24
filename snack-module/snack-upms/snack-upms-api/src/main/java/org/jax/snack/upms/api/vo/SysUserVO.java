@@ -22,7 +22,6 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 /**
  * 用户 VO.
@@ -126,6 +125,6 @@ public class SysUserVO {
 	/**
 	 * 认证侧信息(登录/锁定/初始密码/MFA 等), 由 oauth_user 聚合.
 	 */
-	private OAuthUserVO oauthVO;
+	private SysUserOAuthVO oauthVO;
 
 }

@@ -1,0 +1,68 @@
+/*
+ * Copyright 2023-2025 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jax.snack.upms.api.vo;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+/**
+ * 认证侧用户信息值对象.
+ *
+ * @author Jax Jiang
+ */
+@Getter
+@Setter
+@ToString
+public class SysUserOAuthVO {
+
+	/**
+	 * 锁定状态.
+	 */
+	private Integer locked;
+
+	/**
+	 * 锁定状态标签.
+	 */
+	private String lockedLabel;
+
+	/**
+	 * 账号过期标记.
+	 */
+	private Integer expired;
+
+	/**
+	 * 账号过期标记标签.
+	 */
+	private String expiredLabel;
+
+	/**
+	 * 是否为初始密码.
+	 */
+	private Integer initialPassword;
+
+	/**
+	 * 是否为初始密码标签.
+	 */
+	private String initialPasswordLabel;
+
+	/**
+	 * 是否启用 MFA.
+	 */
+	private Integer mfaEnabled;
+
+}

@@ -21,8 +21,8 @@ import java.util.List;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
-import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
 import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysSessionVO;
@@ -66,7 +66,7 @@ public interface SysUserService {
 	 * @param username 用户名
 	 * @param dto 仅需设置要修改的字段，其余留 null
 	 */
-	void updateOAuth(String username, OAuthUserDTO dto);
+	void updateOAuth(String username, SysUserOAuthDTO dto);
 
 	/**
 	 * 强制下线用户（吊销所有 token）.
