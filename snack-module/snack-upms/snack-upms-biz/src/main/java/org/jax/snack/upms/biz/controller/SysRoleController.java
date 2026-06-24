@@ -25,7 +25,9 @@ import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.upms.api.dto.SysRoleDTO;
+import org.jax.snack.upms.api.service.SysResourceService;
 import org.jax.snack.upms.api.service.SysRoleService;
+import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysRoleVO;
 import org.jax.snack.upms.biz.entity.SysRole;
 
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -50,6 +53,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SysRoleController {
 
 	private final SysRoleService service;
+
+	private final SysResourceService sysResourceService;
 
 	/**
 	 * 创建角色.
@@ -99,6 +104,18 @@ public class SysRoleController {
 	@PostMapping("/query")
 	public PageResult<SysRoleVO> query(@RequestBody QueryCondition condition) {
 		return this.service.queryByDsl(condition);
+	}
+
+	/**
+	 * 获取角色拥有的资源集合.
+	 * @param roleCode 角色编码
+	 * @param status 资源状态（可选，null 时返回全部）
+	 * @return 资源 VO 列表
+	 */
+	@GetMapping("/{roleCode}/resources")
+	public List<SysResourceVO> getRoleResources(@PathVariable String roleCode,
+			@RequestParam(required = false) Integer status) {
+		return this.sysResourceService.findResourcesByRoleCode(roleCode, status);
 	}
 
 }

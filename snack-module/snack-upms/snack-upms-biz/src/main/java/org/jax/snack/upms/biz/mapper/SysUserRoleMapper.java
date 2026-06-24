@@ -16,7 +16,10 @@
 
 package org.jax.snack.upms.biz.mapper;
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import org.jax.snack.upms.biz.entity.SysUserRole;
 
 /**
@@ -25,5 +28,13 @@ import org.jax.snack.upms.biz.entity.SysUserRole;
  * @author Jax Jiang
  */
 public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
+
+	/**
+	 * 查询用户指定状态角色的编码列表.
+	 * @param username 用户名
+	 * @param status 角色状态
+	 * @return 角色编码列表
+	 */
+	List<String> selectEnabledRoleCodesByUsername(@Param("username") String username, @Param("status") Integer status);
 
 }

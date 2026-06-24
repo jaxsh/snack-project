@@ -35,13 +35,13 @@ public class SysResourceRepositoryImpl extends AbstractRepository<SysResource, L
 		implements SysResourceRepository {
 
 	@Override
-	public List<SysResource> selectResourcesByUsername(String username) {
-		return getMapper().selectResourcesByUsername(username);
+	public List<SysResource> selectResourcesByRoleCodes(List<String> roleCodes, Integer status) {
+		return getMapper().selectResourcesByRoleCodes(roleCodes, status);
 	}
 
 	@Override
-	public List<SysResource> selectResourcesByRoleCode(String roleCode) {
-		return getMapper().selectResourcesByRoleCode(roleCode);
+	public List<SysResource> selectResourcesByUsername(String username, Integer status) {
+		return getMapper().selectResourcesByUsername(username, status);
 	}
 
 }

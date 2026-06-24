@@ -29,17 +29,19 @@ import org.jax.snack.upms.biz.entity.SysResource;
 public interface SysResourceRepository extends BaseRepository<SysResource, Long> {
 
 	/**
-	 * 根据用户名获取资源列表.
-	 * @param username 用户名
+	 * 根据角色编码列表查询资源，status 可选（null 时不过滤）.
+	 * @param roleCodes 角色编码列表
+	 * @param status 资源状态（可为 null）
 	 * @return 资源列表
 	 */
-	List<SysResource> selectResourcesByUsername(String username);
+	List<SysResource> selectResourcesByRoleCodes(List<String> roleCodes, Integer status);
 
 	/**
-	 * 根据角色编码获取资源列表.
-	 * @param roleCode 角色编码
+	 * 根据用户名查询资源，status 可选（null 时不过滤）.
+	 * @param username 用户名
+	 * @param status 资源/角色状态（可为 null）
 	 * @return 资源列表
 	 */
-	List<SysResource> selectResourcesByRoleCode(String roleCode);
+	List<SysResource> selectResourcesByUsername(String username, Integer status);
 
 }

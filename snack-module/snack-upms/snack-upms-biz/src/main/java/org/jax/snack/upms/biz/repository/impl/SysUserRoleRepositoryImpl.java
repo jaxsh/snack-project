@@ -16,6 +16,8 @@
 
 package org.jax.snack.upms.biz.repository.impl;
 
+import java.util.List;
+
 import org.jax.snack.framework.mybatisplus.repository.AbstractRepository;
 import org.jax.snack.upms.biz.entity.SysUserRole;
 import org.jax.snack.upms.biz.mapper.SysUserRoleMapper;
@@ -31,5 +33,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class SysUserRoleRepositoryImpl extends AbstractRepository<SysUserRole, Long, SysUserRoleMapper>
 		implements SysUserRoleRepository {
+
+	@Override
+	public List<String> selectEnabledRoleCodesByUsername(String username, Integer status) {
+		return getMapper().selectEnabledRoleCodesByUsername(username, status);
+	}
 
 }

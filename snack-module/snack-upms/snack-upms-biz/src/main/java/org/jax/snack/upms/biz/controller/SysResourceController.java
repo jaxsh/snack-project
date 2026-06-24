@@ -111,14 +111,4 @@ public class SysResourceController {
 		return this.service.buildTree();
 	}
 
-	/**
-	 * 获取角色拥有的资源集合.
-	 * @param roleCode 角色编码
-	 * @return 资源 VO 列表
-	 */
-	@GetMapping("/role/{roleCode}")
-	public List<SysResourceVO> getRoleResources(@PathVariable String roleCode) {
-		return this.service.findResourcesByRoleCode(roleCode);
-	}
-
 }

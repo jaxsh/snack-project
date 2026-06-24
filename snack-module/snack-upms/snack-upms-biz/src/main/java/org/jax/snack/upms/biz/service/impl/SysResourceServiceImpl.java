@@ -17,11 +17,9 @@
 package org.jax.snack.upms.biz.service.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
@@ -44,6 +42,7 @@ import org.jax.snack.upms.biz.repository.SysRoleResourceRepository;
 import org.jax.snack.upms.biz.security.UpmsSecurityMetadataManager;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -59,6 +58,8 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class SysResourceServiceImpl implements SysResourceService {
 
+	private static final String CACHE_NAME = "upms:user";
+
 	private final SysResourceRepository repository;
 
 	private final SysRoleResourceRepository roleResourceRepository;
@@ -69,7 +70,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = "upms:user", allEntries = true)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysResourceDTO dto) {
 		QueryCondition existsCondition = QueryCondition.builder()
 			.eq(SysResource.Fields.name, dto.getName())
@@ -79,7 +80,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Resource");
 		}
 
-		if (!ObjectUtils.isEmpty(dto.getParentId()) && dto.getParentId() > 0) {
+		if (dto.getParentId() != null && dto.getParentId() > 0) {
 			this.repository.findById(dto.getParentId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Parent Resource"));
 		}
@@ -91,7 +92,7 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = "upms:user", allEntries = true)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void update(Long id, SysResourceDTO dto) {
 		this.repository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Resource"));
 
@@ -99,15 +100,22 @@ public class SysResourceServiceImpl implements SysResourceService {
 			throw new BusinessException(ErrorCode.PARAM_INVALID, "Parent cannot be self");
 		}
 
+		if (dto.getParentId() != null && dto.getParentId() > 0) {
+			Set<Long> descendants = getDescendantIds(id);
+			if (descendants.contains(dto.getParentId())) {
+				throw new BusinessException(ErrorCode.PARAM_INVALID, "Parent cannot be a descendant");
+			}
+		}
+
 		SysResource updateEntity = this.converter.toEntity(dto);
 		updateEntity.setId(id);
 		this.repository.update(updateEntity);
 
 		if (Objects.equals(Status.DISABLED.getCode(), dto.getStatus())) {
-			Set<Long> descendantIds = getDescendantIds(id);
-			if (!descendantIds.isEmpty()) {
+			Set<Long> descendants = getDescendantIds(id);
+			if (!descendants.isEmpty()) {
 				WhereCondition where = WhereCondition.builder()
-					.in(SysResource.Fields.id, new ArrayList<>(descendantIds))
+					.in(SysResource.Fields.id, new ArrayList<>(descendants))
 					.build();
 				SysResource updateParams = new SysResource();
 				updateParams.setStatus(Status.DISABLED.getCode());
@@ -119,23 +127,23 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = "upms:user", allEntries = true)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
-		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {
-			Set<Long> descendantIds = getDescendantIds(entity.getId());
-			descendantIds.add(entity.getId());
+		List<Long> targetIds = this.repository.queryListByDsl(queryCondition).stream().map(SysResource::getId).toList();
+		if (targetIds.isEmpty()) {
+			return;
+		}
 
-			WhereCondition roleResCondition = WhereCondition.builder()
-				.in(SysRoleResource.Fields.resourceId, new ArrayList<>(descendantIds))
-				.build();
-			this.roleResourceRepository.deleteByDsl(roleResCondition);
+		List<SysResource> all = this.repository.queryListByDsl(null);
+		List<TreeNode<SysResource>> tree = TreeBuilder.build(all, 0L, SysResource::getId, SysResource::getParentId);
+		List<Long> allIds = new ArrayList<>(
+				TreeBuilder.findDescendants(tree, SysResource::getId, targetIds.toArray(new Long[0])));
 
-			WhereCondition deleteCondition = WhereCondition.builder()
-				.in(SysResource.Fields.id, new ArrayList<>(descendantIds))
-				.build();
-			this.repository.deleteByDsl(deleteCondition);
-		});
+		this.roleResourceRepository
+			.deleteByDsl(WhereCondition.builder().in(SysRoleResource.Fields.resourceId, allIds).build());
+		this.repository.deleteByDsl(WhereCondition.builder().in(SysResource.Fields.id, allIds).build());
+
 		refreshPermissionRulesAfterCommit();
 	}
 
@@ -154,19 +162,11 @@ public class SysResourceServiceImpl implements SysResourceService {
 	}
 
 	private Set<Long> getDescendantIds(Long parentId) {
-		List<Long> collector = new ArrayList<>();
 		List<SysResource> all = this.repository.queryListByDsl(null);
-		recursiveFindChildren(parentId, all, collector);
-		return new HashSet<>(collector);
-	}
-
-	private void recursiveFindChildren(Long parentId, List<SysResource> all, List<Long> collector) {
-		for (SysResource res : all) {
-			if (Objects.equals(res.getParentId(), parentId)) {
-				collector.add(res.getId());
-				recursiveFindChildren(res.getId(), all, collector);
-			}
-		}
+		List<TreeNode<SysResource>> tree = TreeBuilder.build(all, 0L, SysResource::getId, SysResource::getParentId);
+		Set<Long> result = TreeBuilder.findDescendants(tree, SysResource::getId, parentId);
+		result.remove(parentId);
+		return result;
 	}
 
 	@Override
@@ -188,9 +188,28 @@ public class SysResourceServiceImpl implements SysResourceService {
 	}
 
 	@Override
-	public List<SysResourceVO> findResourcesByRoleCode(String roleCode) {
-		List<SysResource> resources = this.repository.selectResourcesByRoleCode(roleCode);
-		return resources.stream().map(this.converter::toVO).collect(Collectors.toList());
+	public List<SysResourceVO> findResourcesByRoleCode(String roleCode, Integer status) {
+		return this.repository.selectResourcesByRoleCodes(List.of(roleCode), status)
+			.stream()
+			.map(this.converter::toVO)
+			.toList();
+	}
+
+	@Override
+	@Cacheable(value = CACHE_NAME, key = "'resources:role:' + #roleCode")
+	public List<SysResourceVO> getResourcesByRoleCode(String roleCode) {
+		return this.repository.selectResourcesByRoleCodes(List.of(roleCode), Status.ENABLED.getCode())
+			.stream()
+			.map(this.converter::toVO)
+			.toList();
+	}
+
+	@Override
+	public List<SysResourceVO> getEnabledResourcesByUsername(String username) {
+		return this.repository.selectResourcesByUsername(username, Status.ENABLED.getCode())
+			.stream()
+			.map(this.converter::toVO)
+			.toList();
 	}
 
 }

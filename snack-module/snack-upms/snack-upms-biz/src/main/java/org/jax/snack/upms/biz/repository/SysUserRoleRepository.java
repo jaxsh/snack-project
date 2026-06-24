@@ -16,6 +16,8 @@
 
 package org.jax.snack.upms.biz.repository;
 
+import java.util.List;
+
 import org.jax.snack.framework.mybatisplus.repository.BaseRepository;
 import org.jax.snack.upms.biz.entity.SysUserRole;
 
@@ -25,5 +27,13 @@ import org.jax.snack.upms.biz.entity.SysUserRole;
  * @author Jax Jiang
  */
 public interface SysUserRoleRepository extends BaseRepository<SysUserRole, Long> {
+
+	/**
+	 * 查询用户指定状态角色的编码列表.
+	 * @param username 用户名
+	 * @param status 角色状态
+	 * @return 角色编码列表
+	 */
+	List<String> selectEnabledRoleCodesByUsername(String username, Integer status);
 
 }

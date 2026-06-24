@@ -52,6 +52,8 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class SysRoleServiceImpl implements SysRoleService {
 
+	private static final String CACHE_NAME = "upms:user";
+
 	private final SysRoleRepository repository;
 
 	private final SysRoleResourceRepository roleResourceRepository;
@@ -62,7 +64,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = "upms:user", allEntries = true)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysRoleDTO dto) {
 		QueryCondition condition = QueryCondition.builder().eq(SysRole.Fields.roleCode, dto.getRoleCode()).build();
 		if (this.repository.existsByDsl(condition)) {
@@ -85,7 +87,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = "upms:user", allEntries = true)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void update(Long id, SysRoleDTO dto) {
 		SysRole current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Role"));
@@ -114,7 +116,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = "upms:user", allEntries = true)
+	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
 		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {
