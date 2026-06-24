@@ -21,6 +21,8 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.jax.snack.framework.core.api.result.PageResult;
 
+import org.springframework.util.CollectionUtils;
+
 /**
  * MapStruct 分页转换基类.
  *
@@ -61,7 +63,7 @@ public interface BasePageConvert<S, T> {
 	 * @return 分页结果
 	 */
 	default PageResult<T> toPageResult(List<S> list) {
-		if (list == null || list.isEmpty()) {
+		if (CollectionUtils.isEmpty(list)) {
 			return PageResult.empty();
 		}
 		List<T> converted = toList(list);

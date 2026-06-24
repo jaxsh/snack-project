@@ -86,13 +86,8 @@ public class PageResult<T> {
 	 * @return 新的 PageResult
 	 */
 	public <R> PageResult<R> map(Function<? super T, ? extends R> mapper) {
-		List<R> newRecords;
-		if (this.records == null || this.records.isEmpty()) {
-			newRecords = Collections.emptyList();
-		}
-		else {
-			newRecords = this.records.stream().map(mapper).collect(Collectors.toList());
-		}
+		List<R> newRecords = (this.records == null) ? Collections.emptyList()
+				: this.records.stream().map(mapper).collect(Collectors.toList());
 		return new PageResult<>(newRecords, this.total, this.size, this.current, this.pages);
 	}
 
