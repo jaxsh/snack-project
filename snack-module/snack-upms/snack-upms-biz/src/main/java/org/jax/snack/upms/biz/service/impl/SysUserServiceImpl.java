@@ -53,9 +53,11 @@ import org.jax.snack.upms.biz.repository.SysUserOrgRepository;
 import org.jax.snack.upms.biz.repository.SysUserRepository;
 import org.jax.snack.upms.biz.repository.SysUserRoleRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -94,6 +96,10 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Value("${spring.application.name}")
 	private String applicationName;
+
+	@Autowired
+	@Lazy
+	private SysUserService self;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -295,7 +301,7 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Override
 	public List<SysResourceVO> getResourcesByUsername(String username) {
-		return this.getEnabledRoleCodesByUsername(username)
+		return this.self.getEnabledRoleCodesByUsername(username)
 			.stream()
 			.flatMap((code) -> this.sysResourceService.getResourcesByRoleCode(code).stream())
 			.distinct()
