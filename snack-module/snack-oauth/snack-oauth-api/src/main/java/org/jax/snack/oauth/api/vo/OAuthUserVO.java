@@ -71,12 +71,12 @@ public class OAuthUserVO {
 	private String lockedLabel;
 
 	/**
-	 * 过期状态(0:正常, 1:过期).
+	 * 账号过期标记(0:正常, 1:过期); 账号是否到期另由 expireDate 实时判定.
 	 */
 	private Integer expired;
 
 	/**
-	 * 过期状态标签.
+	 * 账号过期标记标签.
 	 */
 	private String expiredLabel;
 

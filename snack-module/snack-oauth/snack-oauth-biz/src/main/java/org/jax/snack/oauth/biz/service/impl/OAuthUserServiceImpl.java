@@ -19,6 +19,9 @@ package org.jax.snack.oauth.biz.service.impl;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.UpdateCondition;
@@ -30,6 +33,7 @@ import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.oauth.api.service.OAuthUserService;
+import org.jax.snack.oauth.api.vo.MfaQrVO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
 import org.jax.snack.oauth.biz.converter.OAuthUserConverter;
 import org.jax.snack.oauth.biz.entity.OAuthAuthorization;
@@ -64,6 +68,8 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 	private final OAuthAuthorizationRepository authorizationRepository;
 
 	private final OAuthSessionInvalidator sessionInvalidator;
+
+	private final CodeVerifier mfaCodeVerifier;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -103,13 +109,13 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 			this.userRepository.updateByDsl(user,
 					UpdateCondition.builder().setNull(OAuthUser.Fields.lockUntil).where(where).build());
 		}
-		else if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.NO.getCode())) {
-			OAuthUser user = new OAuthUser();
-			user.setMfaEnabled(YesNoStatus.NO.getCode());
-			this.userRepository.updateByDsl(user,
-					UpdateCondition.builder().setNull(OAuthUser.Fields.mfaSecret).where(where).build());
-		}
 		else {
+			if (StringUtils.hasText(dto.getMfaCode())) {
+				if (!StringUtils.hasText(existing.getMfaSecret())
+						|| !this.mfaCodeVerifier.isValidCode(existing.getMfaSecret(), dto.getMfaCode())) {
+					throw new BusinessException(ErrorCode.PARAM_INVALID, "MFA code");
+				}
+			}
 			OAuthUser user = this.converter.toEntity(dto);
 			user.setId(existing.getId());
 
@@ -118,12 +124,9 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 				user.setLastPasswordResetTime(ZonedDateTime.now());
 				user.setLocked(YesNoStatus.NO.getCode());
 				user.setExpired(YesNoStatus.NO.getCode());
-				if (dto.getInitialPassword() == null) {
-					user.setInitialPassword(YesNoStatus.NO.getCode());
-				}
 			}
 
-			this.userRepository.updateByDsl(user, UpdateCondition.builder().where(where).build());
+			this.userRepository.updateByDsl(user, UpdateCondition.builder().setNulls(dto).where(where).build());
 		}
 
 		if (StringUtils.hasText(dto.getPassword())
@@ -166,6 +169,32 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 			.build();
 		this.authorizationRepository.deleteByDsl(condition);
 		this.sessionInvalidator.invalidateByUsername(username);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public MfaQrVO getMfaQrUri(String username, String issuer) {
+		QueryCondition condition = QueryCondition.builder().eq(OAuthUser.Fields.username, username).build();
+		OAuthUser existing = this.userRepository.queryListByDsl(condition)
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
+		String secret = existing.getMfaSecret();
+		if (!StringUtils.hasText(secret)) {
+			secret = new DefaultSecretGenerator().generate();
+			OAuthUser patch = new OAuthUser();
+			patch.setMfaSecret(secret);
+			WhereCondition where = WhereCondition.builder().eq(OAuthUser.Fields.id, existing.getId()).build();
+			this.userRepository.updateByDsl(patch, UpdateCondition.builder().where(where).build());
+		}
+		String qrUri = new QrData.Builder().label(username)
+			.secret(secret)
+			.issuer(issuer)
+			.digits(6)
+			.period(30)
+			.build()
+			.getUri();
+		return new MfaQrVO(qrUri);
 	}
 
 }

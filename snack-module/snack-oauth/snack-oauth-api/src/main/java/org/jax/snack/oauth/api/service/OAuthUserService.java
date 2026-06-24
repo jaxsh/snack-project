@@ -17,6 +17,7 @@
 package org.jax.snack.oauth.api.service;
 
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
+import org.jax.snack.oauth.api.vo.MfaQrVO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 /**
@@ -57,5 +58,13 @@ public interface OAuthUserService {
 	 * @param username 用户名
 	 */
 	void revokeTokens(String username);
+
+	/**
+	 * 准备 MFA 绑定：确保密钥存在并返回 TOTP QR URI.
+	 * @param username 用户名
+	 * @param issuer TOTP 发行方名称
+	 * @return TOTP QR URI（otpauth://）
+	 */
+	MfaQrVO getMfaQrUri(String username, String issuer);
 
 }

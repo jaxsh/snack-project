@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 /**
  * OAuth2 用户传输对象.
@@ -88,9 +89,9 @@ public class OAuthUserDTO {
 	/**
 	 * 账号到期日.
 	 * <p>
-	 * null 表示永不到期.
+	 * 未传(undefined)表示不变更；传 null 表示清空(永不到期)。
 	 */
-	private LocalDate expireDate;
+	private JsonNullable<LocalDate> expireDate = JsonNullable.undefined();
 
 	/**
 	 * 是否启用MFA(0:未启用, 1:已启用).
@@ -103,5 +104,11 @@ public class OAuthUserDTO {
 	 * MFA TOTP 密钥(Base32编码).
 	 */
 	private String mfaSecret;
+
+	/**
+	 * MFA 验证码(6位数字，解绑时传入).
+	 */
+	@Pattern(regexp = "^[0-9]{6}$")
+	private String mfaCode;
 
 }

@@ -29,6 +29,7 @@ import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.server.OAuthIntegrationTests;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -198,7 +199,7 @@ class OAuthUserAdminControllerTests extends OAuthIntegrationTests {
 			LocalDate yesterday = LocalDate.now().minusDays(1);
 
 			OAuthUserDTO dto = new OAuthUserDTO();
-			dto.setExpireDate(yesterday);
+			dto.setExpireDate(JsonNullable.of(yesterday));
 
 			OAuthUserAdminControllerTests.this.mockMvc
 				.perform(put(API_USER + PATH_USERNAME, username).with(scopeClientJwt())

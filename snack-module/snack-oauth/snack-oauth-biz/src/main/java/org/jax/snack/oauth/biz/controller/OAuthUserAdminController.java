@@ -21,6 +21,7 @@ import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.oauth.api.service.OAuthUserService;
+import org.jax.snack.oauth.api.vo.MfaQrVO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 import org.springframework.validation.annotation.Validated;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -90,6 +92,17 @@ public class OAuthUserAdminController {
 	@DeleteMapping("/{username}/tokens")
 	public void revokeTokens(@PathVariable String username) {
 		this.userService.revokeTokens(username);
+	}
+
+	/**
+	 * 准备 MFA 绑定：确保密钥存在并返回 TOTP QR URI.
+	 * @param username 用户名
+	 * @param issuer TOTP 发行方名称
+	 * @return TOTP QR URI（otpauth://）
+	 */
+	@PostMapping("/{username}/mfa")
+	public MfaQrVO getMfaQrUri(@PathVariable String username, @RequestParam String issuer) {
+		return this.userService.getMfaQrUri(username, issuer);
 	}
 
 }
