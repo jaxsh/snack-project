@@ -25,7 +25,9 @@ import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.framework.webtest.matcher.ExceptionMatchers;
 import org.jax.snack.framework.webtest.matcher.PageResultMatchers;
 import org.jax.snack.upms.UpmsIntegrationTests;
+import org.jax.snack.upms.api.dto.SysResourceDTO;
 import org.jax.snack.upms.api.dto.SysRoleDTO;
+import org.jax.snack.upms.api.service.SysResourceService;
 import org.jax.snack.upms.api.service.SysRoleService;
 import org.jax.snack.upms.api.vo.SysRoleVO;
 import org.jax.snack.upms.biz.entity.SysRole;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -53,8 +56,13 @@ class SysRoleControllerTests extends UpmsIntegrationTests {
 
 	private static final String API_ROLES_QUERY = "/api/upms/roles/query";
 
+	private static final String API_ROLES_RESOURCES = "/api/upms/roles/{roleCode}/resources";
+
 	@Autowired
 	private SysRoleService sysRoleService;
+
+	@Autowired
+	private SysResourceService sysResourceService;
 
 	private SysRoleDTO buildDto(String roleCode) {
 		SysRoleDTO dto = new SysRoleDTO();
@@ -185,6 +193,40 @@ class SysRoleControllerTests extends UpmsIntegrationTests {
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess())
 				.andExpect(PageResultMatchers.totalIs(2));
+		}
+
+	}
+
+	@Nested
+	class GetRoleResources {
+
+		@Test
+		void shouldReturnResourcesByRoleCode() throws Exception {
+			String roleCode = "ROLE_RES_CTRL_TEST";
+			SysResourceDTO resourceDto = new SysResourceDTO();
+			resourceDto.setName("role_ctrl_res");
+			resourceDto.setParentId(0L);
+			resourceDto.setPermission("test:role:ctrl:res");
+			resourceDto.setType(2);
+			SysRoleControllerTests.this.sysResourceService.create(resourceDto);
+
+			Long resourceId = SysRoleControllerTests.this.sysResourceService.buildTree()
+				.stream()
+				.filter((node) -> "role_ctrl_res".equals(node.getData().getName()))
+				.findFirst()
+				.orElseThrow()
+				.getData()
+				.getId();
+
+			SysRoleDTO roleDto = buildDto(roleCode);
+			roleDto.setResourceIds(Set.of(resourceId));
+			SysRoleControllerTests.this.sysRoleService.create(roleDto);
+
+			getJson(API_ROLES_RESOURCES, roleCode).andDo(print())
+				.andExpect(status().isOk())
+				.andExpectAll(ApiResponseMatchers.isSuccess())
+				.andExpect(jsonPath("$.data").isArray())
+				.andExpect(jsonPath("$.data[?(@.permission == 'test:role:ctrl:res')]").exists());
 		}
 
 	}

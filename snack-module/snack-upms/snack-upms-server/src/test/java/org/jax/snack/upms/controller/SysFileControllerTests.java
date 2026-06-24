@@ -17,11 +17,13 @@
 package org.jax.snack.upms.controller;
 
 import com.jayway.jsonpath.JsonPath;
+import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.webtest.matcher.ApiResponseMatchers;
 import org.jax.snack.upms.UpmsIntegrationTests;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 import org.jax.snack.upms.biz.client.OAuth2UserClient;
+import org.jax.snack.upms.biz.entity.SysUser;
 import org.jax.snack.upms.biz.repository.SysFileRepository;
 import org.jax.snack.upms.biz.service.impl.SysUserServiceImpl;
 import org.junit.jupiter.api.Nested;
@@ -179,9 +181,11 @@ class SysFileControllerTests extends UpmsIntegrationTests {
 			userDto.setAvatar(JsonNullable.of(urlA));
 
 			SysFileControllerTests.this.userService.create(userDto);
-			Long userId = SysFileControllerTests.this.userService.getByUsername("lifecycle_mb_user").getId();
-
-			SysUserVO user = SysFileControllerTests.this.userService.queryById(userId);
+			QueryCondition userCondition = QueryCondition.builder()
+				.eq(SysUser.Fields.username, "lifecycle_mb_user")
+				.build();
+			SysUserVO user = SysFileControllerTests.this.userService.queryByDsl(userCondition).getRecords().get(0);
+			Long userId = user.getId();
 			assertThat(user.getAvatar()).isEqualTo(urlA);
 
 			MockMultipartFile fileB = new MockMultipartFile(PARAM_FILE, "avatar_b.png", "image/png",
@@ -195,7 +199,8 @@ class SysFileControllerTests extends UpmsIntegrationTests {
 			updateDto.setAvatar(JsonNullable.of(urlB));
 			SysFileControllerTests.this.userService.update(userId, updateDto);
 
-			user = SysFileControllerTests.this.userService.queryById(userId);
+			QueryCondition byIdCondition = QueryCondition.builder().eq(SysUser.Fields.id, userId).build();
+			user = SysFileControllerTests.this.userService.queryByDsl(byIdCondition).getRecords().get(0);
 			assertThat(user.getAvatar()).isEqualTo(urlB);
 
 			assertThat(SysFileControllerTests.this.fileRepository.findById(fileIdB)).isPresent();

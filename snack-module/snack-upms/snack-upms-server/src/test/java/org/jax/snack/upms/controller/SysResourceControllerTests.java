@@ -164,21 +164,4 @@ class SysResourceControllerTests extends UpmsIntegrationTests {
 
 	}
 
-	@Nested
-	class GetRoleResources {
-
-		@Test
-		void shouldReturnResourcesByRoleCode() {
-			SysResourceDTO dto = buildDto("ctrl_test", 0L);
-			SysResourceControllerTests.this.sysResourceService.create(dto);
-
-			SysResourceControllerTests.this.sysResourceService.buildTree()
-				.stream()
-				.filter((node) -> "ctrl_test".equals(node.getData().getName()))
-				.findFirst()
-				.orElseThrow();
-		}
-
-	}
-
 }
