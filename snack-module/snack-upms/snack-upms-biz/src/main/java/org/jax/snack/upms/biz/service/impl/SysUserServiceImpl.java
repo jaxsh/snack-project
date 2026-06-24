@@ -32,16 +32,15 @@ import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.oauth.api.dto.OAuthUserDTO;
-import org.jax.snack.oauth.api.vo.MfaQrVO;
-import org.jax.snack.oauth.api.vo.OAuthUserVO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
 import org.jax.snack.upms.api.service.SysResourceService;
 import org.jax.snack.upms.api.service.SysSessionService;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysSessionVO;
+import org.jax.snack.upms.api.vo.SysUserOAuthVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 import org.jax.snack.upms.biz.client.OAuth2UserClient;
 import org.jax.snack.upms.biz.converter.SysUserConverter;
@@ -51,6 +50,7 @@ import org.jax.snack.upms.biz.entity.SysUserRole;
 import org.jax.snack.upms.biz.repository.SysUserOrgRepository;
 import org.jax.snack.upms.biz.repository.SysUserRepository;
 import org.jax.snack.upms.biz.repository.SysUserRoleRepository;
+import org.jax.snack.upms.biz.vo.SysMfaQrVO;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -105,7 +105,7 @@ public class SysUserServiceImpl implements SysUserService {
 		if (this.repository.existsByDsl(condition)) {
 			throw new BusinessException(ErrorCode.DATA_ALREADY_EXISTS, "Username");
 		}
-		OAuthUserDTO oauthUserDto = new OAuthUserDTO();
+		SysUserOAuthDTO oauthUserDto = new SysUserOAuthDTO();
 		oauthUserDto.setUsername(dto.getUsername());
 		oauthUserDto.setMobile(dto.getMobile());
 		oauthUserDto.setEmail(dto.getEmail());
@@ -185,7 +185,7 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
-	public void updateOAuth(String username, OAuthUserDTO dto) {
+	public void updateOAuth(String username, SysUserOAuthDTO dto) {
 		this.oAuth2UserClient.update(username, dto);
 	}
 
@@ -252,7 +252,7 @@ public class SysUserServiceImpl implements SysUserService {
 		entity.setUsername(current.getUsername());
 		this.repository.updateByDsl(entity, UpdateCondition.builder().setNulls(dto).eq(SysUser.Fields.id, id).build());
 
-		OAuthUserDTO oAuthPatch = new OAuthUserDTO();
+		SysUserOAuthDTO oAuthPatch = new SysUserOAuthDTO();
 		boolean needSync = false;
 		if (!ObjectUtils.isEmpty(dto.getStatus()) && !Objects.equals(dto.getStatus(), current.getStatus())) {
 			oAuthPatch.setEnabled(dto.getStatus());
@@ -318,7 +318,7 @@ public class SysUserServiceImpl implements SysUserService {
 			.stream()
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
-		OAuthUserVO oauthVO = this.oAuth2UserClient.getByUsername(username);
+		SysUserOAuthVO oauthVO = this.oAuth2UserClient.getByUsername(username);
 		if (!ObjectUtils.isEmpty(oauthVO)) {
 			vo.setOauthVO(oauthVO);
 		}
@@ -327,7 +327,7 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Override
 	public MfaSetupVO mfaSetup(String username) {
-		MfaQrVO resp = this.oAuth2UserClient.getMfaQrUri(username, this.applicationName);
+		SysMfaQrVO resp = this.oAuth2UserClient.getMfaQrUri(username, this.applicationName);
 		return new MfaSetupVO(null, resp.getQrUri());
 	}
 

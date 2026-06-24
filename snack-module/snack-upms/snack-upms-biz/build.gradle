@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
 	api project(':snack-module:snack-upms:snack-upms-api')
-	api project(':snack-module:snack-oauth:snack-oauth-api')
 
 	implementation project(':snack-framework:snack-web-spring-boot-starter')
 	implementation project(':snack-framework:snack-mybatisplus-spring-boot-starter')

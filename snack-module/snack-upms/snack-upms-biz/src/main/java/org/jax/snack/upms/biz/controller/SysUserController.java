@@ -27,8 +27,8 @@ import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
-import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -120,7 +121,7 @@ public class SysUserController {
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"))
 			.getUsername();
-		OAuthUserDTO dto = new OAuthUserDTO();
+		SysUserOAuthDTO dto = new SysUserOAuthDTO();
 		dto.setLocked(YesNoStatus.NO.getCode());
 		this.service.updateOAuth(username, dto);
 	}
@@ -139,7 +140,7 @@ public class SysUserController {
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"))
 			.getUsername();
-		OAuthUserDTO oauthDto = new OAuthUserDTO();
+		SysUserOAuthDTO oauthDto = new SysUserOAuthDTO();
 		oauthDto.setPassword(dto.getPassword());
 		oauthDto.setInitialPassword(YesNoStatus.YES.getCode());
 		oauthDto.setExpired(YesNoStatus.NO.getCode());
@@ -173,6 +174,16 @@ public class SysUserController {
 	@DeleteMapping("/{id}/sessions/{sessionId}")
 	public void revokeSession(@PathVariable Long id, @PathVariable String sessionId) {
 		this.service.revokeSession(id, sessionId);
+	}
+
+	/**
+	 * 获取指定用户的详情（包含 OAuth 聚合信息）.
+	 * @param username 用户名
+	 * @return 用户 VO
+	 */
+	@GetMapping("/info")
+	public SysUserVO info(@RequestParam String username) {
+		return this.service.findByUsername(username);
 	}
 
 }

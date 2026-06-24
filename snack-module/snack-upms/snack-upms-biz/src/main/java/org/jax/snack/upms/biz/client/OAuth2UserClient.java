@@ -16,9 +16,9 @@
 
 package org.jax.snack.upms.biz.client;
 
-import org.jax.snack.oauth.api.dto.OAuthUserDTO;
-import org.jax.snack.oauth.api.vo.MfaQrVO;
-import org.jax.snack.oauth.api.vo.OAuthUserVO;
+import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
+import org.jax.snack.upms.api.vo.SysUserOAuthVO;
+import org.jax.snack.upms.biz.vo.SysMfaQrVO;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +42,7 @@ public interface OAuth2UserClient {
 	 * @param dto 用户信息 DTO
 	 */
 	@PostExchange
-	void create(@RequestBody OAuthUserDTO dto);
+	void create(@RequestBody SysUserOAuthDTO dto);
 
 	/**
 	 * 更新用户信息.
@@ -50,7 +50,7 @@ public interface OAuth2UserClient {
 	 * @param dto 用户信息 DTO
 	 */
 	@PutExchange("/{username}")
-	void update(@PathVariable String username, @RequestBody OAuthUserDTO dto);
+	void update(@PathVariable String username, @RequestBody SysUserOAuthDTO dto);
 
 	/**
 	 * 根据用户名获取用户信息.
@@ -58,7 +58,7 @@ public interface OAuth2UserClient {
 	 * @return 用户信息 VO
 	 */
 	@GetExchange("/{username}")
-	OAuthUserVO getByUsername(@PathVariable String username);
+	SysUserOAuthVO getByUsername(@PathVariable String username);
 
 	/**
 	 * 删除用户.
@@ -81,6 +81,6 @@ public interface OAuth2UserClient {
 	 * @return TOTP QR URI
 	 */
 	@PostExchange("/{username}/mfa")
-	MfaQrVO getMfaQrUri(@PathVariable String username, @RequestParam String issuer);
+	SysMfaQrVO getMfaQrUri(@PathVariable String username, @RequestParam String issuer);
 
 }

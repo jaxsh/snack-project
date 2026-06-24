@@ -24,8 +24,8 @@ import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
-import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
+import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
 import org.jax.snack.upms.api.service.SysUserService;
 import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
@@ -86,7 +86,7 @@ public class SysProfileController {
 			throw new BusinessException(ErrorCode.PARAM_INVALID, "password");
 		}
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		OAuthUserDTO oauthDto = new OAuthUserDTO();
+		SysUserOAuthDTO oauthDto = new SysUserOAuthDTO();
 		oauthDto.setPassword(dto.getPassword());
 		oauthDto.setInitialPassword(YesNoStatus.NO.getCode());
 		oauthDto.setExpired(YesNoStatus.NO.getCode());
@@ -117,7 +117,7 @@ public class SysProfileController {
 		}
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
 
-		OAuthUserDTO oauthDto = new OAuthUserDTO();
+		SysUserOAuthDTO oauthDto = new SysUserOAuthDTO();
 		oauthDto.setMfaEnabled(dto.getMfaEnabled());
 		oauthDto.setMfaCode(dto.getMfaCode());
 		oauthDto.setMfaSecret(dto.getMfaSecret());
