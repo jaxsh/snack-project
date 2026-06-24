@@ -22,6 +22,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jax.snack.oauth.api.vo.OAuthUserVO;
 
 /**
  * 用户 VO.
@@ -108,18 +109,23 @@ public class SysUserVO {
 	private String email;
 
 	/**
+	 * 到期日(null:永不到期).
+	 */
+	private LocalDate expireDate;
+
+	/**
 	 * 最后活跃时间(无活跃 Session 时为 null).
 	 */
 	private ZonedDateTime lastActiveTime;
 
 	/**
-	 * 是否启用 MFA(0:未启用, 1:已启用).
-	 */
-	private Integer mfaEnabled;
-
-	/**
 	 * 角色编码列表.
 	 */
 	private List<String> roleCodes;
+
+	/**
+	 * 认证侧信息(登录/锁定/初始密码/MFA 等), 由 oauth_user 聚合.
+	 */
+	private OAuthUserVO oauthVO;
 
 }

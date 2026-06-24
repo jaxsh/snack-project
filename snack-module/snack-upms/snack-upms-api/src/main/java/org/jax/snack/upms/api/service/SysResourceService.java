@@ -65,10 +65,25 @@ public interface SysResourceService {
 	List<TreeNode<SysResourceVO>> buildTree();
 
 	/**
-	 * 查询角色拥有的资源集合.
+	 * 查询角色拥有的资源（供管理端使用），status 可选，null 时返回全部.
+	 * @param roleCode 角色编码
+	 * @param status 资源状态（可为 null）
+	 * @return 资源 VO 列表
+	 */
+	List<SysResourceVO> findResourcesByRoleCode(String roleCode, Integer status);
+
+	/**
+	 * 查询角色拥有的已启用资源（有缓存）.
 	 * @param roleCode 角色编码
 	 * @return 资源 VO 列表
 	 */
-	List<SysResourceVO> findResourcesByRoleCode(String roleCode);
+	List<SysResourceVO> getResourcesByRoleCode(String roleCode);
+
+	/**
+	 * 查询用户已启用的资源列表（启用角色 + 启用资源）.
+	 * @param username 用户名
+	 * @return 资源 VO 列表
+	 */
+	List<SysResourceVO> getEnabledResourcesByUsername(String username);
 
 }

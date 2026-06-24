@@ -6,5 +6,6 @@ plugins {
 dependencies {
 	api project(':snack-framework:snack-core')
 	api project(':snack-framework:snack-utils')
+	api project(':snack-module:snack-oauth:snack-oauth-api')
 	api 'org.springframework.boot:spring-boot-starter-validation'
 }

@@ -83,12 +83,12 @@ public class SysUserDTO {
 	/**
 	 * 关联角色编码集合.
 	 */
-	private Set<String> roleCodes;
+	private JsonNullable<Set<String>> roleCodes = JsonNullable.undefined();
 
 	/**
 	 * 关联组织编码集合.
 	 */
-	private Set<String> orgCodes;
+	private JsonNullable<Set<String>> orgCodes = JsonNullable.undefined();
 
 	/**
 	 * 账户状态(0:禁用, 1:启用).

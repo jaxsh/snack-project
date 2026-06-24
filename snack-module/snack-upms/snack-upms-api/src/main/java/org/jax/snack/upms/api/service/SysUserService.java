@@ -17,12 +17,11 @@
 package org.jax.snack.upms.api.service;
 
 import java.util.List;
-import java.util.Set;
 
 import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
-import org.jax.snack.framework.core.enums.YesNoStatus;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
@@ -37,17 +36,10 @@ import org.jax.snack.upms.api.vo.SysUserVO;
 public interface SysUserService {
 
 	/**
-	 * 创建用户基本信息（仅单表操作，不同步角色与组织关系）.
+	 * 创建用户及其角色、组织关联关系.
 	 * @param dto 用户 DTO.
 	 */
 	void create(SysUserDTO dto);
-
-	/**
-	 * 更新用户基本信息（仅单表操作，退化为仅主表更新，不处理关联表关系）.
-	 * @param id 主键 ID.
-	 * @param dto 用户 DTO.
-	 */
-	void update(Long id, SysUserDTO dto);
 
 	/**
 	 * 根据条件删除用户.
@@ -63,47 +55,18 @@ public interface SysUserService {
 	PageResult<SysUserVO> queryByDsl(QueryCondition condition);
 
 	/**
-	 * 获取用户拥有的资源集合.
-	 * @param username 用户名
-	 * @return 资源 VO 列表
-	 */
-	List<SysResourceVO> getUserResources(String username);
-
-	/**
-	 * 根据 ID 获取用户信息.
+	 * 更新用户及其角色、组织关联关系.
 	 * @param id 用户 ID
-	 * @return 用户信息 VO
+	 * @param dto 用户 DTO
 	 */
-	SysUserVO queryById(Long id);
+	void update(Long id, SysUserDTO dto);
 
 	/**
-	 * 获取用户拥有的角色编码集合.
-	 * @param username 用户名
-	 * @return 角色编码列表
+	 * 更新 oauth_user 字段（解锁、改密等动作均走此方法）.
+	 * @param id sys_user 主键
+	 * @param dto 仅需设置要修改的字段，其余留 null
 	 */
-	List<String> getUserRoles(String username);
-
-	/**
-	 * 根据用户名获取用户信息.
-	 * @param username 用户名
-	 * @return 用户信息 VO
-	 */
-	SysUserVO getByUsername(String username);
-
-	/**
-	 * 解锁用户.
-	 * @param id 用户 ID
-	 */
-	void unlock(Long id);
-
-	/**
-	 * 重置用户密码.
-	 * @param id 用户 ID
-	 * @param newPassword 新密码
-	 * @param initialPassword 是否标记为初始密码
-	 * @param expired 是否标记为已过期
-	 */
-	void resetPassword(Long id, String newPassword, YesNoStatus initialPassword, YesNoStatus expired);
+	void updateOAuth(Long id, OAuthUserDTO dto);
 
 	/**
 	 * 强制下线用户（吊销所有 token）.
@@ -126,18 +89,32 @@ public interface SysUserService {
 	void revokeSession(Long id, String sessionId);
 
 	/**
-	 * 独立更新用户的角色关联关系.
+	 * 获取用户已启用的角色编码列表（有缓存）.
 	 * @param username 用户名
-	 * @param roleCodes 角色编码集合
+	 * @return 角色编码列表
 	 */
-	void updateUserRoles(String username, Set<String> roleCodes);
+	List<String> getEnabledRoleCodesByUsername(String username);
 
 	/**
-	 * 独立更新用户的组织机构关联关系.
+	 * 获取用户拥有的资源集合（按角色组合，去重）.
 	 * @param username 用户名
-	 * @param orgCodes 组织机构编码集合
+	 * @return 资源 VO 列表
 	 */
-	void updateUserOrgs(String username, Set<String> orgCodes);
+	List<SysResourceVO> getResourcesByUsername(String username);
+
+	/**
+	 * 获取用户拥有的资源集合（按角色组合，去重）.
+	 * @param username 用户名
+	 * @return 资源 VO 列表
+	 */
+	List<SysResourceVO> getUserResources(String username);
+
+	/**
+	 * 根据用户名查询用户信息，不存在时抛 DATA_NOT_FOUND.
+	 * @param username 用户名
+	 * @return 用户 VO
+	 */
+	SysUserVO findByUsername(String username);
 
 	/**
 	 * 生成 MFA TOTP 密钥和二维码 URI.
@@ -145,18 +122,5 @@ public interface SysUserService {
 	 * @return MFA 初始化信息
 	 */
 	MfaSetupVO mfaSetup(String username);
-
-	/**
-	 * 创建用户及其角色、组织关联关系 (管理员级联创建).
-	 * @param dto 用户 DTO
-	 */
-	void createWithRelations(SysUserDTO dto);
-
-	/**
-	 * 更新用户及其角色、组织关联关系 (管理员级联更新).
-	 * @param id 用户 ID
-	 * @param dto 用户 DTO
-	 */
-	void updateWithRelations(Long id, SysUserDTO dto);
 
 }
