@@ -16,7 +16,6 @@
 
 package org.jax.snack.upms.biz.client;
 
-import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.oauth.api.vo.MfaQrVO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
@@ -56,10 +55,10 @@ public interface OAuth2UserClient {
 	/**
 	 * 根据用户名获取用户信息.
 	 * @param username 用户名
-	 * @return 用户信息 VO（含 ApiResponse 包装）
+	 * @return 用户信息 VO
 	 */
 	@GetExchange("/{username}")
-	ApiResponse<OAuthUserVO> getByUsername(@PathVariable String username);
+	OAuthUserVO getByUsername(@PathVariable String username);
 
 	/**
 	 * 删除用户.
@@ -79,9 +78,9 @@ public interface OAuth2UserClient {
 	 * 准备 MFA 绑定：确保密钥存在并返回 TOTP QR URI.
 	 * @param username 用户名
 	 * @param issuer TOTP 发行方名称
-	 * @return TOTP QR URI（含 ApiResponse 包装）
+	 * @return TOTP QR URI
 	 */
 	@PostExchange("/{username}/mfa")
-	ApiResponse<MfaQrVO> getMfaQrUri(@PathVariable String username, @RequestParam String issuer);
+	MfaQrVO getMfaQrUri(@PathVariable String username, @RequestParam String issuer);
 
 }

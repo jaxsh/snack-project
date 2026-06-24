@@ -18,6 +18,7 @@ package org.jax.snack.upms.biz.config;
 
 import org.jax.snack.framework.oauth2.client.config.OAuth2ClientProperties;
 import org.jax.snack.upms.biz.client.OAuth2UserClient;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -38,9 +39,17 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 @EnableConfigurationProperties(OAuth2ClientProperties.class)
 public class OAuth2UserClientConfiguration {
 
+	/**
+	 * 配置并创建 OAuth2UserClient 客户端 Bean.
+	 * @param builder RestClient 构造器
+	 * @param manager OAuth2 客户端管理器
+	 * @param properties OAuth2 客户端配置属性
+	 * @param jsonMapper JSON 解析器
+	 * @return 返回 OAuth2 接口代理客户端
+	 */
 	@Bean
 	OAuth2UserClient oauth2UserClient(RestClient.Builder builder, OAuth2AuthorizedClientManager manager,
-			OAuth2ClientProperties properties) {
+			OAuth2ClientProperties properties, JsonMapper jsonMapper) {
 		String baseUrl = properties.getServerUrl();
 		if (!StringUtils.hasText(baseUrl)) {
 			throw new IllegalArgumentException("OAuth2 server URL must be configured");
@@ -48,7 +57,10 @@ public class OAuth2UserClientConfiguration {
 
 		OAuth2ClientHttpRequestInterceptor interceptor = new OAuth2ClientHttpRequestInterceptor(manager);
 		interceptor.setClientRegistrationIdResolver((request) -> "snack-upms-service");
-		RestClient restClient = builder.baseUrl(baseUrl).requestInterceptor(interceptor).build();
+		RestClient restClient = builder.baseUrl(baseUrl)
+			.requestInterceptor(interceptor)
+			.requestInterceptor(new OAuth2ResponseUnwrappingInterceptor(jsonMapper))
+			.build();
 		return HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClient))
 			.build()
 			.createClient(OAuth2UserClient.class);

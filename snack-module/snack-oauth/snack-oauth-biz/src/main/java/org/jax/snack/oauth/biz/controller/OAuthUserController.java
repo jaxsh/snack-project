@@ -46,12 +46,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * OAuth 用户自助服务控制器.
@@ -60,7 +59,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  *
  * @author Jax Jiang
  */
-@Controller
+@RestController
 @RequestMapping("/oauth2/account")
 @RequiredArgsConstructor
 public class OAuthUserController {
@@ -85,7 +84,6 @@ public class OAuthUserController {
 	 * @return 含 redirectUrl 的 map
 	 */
 	@PostMapping("/change-password")
-	@ResponseBody
 	@PreAuthorize("hasAuthority('" + OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_RESET_SCOPE
 			+ "')")
 	public Map<String, String> changePassword(@RequestBody @Validated OAuthUserDTO body, HttpServletRequest request,
@@ -106,7 +104,6 @@ public class OAuthUserController {
 	 * @return 含 redirectUrl 的 map
 	 */
 	@PostMapping("/verify-mfa")
-	@ResponseBody
 	@PreAuthorize("hasAuthority('" + OAuth2SecurityConstants.SCOPE_PREFIX + OAuth2SecurityConstants.PRE_AUTH_MFA_SCOPE
 			+ "')")
 	public Map<String, String> verifyMfa(@RequestBody @Validated MfaVerifyDTO body, HttpServletRequest request,

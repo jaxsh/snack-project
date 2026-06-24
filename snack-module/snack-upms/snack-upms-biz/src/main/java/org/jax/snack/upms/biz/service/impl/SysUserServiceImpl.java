@@ -32,7 +32,6 @@ import org.jax.snack.framework.core.enums.Status;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.exception.BusinessException;
 import org.jax.snack.framework.core.exception.constants.ErrorCode;
-import org.jax.snack.framework.web.model.ApiResponse;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.oauth.api.vo.MfaQrVO;
 import org.jax.snack.oauth.api.vo.OAuthUserVO;
@@ -319,17 +318,17 @@ public class SysUserServiceImpl implements SysUserService {
 			.stream()
 			.findFirst()
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"));
-		ApiResponse<OAuthUserVO> oauthResponse = this.oAuth2UserClient.getByUsername(username);
-		if (!ObjectUtils.isEmpty(oauthResponse) && !ObjectUtils.isEmpty(oauthResponse.getData())) {
-			vo.setOauthVO(oauthResponse.getData());
+		OAuthUserVO oauthVO = this.oAuth2UserClient.getByUsername(username);
+		if (!ObjectUtils.isEmpty(oauthVO)) {
+			vo.setOauthVO(oauthVO);
 		}
 		return vo;
 	}
 
 	@Override
 	public MfaSetupVO mfaSetup(String username) {
-		ApiResponse<MfaQrVO> resp = this.oAuth2UserClient.getMfaQrUri(username, this.applicationName);
-		return new MfaSetupVO(null, resp.getData().getQrUri());
+		MfaQrVO resp = this.oAuth2UserClient.getMfaQrUri(username, this.applicationName);
+		return new MfaSetupVO(null, resp.getQrUri());
 	}
 
 }
