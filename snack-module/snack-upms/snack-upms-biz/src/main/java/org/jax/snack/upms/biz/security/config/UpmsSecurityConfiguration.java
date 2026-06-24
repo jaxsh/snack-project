@@ -52,7 +52,8 @@ public class UpmsSecurityConfiguration implements OAuth2ClientSecurityCustomizer
 	public void configureAuthorization(
 			AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize) {
 		authorize.requestMatchers(HttpMethod.GET, "/api/upms/user").authenticated();
-		authorize.requestMatchers(HttpMethod.PUT, "/api/upms/user", "/api/upms/user/password").authenticated();
+		authorize.requestMatchers(HttpMethod.PUT, "/api/upms/user", "/api/upms/user/password", "/api/upms/user/mfa")
+			.authenticated();
 		authorize.requestMatchers(HttpMethod.GET, "/api/upms/user/mfa").authenticated();
 		authorize.requestMatchers(HttpMethod.GET, "/api/upms/user/resources").authenticated();
 	}

@@ -183,10 +183,8 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
-	public void updateOAuth(Long id, OAuthUserDTO dto) {
-		SysUser current = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
-		this.oAuth2UserClient.update(current.getUsername(), dto);
+	public void updateOAuth(String username, OAuthUserDTO dto) {
+		this.oAuth2UserClient.update(username, dto);
 	}
 
 	@Override

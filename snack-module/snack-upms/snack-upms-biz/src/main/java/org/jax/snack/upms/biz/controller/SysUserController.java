@@ -23,6 +23,8 @@ import org.jax.snack.framework.core.api.query.QueryCondition;
 import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.YesNoStatus;
+import org.jax.snack.framework.core.exception.BusinessException;
+import org.jax.snack.framework.core.exception.constants.ErrorCode;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.oauth.api.dto.OAuthUserDTO;
@@ -111,9 +113,16 @@ public class SysUserController {
 	 */
 	@PatchMapping("/{id}/unlock")
 	public void unlock(@PathVariable Long id) {
+		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.id, id).build();
+		String username = this.service.queryByDsl(condition)
+			.getRecords()
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"))
+			.getUsername();
 		OAuthUserDTO dto = new OAuthUserDTO();
 		dto.setLocked(YesNoStatus.NO.getCode());
-		this.service.updateOAuth(id, dto);
+		this.service.updateOAuth(username, dto);
 	}
 
 	/**
@@ -123,11 +132,18 @@ public class SysUserController {
 	 */
 	@PostMapping("/{id}/reset-password")
 	public void resetPassword(@PathVariable Long id, @Validated @RequestBody SysUserDTO dto) {
+		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.id, id).build();
+		String username = this.service.queryByDsl(condition)
+			.getRecords()
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "User"))
+			.getUsername();
 		OAuthUserDTO oauthDto = new OAuthUserDTO();
 		oauthDto.setPassword(dto.getPassword());
 		oauthDto.setInitialPassword(YesNoStatus.YES.getCode());
 		oauthDto.setExpired(YesNoStatus.NO.getCode());
-		this.service.updateOAuth(id, oauthDto);
+		this.service.updateOAuth(username, oauthDto);
 	}
 
 	/**

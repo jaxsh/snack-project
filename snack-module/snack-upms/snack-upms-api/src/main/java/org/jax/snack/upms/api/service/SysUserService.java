@@ -63,10 +63,10 @@ public interface SysUserService {
 
 	/**
 	 * 更新 oauth_user 字段（解锁、改密等动作均走此方法）.
-	 * @param id sys_user 主键
+	 * @param username 用户名
 	 * @param dto 仅需设置要修改的字段，其余留 null
 	 */
-	void updateOAuth(Long id, OAuthUserDTO dto);
+	void updateOAuth(String username, OAuthUserDTO dto);
 
 	/**
 	 * 强制下线用户（吊销所有 token）.

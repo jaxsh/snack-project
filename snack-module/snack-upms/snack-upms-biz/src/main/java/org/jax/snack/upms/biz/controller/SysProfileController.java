@@ -86,12 +86,11 @@ public class SysProfileController {
 			throw new BusinessException(ErrorCode.PARAM_INVALID, "password");
 		}
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		Long id = this.sysUserService.findByUsername(username).getId();
 		OAuthUserDTO oauthDto = new OAuthUserDTO();
 		oauthDto.setPassword(dto.getPassword());
 		oauthDto.setInitialPassword(YesNoStatus.NO.getCode());
 		oauthDto.setExpired(YesNoStatus.NO.getCode());
-		this.sysUserService.updateOAuth(id, oauthDto);
+		this.sysUserService.updateOAuth(username, oauthDto);
 	}
 
 	/**
@@ -102,6 +101,27 @@ public class SysProfileController {
 	public MfaSetupVO mfaSetup() {
 		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
 		return this.sysUserService.mfaSetup(username);
+	}
+
+	/**
+	 * 绑定或解绑当前用户 MFA.
+	 * @param dto 包含 mfaEnabled, mfaSecret, mfaCode 的 DTO
+	 */
+	@PutMapping("/mfa")
+	public void updateMfa(@Validated @RequestBody SysUserDTO dto) {
+		if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.NO.getCode()) && !StringUtils.hasText(dto.getMfaCode())) {
+			throw new BusinessException(ErrorCode.PARAM_INVALID, "MFA code");
+		}
+		if (Objects.equals(dto.getMfaEnabled(), YesNoStatus.YES.getCode()) && !StringUtils.hasText(dto.getMfaCode())) {
+			throw new BusinessException(ErrorCode.PARAM_INVALID, "MFA code");
+		}
+		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+
+		OAuthUserDTO oauthDto = new OAuthUserDTO();
+		oauthDto.setMfaEnabled(dto.getMfaEnabled());
+		oauthDto.setMfaCode(dto.getMfaCode());
+		oauthDto.setMfaSecret(dto.getMfaSecret());
+		this.sysUserService.updateOAuth(username, oauthDto);
 	}
 
 	/**
