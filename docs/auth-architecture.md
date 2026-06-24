@@ -1,6 +1,6 @@
 # 认证授权架构文档
 
-> 审计日期：2026-05-24 | 最后更新：2026-06-18（Phase 2：MFA TOTP 双因素认证（§5.10、§3.2、§6.1、§8、§10）；BusinessException / InterfaceBusinessException HTTP 状态从 500 改为 422（§9-F）；新增集群安全已知缺口 GAP-9/GAP-10（§11））
+> 审计日期：2026-05-24 | 最后更新：2026-06-21（Phase 6：sys_user ↔ oauth_user 字段归属/同步表（§6.2）；`expire_date` 镜像 sys_user 且清除链路接通（§5.5、§GAP-7）；`status` 双层语义——登录闸门走 `enabled`、UPMS 访问走 `sys_user.status`（§5.5、§5.6、§4.2）；`SysUserVO` 内嵌 `oauthVO` 聚合认证侧信息（§5.5）；GAP-7 引入 JsonNullable 三态更新基础设施（§11、§5.5）；Phase 2：MFA TOTP 双因素认证（§5.10、§3.2、§6.1、§8、§10）；BusinessException / InterfaceBusinessException HTTP 状态从 500 改为 422（§9-F）；新增集群安全已知缺口 GAP-9/GAP-10（§11））
 > 审计范围：snack-oauth、snack-upms、oauth2 starter、snack-project-web
 
 ---
@@ -118,7 +118,7 @@
     ├─ [Order   1] PreAuthAuthorizationManager（oauth-biz）
     │               含任意 pre-auth restriction 权限（如 SCOPE_pre_auth_reset）→ 403
     ├─ [Order 100] UpmsDynamicAuthorizationManager（upms-biz）
-    │               ROLE_ADMIN → 放行；URL 不在 sys_resource → 403；否则校验权限串
+    │               sys_user.status 禁用 → 403（含管理员）；ROLE_ADMIN → 放行；URL 不在 sys_resource → 403；否则校验权限串
     └─ fallback    AuthenticatedAuthorizationManager → 已认证则放行
 ```
 
@@ -416,6 +416,7 @@ snack.security.policy.rsa.keys:
     ├─ [Order 1]   PreAuthAuthorizationManager
     │               含任意 pre-auth restriction 权限 → AuthorizationDecision(false) → 403
     ├─ [Order 100] UpmsDynamicAuthorizationManager（snack-upms-biz 同进程时注册）
+    │               sys_user.status 禁用 → 403（早于 ROLE_ADMIN，即时生效）
     │               ROLE_ADMIN → 直接放行
     │               URL 不在 sys_resource → 403（deny-by-default）
     │               URL 在 sys_resource → 校验用户权限串
@@ -582,13 +583,19 @@ AT 到期，下次请求触发刷新：
 
 | 操作      | 接口                                                     | oauth_user 副作用                                       |
 |---------|--------------------------------------------------------|------------------------------------------------------|
-| 禁用 / 启用 | `PUT /api/upms/users/{id}` `{status:0/1}`              | `enabled=0/1`；禁用时吊销所有 session                        |
+| 禁用 / 启用 | `PUT /api/upms/users/{id}` `{status:0/1}`              | `sys_user.status` 权威，镜像同步 `oauth_user.enabled=0/1`；禁用时吊销所有 session |
 | 解锁      | `PATCH /api/upms/users/{id}/unlock`                    | `locked=0, lockCount=0, lockUntil=null`              |
 | 重置密码    | `POST /api/upms/users/{id}/reset-password`             | 密码更新，`initialPassword=1`，吊销所有 session                |
 | 强制下线    | `DELETE /api/upms/users/{id}/tokens`                   | ① `oAuth2UserClient.revokeTokens()`：SAS 删 `oauth_authorization`（RT 立即失效）并由 `OAuthSessionInvalidator` 直接 `invalidate` SAS 侧 `HttpSession`，阻止静默重新授权 ② expire BFF Session（`SessionRegistry.expireNow()`）；细粒度踢出单个设备见 §5.8 |
-| 设置到期日   | `PUT /api/upms/users/{id}` `{expireDate:"2026-12-31"}` | `expire_date=设定值`；登录/刷新 Token 时自动判定（§GAP-6）          |
+| 设置到期日   | `PUT /api/upms/users/{id}` `{expireDate:"2026-12-31"}` 或 `{expireDate:null}` 清除 | `sys_user.expire_date` 镜像 + 单向同步 `oauth_user.expire_date`；登录/刷新 Token 时自动判定（§GAP-6）；清除链路经 `JsonNullable` + `setNulls` 接通（§GAP-7） |
 
 禁用 / 吊销 session 后：已颁发 AT 最长仍有 5 分钟有效期（RS 纯 JWT 验证）。重置密码后下次登录触发 §5.2 强制改密流程。
+
+**`status` 双层语义**：`sys_user.status` 与 `oauth_user.enabled` 同义且镜像同步，但分属两层强制：
+- **登录闸门**：`enabled=0` → `UserDetailsServiceImpl` 置 `disabled` → 登录/刷新被拒（生效窗口 ≤5min，随 AT 过期）。
+- **UPMS 访问闸门**：`UpmsDynamicAuthorizationManager.authorize()` 最前（早于 isAdmin）读 `sys_user.status`（`SysUserService.getStatusByUsername`，`@Cacheable(upms:user)`），禁用 → `AuthorizationDecision(false)`（403），**含被禁用的管理员，且即时生效**（不必等 AT 过期；改状态经 `@CacheEvict(upms:user)` 立即失效缓存）。
+
+**认证侧信息聚合**：用户详情（`GET /api/upms/users/{id}` → `queryById`）与个人信息（`GET /api/upms/users/info` → `getByUsername`）统一经 `SysUserServiceImpl.attachOAuth(vo)` 调 `oAuth2UserClient.getByUsername()`，将 `oauth_user` 的 `locked`/`initialPassword`/`mfaEnabled` 等以内嵌对象 `SysUserVO.oauthVO` 返回（列表查询 `queryByDsl` 不聚合，避免 N+1）。
 
 **闭环状态**：✅（GAP-3 已修复）
 
@@ -603,6 +610,7 @@ AT 到期，下次请求触发刷新：
 情形 B：普通用户访问无 RBAC 权限的接口（UpmsDynamicAuthorizationManager 同进程注册时）
     PasswordRestrictionAuthorizationManager → 通过
     UpmsDynamicAuthorizationManager：
+        sys_user.status = 禁用 → 403（早于 ROLE_ADMIN，含被禁用的管理员，即时生效）
         ROLE_ADMIN → 直接放行
         URL 不在 sys_resource → 403（deny-by-default）
         URL 在 sys_resource 但无权限 → 403
@@ -865,7 +873,23 @@ snack.oauth2.client.max-sessions: 1    # 1 = 同时只允许一个设备登录
 
 > ⚠️ `enabled` 使用 `Status` 枚举（ENABLED=1），其余布尔字段使用 `YesNo` 枚举（NO=0=正常）。语义不统一，赋值必须使用正确的枚举常量。
 
-### 6.2 sys_user 关联体系
+### 6.2 sys_user ↔ oauth_user 字段归属与同步
+
+`oauth_user` 为认证权威（SAS 消费），`sys_user` 为 UPMS 业务侧。字段按归属分三类：管理意图字段（UPMS 写、oauth 消费）、通道字段（双写冗余）、运行时认证状态（oauth 运行时写、不反向镜像）。
+
+| 字段                                              | 权威 / 同步方向                                              | UPMS 展示             |
+|-------------------------------------------------|-------------------------------------------------------|---------------------|
+| realName / nickname / avatar / gender / birthday / remark、roleCodes / orgCodes | sys_user 自管理                                          | 本地                  |
+| mobile / email                                  | 双写冗余（oauth 作改密 / 发送初始密码通道，sys_user 副本供查询）             | 本地                  |
+| `status`（sys_user）↔ `enabled`（oauth_user），同义不改名 | sys_user 写 → 镜像同步 oauth；双层强制：登录走 `enabled`、UPMS 访问走 `status`（§5.5、§5.6） | 本地 `status`         |
+| `expire_date`                                   | sys_user 镜像 + 单向同步 oauth；清除经 `JsonNullable`+`setNulls`（§GAP-7） | 本地 `expireDate`     |
+| locked / lockUntil / lockCount、initialPassword、lastPasswordResetTime（→凭证过期）、mfaEnabled | oauth 运行时权威，**不镜像** sys_user                          | 详情聚合 `oauthVO`（unlock / reset 动作触发写） |
+| password / mfaSecret                            | oauth                                                 | 永不外露（不入 `OAuthUserVO`） |
+| `expired`(flag)                                 | oauth；与 `expire_date` 做 OR 判断账号到期，当前恒为 0（近似死字段）        | 详情 `oauthVO.expired` |
+
+> `OAuthUserVO` 不含 password / mfaSecret / lockUntil / lockCount，可整体安全外露；`SysUserVO` 内嵌整个 `oauthVO` 对象（非扁平，避免与 sys_user 同名字段冲突），由 `attachOAuth` 一次性填充。
+
+### 6.3 sys_user 关联体系
 
 ```
 sys_user ──(username)──> sys_user_role ──(roleCode)──> sys_role
@@ -875,7 +899,7 @@ sys_user ──(username)──> sys_user_role ──(roleCode)──> sys_role
                                                         sys_resource
 ```
 
-### 6.3 sys_login_log（登录审计）
+### 6.4 sys_login_log（登录审计）
 
 | 字段             | 说明                                                                         |
 |----------------|----------------------------------------------------------------------------|
@@ -1255,29 +1279,26 @@ spring:
 
 1. ✅ `oauth_user` 增加 `expire_date date` 字段（null=永不到期）
 2. ✅ `UserDetailsServiceImpl.loadUserByUsername()` 的 `accountExpired` 改为 OR 逻辑：`expired=1` OR `expireDate < today`；无需定时任务，登录时及 refresh_token 重验时自然感知
-3. ✅ `OAuth2UserDTO` / `SysUserDTO` 增加 `expireDate LocalDate`，管理员通过 `PUT /api/upms/users/{id}` 设置并透传至 oauth_user
+3. ✅ `OAuthUserDTO` / `SysUserDTO` 均以 `JsonNullable<LocalDate>` 持有 `expireDate`，管理员通过 `PUT /api/upms/users/{id}` 设置并透传至 oauth_user；清除链路已接通（见 GAP-7）
 
 ---
 
-### GAP-7：可空字段无法通过更新接口清除
+### GAP-7：可空字段无法通过更新接口清除 🚧 进行中
 
-后端配置 `spring.jackson.default-property-inclusion = NON_NULL`，响应中 null 字段不输出；前端构建请求时同样不携带 null 字段。因此 `null` 在当前栈中无法作为"主动清除"的信号传递给后端。
+已选用 `JsonNullable<T>` 方案区分三态（未传 / 显式 `null` / 有值），基础设施已落地，`expire_date` 清除链路已接通；`mobile` / `email` 因属双写通道字段（§6.2），按业务保留普通字段、暂不清除。
 
-受影响字段（选填，业务上存在清除场景）：
+**已落地（基础设施）**：
+1. ✅ `WebAutoConfiguration` 注册 `JsonNullableJackson3Module`，反序列化保留"未传"与"显式 null"的区分
+2. ✅ `updateByDsl(entity, UpdateCondition.builder().setNulls(dto)...)`：`WrapperBuilder` 经 `JsonNullableSupport.clearedFields(dto)` 将"显式 null"字段生成 `SET col = NULL`（已在 `SysUserDTO` 的 `avatar`/`birthday`/`remark`/`roleCodes` 等 **sys_user 本地列**验证可用）
+3. ✅ `expire_date` 清除接通：`OAuthUserDTO.expireDate` 改为 `JsonNullable<LocalDate>`，oauth 侧 `OAuthUserServiceImpl.update()` 通用分支走 `setNulls(dto)`，`PUT /api/upms/users/{id}` `{expireDate:null}` 同时清除 sys_user 与 oauth_user 两侧
 
-| 字段            | 所在表                   | 清除含义             |
-|---------------|-----------------------|------------------|
-| `expire_date` | oauth_user            | 合同延期，取消到期限制      |
-| `mobile`      | oauth_user / sys_user | 解绑手机号（按业务决定是否支持） |
-| `email`       | oauth_user / sys_user | 解绑邮箱（按业务决定是否支持）  |
+**未接通（按业务搁置）**：
 
-**候选方案**：
+| 字段                | 所在表                   | 现状                                                                       |
+|-------------------|-----------------------|--------------------------------------------------------------------------|
+| `mobile` / `email` | oauth_user / sys_user | 作改密 / 发送初始密码通道（§6.2），双写冗余但不提供清除；`SysUserDTO` / `OAuthUserDTO` 仍为普通字段，未包装 `JsonNullable` |
 
-- **方案 A（`clearFields` 列表）**：在 DTO 加 `Set<String> clearFields`，前端发 `{"clearFields":["expireDate"]}` 显式声明清除意图，后端按此列表重置字段为 null。改动最小，与现有 PUT 接口兼容。
-- **方案 B（专用端点）**：`DELETE /users/{id}/expire-date` 等，语义清晰但前端需维护多个调用路径。
-- **方案 C（JSON Merge Patch）**：改用 `PATCH` + RFC 7396，`null` 显式表示删除字段。需引入额外依赖并改变 HTTP 方法，适合字段清除场景较多时统一采用。
-
-**当前状态**：待决策。`expire_date` 的清除需求最确定（合同延期场景），建议优先处理。
+> 相比原候选方案（`clearFields` 列表 / 专用端点 / JSON Merge Patch），`JsonNullable` 在保留 `PUT` 接口与 JSON 语义的前提下解决三态区分，无需新增字段或切换 HTTP 方法。
 
 ---
 
