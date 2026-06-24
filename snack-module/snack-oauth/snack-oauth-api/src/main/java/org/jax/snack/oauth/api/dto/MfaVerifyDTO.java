@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jax.snack.oauth.api.mfa;
+package org.jax.snack.oauth.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
