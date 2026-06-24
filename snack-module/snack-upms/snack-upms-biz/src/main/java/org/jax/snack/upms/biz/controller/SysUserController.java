@@ -17,7 +17,6 @@
 package org.jax.snack.upms.biz.controller;
 
 import java.util.List;
-import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
@@ -26,15 +25,13 @@ import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.core.enums.YesNoStatus;
 import org.jax.snack.framework.core.validation.ValidationGroups.Create;
 import org.jax.snack.framework.core.validation.ValidationGroups.Update;
+import org.jax.snack.oauth.api.dto.OAuthUserDTO;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.service.SysUserService;
-import org.jax.snack.upms.api.vo.MfaSetupVO;
-import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 import org.jax.snack.upms.biz.entity.SysUser;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +44,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 用户 Controller.
+ * 用户管理 Controller.
  *
  * @author Jax Jiang
  */
@@ -64,7 +61,7 @@ public class SysUserController {
 	 */
 	@PostMapping
 	public void create(@Validated(Create.class) @RequestBody SysUserDTO dto) {
-		this.service.createWithRelations(dto);
+		this.service.create(dto);
 	}
 
 	/**
@@ -95,7 +92,7 @@ public class SysUserController {
 	 */
 	@PutMapping("/{id}")
 	public void update(@PathVariable Long id, @Validated(Update.class) @RequestBody SysUserDTO dto) {
-		this.service.updateWithRelations(id, dto);
+		this.service.update(id, dto);
 	}
 
 	/**
@@ -109,32 +106,14 @@ public class SysUserController {
 	}
 
 	/**
-	 * 获取当前用户信息.
-	 * @return 用户 VO
-	 */
-	@GetMapping("/info")
-	public SysUserVO info() {
-		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		return this.service.getByUsername(username);
-	}
-
-	/**
-	 * 获取当前用户资源列表.
-	 * @return 资源 VO 列表
-	 */
-	@GetMapping("/resources")
-	public List<SysResourceVO> getResources() {
-		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		return this.service.getUserResources(username);
-	}
-
-	/**
 	 * 解锁用户.
 	 * @param id 用户 ID
 	 */
 	@PatchMapping("/{id}/unlock")
 	public void unlock(@PathVariable Long id) {
-		this.service.unlock(id);
+		OAuthUserDTO dto = new OAuthUserDTO();
+		dto.setLocked(YesNoStatus.NO.getCode());
+		this.service.updateOAuth(id, dto);
 	}
 
 	/**
@@ -144,7 +123,11 @@ public class SysUserController {
 	 */
 	@PostMapping("/{id}/reset-password")
 	public void resetPassword(@PathVariable Long id, @Validated @RequestBody SysUserDTO dto) {
-		this.service.resetPassword(id, dto.getPassword(), YesNoStatus.YES, YesNoStatus.NO);
+		OAuthUserDTO oauthDto = new OAuthUserDTO();
+		oauthDto.setPassword(dto.getPassword());
+		oauthDto.setInitialPassword(YesNoStatus.YES.getCode());
+		oauthDto.setExpired(YesNoStatus.NO.getCode());
+		this.service.updateOAuth(id, oauthDto);
 	}
 
 	/**
@@ -174,38 +157,6 @@ public class SysUserController {
 	@DeleteMapping("/{id}/sessions/{sessionId}")
 	public void revokeSession(@PathVariable Long id, @PathVariable String sessionId) {
 		this.service.revokeSession(id, sessionId);
-	}
-
-	/**
-	 * 更新当前登录用户的个人基本资料.
-	 * @param dto 用户 DTO (仅修改个人允许修改的字段)
-	 */
-	@PutMapping("/profile")
-	public void updateProfile(@Validated(Update.class) @RequestBody SysUserDTO dto) {
-		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		SysUserVO current = this.service.getByUsername(username);
-		this.service.update(current.getId(), dto);
-	}
-
-	/**
-	 * 获取当前用户 MFA 初始化信息.
-	 * @return MFA 初始化信息
-	 */
-	@GetMapping("/mfa/setup")
-	public MfaSetupVO mfaSetup() {
-		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		return this.service.mfaSetup(username);
-	}
-
-	/**
-	 * 修改当前登录用户的密码.
-	 * @param dto 包含新密码的 DTO
-	 */
-	@PutMapping("/password")
-	public void changePassword(@Validated @RequestBody SysUserDTO dto) {
-		String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-		SysUserVO current = this.service.getByUsername(username);
-		this.service.resetPassword(current.getId(), dto.getPassword(), YesNoStatus.NO, YesNoStatus.NO);
 	}
 
 }

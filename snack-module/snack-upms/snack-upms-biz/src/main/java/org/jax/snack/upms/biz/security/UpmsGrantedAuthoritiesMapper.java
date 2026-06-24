@@ -26,7 +26,6 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.oauth2.client.security.OidcScopeGrantedAuthoritiesMapper;
 import org.jax.snack.upms.api.service.SysUserService;
-import org.jax.snack.upms.api.vo.SysResourceVO;
 import org.jspecify.annotations.NullMarked;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -41,7 +40,8 @@ import org.springframework.util.StringUtils;
 /**
  * UPMS 权限映射器.
  * <p>
- * 登录成功后, 根据用户信息从数据库加载细粒度权限 (SysResource).
+ * 登录成功后，根据用户信息从数据库加载角色权限。Session 只存 ROLE_XXX， 具体 API 权限由
+ * {@link UpmsDynamicAuthorizationManager} 在每次请求时实时推导。
  *
  * @author Jax Jiang
  */
@@ -66,24 +66,15 @@ public class UpmsGrantedAuthoritiesMapper implements GrantedAuthoritiesMapper {
 		Set<GrantedAuthority> mapped = new HashSet<>(baseAuthorities);
 
 		String username = extractUsername(authorities);
-		if (username != null) {
-			List<String> roles = this.sysUserService.getUserRoles(username);
-			for (String roleCode : roles) {
+		if (StringUtils.hasText(username)) {
+			List<String> roleCodes = this.sysUserService.getEnabledRoleCodesByUsername(username);
+			for (String roleCode : roleCodes) {
 				if (StringUtils.hasText(roleCode)) {
 					mapped.add(new SimpleGrantedAuthority("ROLE_" + roleCode.toUpperCase(Locale.ROOT)));
 				}
 			}
 
-			List<SysResourceVO> resources = this.sysUserService.getUserResources(username);
-			for (SysResourceVO resource : resources) {
-				if (Integer.valueOf(2).equals(resource.getType()) && StringUtils.hasText(resource.getMethod())
-						&& StringUtils.hasText(resource.getPath())) {
-					mapped.add(new SimpleGrantedAuthority(
-							resource.getMethod().toUpperCase(Locale.ROOT) + ":" + resource.getPath()));
-				}
-			}
-			log.debug("Loaded {} permissions for user '{}'", resources.size(), username);
-
+			log.debug("Loaded {} role(s) for user '{}'", roleCodes.size(), username);
 		}
 
 		return mapped;

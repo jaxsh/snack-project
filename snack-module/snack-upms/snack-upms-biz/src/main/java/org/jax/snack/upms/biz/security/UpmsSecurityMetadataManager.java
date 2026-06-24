@@ -21,12 +21,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.framework.core.api.query.QueryCondition;
+import org.jax.snack.framework.core.enums.Status;
+import org.jax.snack.upms.api.enums.ResourceType;
 import org.jax.snack.upms.biz.entity.SysResource;
 import org.jax.snack.upms.biz.repository.SysResourceRepository;
 
@@ -67,8 +70,8 @@ public class UpmsSecurityMetadataManager {
 	 */
 	public void refresh() {
 		QueryCondition condition = QueryCondition.builder()
-			.eq(SysResource.Fields.type, 2)
-			.eq(SysResource.Fields.status, 1)
+			.eq(SysResource.Fields.type, ResourceType.API.getCode())
+			.eq(SysResource.Fields.status, Status.ENABLED.getCode())
 			.build();
 
 		List<SysResource> resources = this.sysResourceRepository.queryListByDsl(condition);
@@ -79,8 +82,8 @@ public class UpmsSecurityMetadataManager {
 			if (order1 != order2) {
 				return Integer.compare(order1, order2);
 			}
-			String path1 = (r1.getPath() != null) ? r1.getPath() : "";
-			String path2 = (r2.getPath() != null) ? r2.getPath() : "";
+			String path1 = Objects.toString(r1.getPath(), "");
+			String path2 = Objects.toString(r2.getPath(), "");
 			return Integer.compare(path2.length(), path1.length());
 		});
 

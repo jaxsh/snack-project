@@ -18,6 +18,7 @@ package org.jax.snack.upms.biz.config;
 
 import org.mybatis.spring.annotation.MapperScan;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Jax Jiang
  */
 @Configuration
+@EnableCaching
 @ComponentScan("org.jax.snack.upms.biz")
 @MapperScan("org.jax.snack.upms.biz.mapper")
 public class UpmsModuleConfig {

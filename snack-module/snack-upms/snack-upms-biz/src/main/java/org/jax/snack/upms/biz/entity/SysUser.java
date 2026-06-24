@@ -91,6 +91,11 @@ public class SysUser extends BaseEntity implements Serializable {
 	private String email;
 
 	/**
+	 * 到期日(null:永不到期).
+	 */
+	private LocalDate expireDate;
+
+	/**
 	 * 字段名常量, 继承父类字段.
 	 */
 	public static final class Fields extends BaseEntity.Fields {

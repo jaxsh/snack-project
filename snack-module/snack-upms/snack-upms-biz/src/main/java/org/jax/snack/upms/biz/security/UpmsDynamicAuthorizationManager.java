@@ -16,19 +16,20 @@
 
 package org.jax.snack.upms.biz.security;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NullMarked;
+import org.jax.snack.upms.api.enums.ResourceType;
+import org.jax.snack.upms.api.service.SysUserService;
+import org.jax.snack.upms.api.vo.SysResourceVO;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
@@ -36,11 +37,10 @@ import org.springframework.stereotype.Component;
 /**
  * 动态权限鉴权管理器.
  * <p>
- * 根据当前请求 URL 动态匹配所需权限, 并检查用户是否拥有该权限.
+ * 根据请求 URL 从角色缓存实时推导权限, 角色变更后无需重新登录即可生效.
  *
  * @author Jax Jiang
  */
-@Slf4j
 @Order(100)
 @Component
 @RequiredArgsConstructor
@@ -48,37 +48,28 @@ public class UpmsDynamicAuthorizationManager implements AuthorizationManager<Req
 
 	private final UpmsSecurityMetadataManager metadataManager;
 
-	@NullMarked
+	private final SysUserService sysUserService;
+
 	@Override
 	public AuthorizationDecision authorize(Supplier<? extends Authentication> authentication,
 			RequestAuthorizationContext context) {
-		HttpServletRequest request = context.getRequest();
 		Authentication auth = authentication.get();
 
-		if (isAdmin(auth)) {
-			return new AuthorizationDecision(true);
+		if (!auth.isAuthenticated()) {
+			return new AuthorizationDecision(false);
 		}
 
-		String requiredPermission = findRequiredPermission(request);
-
+		String requiredPermission = findRequiredPermission(context.getRequest());
 		if (requiredPermission == null) {
 			return new AuthorizationDecision(false);
 		}
 
-		boolean granted = isGranted(auth, requiredPermission);
-		return new AuthorizationDecision(granted);
-	}
-
-	/**
-	 * 检查用户是否为超级管理员.
-	 * @param authentication 认证信息
-	 * @return 是否为超管
-	 */
-	private boolean isAdmin(Authentication authentication) {
-		return authentication != null && authentication.getAuthorities()
+		boolean permitted = this.sysUserService.getResourcesByUsername(auth.getName())
 			.stream()
-			.map(GrantedAuthority::getAuthority)
-			.anyMatch("ROLE_ADMIN"::equals);
+			.filter((r) -> ResourceType.API.getCode().equals(r.getType()))
+			.anyMatch((r) -> requiredPermission.equals(buildPermission(r)));
+
+		return new AuthorizationDecision(permitted);
 	}
 
 	private String findRequiredPermission(HttpServletRequest request) {
@@ -90,12 +81,8 @@ public class UpmsDynamicAuthorizationManager implements AuthorizationManager<Req
 		return null;
 	}
 
-	private boolean isGranted(Authentication authentication, String permission) {
-		return authentication != null && authentication.isAuthenticated()
-				&& authentication.getAuthorities()
-					.stream()
-					.map(GrantedAuthority::getAuthority)
-					.anyMatch(permission::equals);
+	private String buildPermission(SysResourceVO resource) {
+		return resource.getMethod().toUpperCase(Locale.ROOT) + ":" + resource.getPath();
 	}
 
 }

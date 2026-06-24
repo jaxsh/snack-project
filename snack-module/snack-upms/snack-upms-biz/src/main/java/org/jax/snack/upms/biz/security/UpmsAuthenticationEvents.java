@@ -37,6 +37,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring Security 认证事件监听器.
@@ -63,7 +64,7 @@ public class UpmsAuthenticationEvents {
 		Authentication authentication = event.getAuthentication();
 		if (authentication instanceof OAuth2AuthenticationToken) {
 			String username = extractUsername(authentication.getPrincipal());
-			if (username != null) {
+			if (StringUtils.hasText(username)) {
 				HttpServletRequest request = this.requestProvider.getIfAvailable();
 				this.loginAuditHandler.recordLoginSuccess(username, request);
 			}

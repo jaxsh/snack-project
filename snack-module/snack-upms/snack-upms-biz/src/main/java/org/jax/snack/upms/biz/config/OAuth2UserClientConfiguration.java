@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpRequestInterceptor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -41,7 +42,7 @@ public class OAuth2UserClientConfiguration {
 	OAuth2UserClient oauth2UserClient(RestClient.Builder builder, OAuth2AuthorizedClientManager manager,
 			OAuth2ClientProperties properties) {
 		String baseUrl = properties.getServerUrl();
-		if (baseUrl == null || baseUrl.isEmpty()) {
+		if (!StringUtils.hasText(baseUrl)) {
 			throw new IllegalArgumentException("OAuth2 server URL must be configured");
 		}
 
