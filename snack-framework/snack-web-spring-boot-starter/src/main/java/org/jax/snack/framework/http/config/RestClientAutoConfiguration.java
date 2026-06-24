@@ -16,6 +16,9 @@
 
 package org.jax.snack.framework.http.config;
 
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.jax.snack.framework.http.handler.CustomResponseErrorHandler;
 import org.jax.snack.framework.http.handler.DefaultErrorWrappingInterceptor;
 import org.jax.snack.framework.http.handler.DefaultStatusHandler;
@@ -29,6 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -65,6 +69,13 @@ public class RestClientAutoConfiguration {
 			CustomResponseErrorHandler defaultStatusHandler) {
 
 		return (restClientBuilder) -> restClientBuilder.requestInterceptor(errorWrappingInterceptor)
+			.requestInterceptor((request, body, execution) -> {
+				Locale locale = LocaleContextHolder.getLocale();
+				request.getHeaders().set("Accept-Language", locale.toLanguageTag());
+				TimeZone timeZone = LocaleContextHolder.getTimeZone();
+				request.getHeaders().set("X-Timezone", timeZone.getID());
+				return execution.execute(request, body);
+			})
 			.defaultStatusHandler(defaultStatusHandler, defaultStatusHandler);
 	}
 
