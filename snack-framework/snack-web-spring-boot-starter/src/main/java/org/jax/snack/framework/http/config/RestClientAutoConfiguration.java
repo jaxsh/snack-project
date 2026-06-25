@@ -32,8 +32,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.task.TaskDecorator;
 
 /**
  * RestClient自动配置类. 用于配置RestClient相关的属性和Bean.
@@ -61,6 +63,27 @@ public class RestClientAutoConfiguration {
 	@ConditionalOnMissingBean(CustomResponseErrorHandler.class)
 	public CustomResponseErrorHandler defaultStatusHandler() {
 		return new DefaultStatusHandler();
+	}
+
+	/**
+	 * 注册 Locale 上下文传播装饰器.
+	 * @return {@link TaskDecorator} 实例
+	 */
+	@Bean
+	public TaskDecorator localeContextTaskDecorator() {
+		return (runnable) -> {
+			LocaleContext context = LocaleContextHolder.getLocaleContext();
+			return () -> {
+				LocaleContext previous = LocaleContextHolder.getLocaleContext();
+				LocaleContextHolder.setLocaleContext(context);
+				try {
+					runnable.run();
+				}
+				finally {
+					LocaleContextHolder.setLocaleContext(previous);
+				}
+			};
+		};
 	}
 
 	@Bean
