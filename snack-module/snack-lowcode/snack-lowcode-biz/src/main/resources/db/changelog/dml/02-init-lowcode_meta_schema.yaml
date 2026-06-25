@@ -1,7 +1,7 @@
 # 初始化低代码元数据模版
 databaseChangeLog:
   - changeSet:
-      id: insert-lowcode_meta_schema-entity-template
+      id: insert-lowcode_meta_schema
       author: lowcode
       changes:
         - insert:
@@ -32,10 +32,6 @@ databaseChangeLog:
                   name: update_time
                   valueComputed: CURRENT_TIMESTAMP
 
-  - changeSet:
-      id: insert-lowcode_meta_schema-field-template
-      author: lowcode
-      changes:
         - insert:
             tableName: lowcode_meta_schema
             columns:
