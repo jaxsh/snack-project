@@ -63,7 +63,7 @@ databaseChangeLog:
                   valueNumeric: 1
               - column:
                   name: permission
-                  value: user:create
+                  value: sys:user:create
               - column:
                   name: sort_order
                   valueNumeric: 1
@@ -102,7 +102,7 @@ databaseChangeLog:
                   valueNumeric: 1
               - column:
                   name: permission
-                  value: user:update
+                  value: sys:user:update
               - column:
                   name: sort_order
                   valueNumeric: 2
@@ -141,7 +141,7 @@ databaseChangeLog:
                   valueNumeric: 1
               - column:
                   name: permission
-                  value: user:delete
+                  value: sys:user:delete
               - column:
                   name: sort_order
                   valueNumeric: 3
@@ -180,7 +180,7 @@ databaseChangeLog:
                   valueNumeric: 1
               - column:
                   name: permission
-                  value: user:query
+                  value: sys:user:query
               - column:
                   name: sort_order
                   valueNumeric: 4
@@ -685,6 +685,204 @@ databaseChangeLog:
               - column:
                   name: visible
                   valueNumeric: 0
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 117
+              - column:
+                  name: parent_id
+                  valueNumeric: 100
+              - column:
+                  name: name
+                  value: 获取指定用户详情接口
+              - column:
+                  name: type
+                  valueNumeric: 2
+              - column:
+                  name: path
+                  value: /api/upms/users/info
+              - column:
+                  name: method
+                  value: GET
+              - column:
+                  name: sort_order
+                  valueNumeric: 0
+              - column:
+                  name: visible
+                  valueNumeric: 0
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 118
+              - column:
+                  name: parent_id
+                  valueNumeric: 100
+              - column:
+                  name: name
+                  value: 重置密码
+              - column:
+                  name: type
+                  valueNumeric: 1
+              - column:
+                  name: permission
+                  value: sys:user:reset-password
+              - column:
+                  name: sort_order
+                  valueNumeric: 7
+              - column:
+                  name: visible
+                  valueNumeric: 1
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 119
+              - column:
+                  name: parent_id
+                  valueNumeric: 100
+              - column:
+                  name: name
+                  value: 解锁用户
+              - column:
+                  name: type
+                  valueNumeric: 1
+              - column:
+                  name: permission
+                  value: sys:user:unlock
+              - column:
+                  name: sort_order
+                  valueNumeric: 8
+              - column:
+                  name: visible
+                  valueNumeric: 1
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 120
+              - column:
+                  name: parent_id
+                  valueNumeric: 100
+              - column:
+                  name: name
+                  value: 重置 MFA
+              - column:
+                  name: type
+                  valueNumeric: 1
+              - column:
+                  name: permission
+                  value: sys:user:reset-mfa
+              - column:
+                  name: sort_order
+                  valueNumeric: 9
+              - column:
+                  name: visible
+                  valueNumeric: 1
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 121
+              - column:
+                  name: parent_id
+                  valueNumeric: 100
+              - column:
+                  name: name
+                  value: 强制下线
+              - column:
+                  name: type
+                  valueNumeric: 1
+              - column:
+                  name: permission
+                  value: sys:user:revoke-token
+              - column:
+                  name: sort_order
+                  valueNumeric: 10
+              - column:
+                  name: visible
+                  valueNumeric: 1
               - column:
                   name: status
                   valueNumeric: 1
