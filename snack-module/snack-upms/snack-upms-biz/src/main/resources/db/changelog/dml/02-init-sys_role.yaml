@@ -1,7 +1,7 @@
 # 初始化管理员角色和权限
 databaseChangeLog:
   - changeSet:
-      id: insert-admin-sys_role
+      id: insert-sys_role
       author: upms
       changes:
         - insert:
@@ -16,9 +16,6 @@ databaseChangeLog:
               - column:
                   name: role_code
                   value: admin
-              - column:
-                  name: role_desc
-                  value: 拥有系统所有权限
               - column:
                   name: status
                   valueNumeric: 1

@@ -1,7 +1,7 @@
 # 初始化字典类型数据
 databaseChangeLog:
   - changeSet:
-      id: insert-sys_dict_type-init
+      id: insert-sys_dict_type
       author: upms
       changes:
         - insert:

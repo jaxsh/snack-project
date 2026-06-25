@@ -1,7 +1,7 @@
 # 初始化 admin 角色与资源的关联关系
 databaseChangeLog:
   - changeSet:
-      id: insert-sys_role_resource-admin
+      id: insert-sys_role_resource
       author: upms
       changes:
         # 系统管理目录

@@ -1,7 +1,7 @@
 # 初始化 org_code 规则数据
 databaseChangeLog:
   - changeSet:
-      id: insert-org_code-rule
+      id: insert-sys_id_rule
       author: upms
       changes:
         - insert:

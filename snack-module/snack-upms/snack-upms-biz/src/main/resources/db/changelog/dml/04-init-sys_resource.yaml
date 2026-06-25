@@ -1,7 +1,7 @@
 # 初始化系统资源数据（用户管理、角色管理、权限管理）
 databaseChangeLog:
   - changeSet:
-      id: insert-sys_resource-user-management
+      id: insert-sys_resource
       author: upms
       changes:
         - insert:
