@@ -31,6 +31,7 @@ import org.jax.snack.oauth.biz.security.config.SecurityProperties;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -63,9 +64,11 @@ public class OAuth2AuthenticationEvents {
 	 */
 	@EventListener
 	public void onAuthenticationFailure(AbstractAuthenticationFailureEvent event) {
-		Object principal = event.getAuthentication().getPrincipal();
-		if (principal instanceof String username) {
-			handleLoginFailure(username);
+		if (event.getException() instanceof BadCredentialsException) {
+			Object principal = event.getAuthentication().getPrincipal();
+			if (principal instanceof String username) {
+				handleLoginFailure(username);
+			}
 		}
 	}
 

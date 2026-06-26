@@ -21,6 +21,8 @@ import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.oauth.biz.service.LoginAttemptService;
 
+import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,6 +45,16 @@ public class CacheBasedUserDetailsChecker implements UserDetailsChecker {
 	@Override
 	public void check(UserDetails user) {
 		String username = user.getUsername();
+
+		if (!user.isEnabled()) {
+			throw new DisabledException(SpringSecurityMessageSource.getAccessor()
+				.getMessage("AbstractUserDetailsAuthenticationProvider.disabled", "User is disabled"));
+		}
+
+		if (!user.isAccountNonExpired()) {
+			throw new AccountExpiredException(SpringSecurityMessageSource.getAccessor()
+				.getMessage("AbstractUserDetailsAuthenticationProvider.expired", "User account has expired"));
+		}
 
 		if (this.loginAttemptService.isLocked(username)) {
 			throw new LockedException(SpringSecurityMessageSource.getAccessor()
