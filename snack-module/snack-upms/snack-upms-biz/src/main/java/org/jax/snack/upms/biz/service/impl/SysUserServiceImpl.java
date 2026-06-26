@@ -51,6 +51,7 @@ import org.jax.snack.upms.biz.repository.SysUserOrgRepository;
 import org.jax.snack.upms.biz.repository.SysUserRepository;
 import org.jax.snack.upms.biz.repository.SysUserRoleRepository;
 import org.jax.snack.upms.biz.vo.SysMfaQrVO;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,7 +111,7 @@ public class SysUserServiceImpl implements SysUserService {
 		oauthUserDto.setMobile(dto.getMobile());
 		oauthUserDto.setEmail(dto.getEmail());
 		oauthUserDto.setEnabled(dto.getStatus());
-		oauthUserDto.setExpireDate(dto.getExpireDate());
+		oauthUserDto.setExpireDate(JsonNullable.of(dto.getExpireDate().orElse(null)));
 		this.oAuth2UserClient.create(oauthUserDto);
 
 		SysUser entity = this.converter.toEntity(dto);

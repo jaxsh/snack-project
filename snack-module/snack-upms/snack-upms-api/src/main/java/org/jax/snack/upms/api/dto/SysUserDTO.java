@@ -23,6 +23,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -93,6 +94,7 @@ public class SysUserDTO {
 	/**
 	 * 账户状态(0:禁用, 1:启用).
 	 */
+	@NotNull(groups = Create.class)
 	@Min(0)
 	@Max(1)
 	private Integer status;
