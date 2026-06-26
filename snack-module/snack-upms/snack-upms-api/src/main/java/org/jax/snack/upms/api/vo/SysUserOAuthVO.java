@@ -16,6 +16,8 @@
 
 package org.jax.snack.upms.api.vo;
 
+import java.time.ZonedDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -64,5 +66,10 @@ public class SysUserOAuthVO {
 	 * 是否启用 MFA.
 	 */
 	private Integer mfaEnabled;
+
+	/**
+	 * 密码过期时间.
+	 */
+	private ZonedDateTime passwordExpireTime;
 
 }

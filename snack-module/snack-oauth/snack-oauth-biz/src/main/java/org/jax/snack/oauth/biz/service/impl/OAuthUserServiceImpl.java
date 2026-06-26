@@ -152,6 +152,10 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 		int expiredCode = credentialsExpired ? YesNoStatus.YES.getCode() : YesNoStatus.NO.getCode();
 		vo.setExpired(expiredCode);
 		vo.setExpiredLabel(BaseEnum.getNameByCode(YesNoStatus.class, expiredCode));
+		if (user.getLastPasswordResetTime() != null && this.securityProperties.getPasswordExpirationDays() > 0) {
+			vo.setPasswordExpireTime(
+					user.getLastPasswordResetTime().plusDays(this.securityProperties.getPasswordExpirationDays()));
+		}
 		return vo;
 	}
 

@@ -105,4 +105,9 @@ public class OAuthUserVO {
 	 */
 	private Integer mfaEnabled;
 
+	/**
+	 * 密码过期时间.
+	 */
+	private ZonedDateTime passwordExpireTime;
+
 }
