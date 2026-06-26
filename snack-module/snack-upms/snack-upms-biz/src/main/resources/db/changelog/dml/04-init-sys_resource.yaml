@@ -898,6 +898,45 @@ databaseChangeLog:
               - column:
                   name: update_time
                   valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 122
+              - column:
+                  name: parent_id
+                  valueNumeric: 100
+              - column:
+                  name: name
+                  value: 查看用户详情
+              - column:
+                  name: type
+                  valueNumeric: 1
+              - column:
+                  name: permission
+                  value: sys:user:detail
+              - column:
+                  name: sort_order
+                  valueNumeric: 11
+              - column:
+                  name: visible
+                  valueNumeric: 1
+              - column:
+                  name: status
+                  valueNumeric: 1
+              - column:
+                  name: create_by
+                  value: system
+              - column:
+                  name: create_time
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: update_by
+                  value: system
+              - column:
+                  name: update_time
+                  valueComputed: CURRENT_TIMESTAMP
 
   - changeSet:
       id: insert-sys_resource-role-management
