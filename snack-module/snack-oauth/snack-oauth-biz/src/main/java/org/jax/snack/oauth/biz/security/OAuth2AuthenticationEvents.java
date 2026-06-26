@@ -179,6 +179,9 @@ public class OAuth2AuthenticationEvents {
 	 */
 	private ZonedDateTime calculateLockUntil(int lockCount) {
 		List<Integer> durations = this.securityProperties.getLockDurations();
+		if (durations.isEmpty()) {
+			return null;
+		}
 		int index = Math.min(lockCount - 1, durations.size() - 1);
 		int minutes = durations.get(index);
 

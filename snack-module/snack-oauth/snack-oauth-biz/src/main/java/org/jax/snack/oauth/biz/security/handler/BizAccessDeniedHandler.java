@@ -30,6 +30,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
 /**
@@ -51,8 +52,9 @@ public class BizAccessDeniedHandler implements AccessDeniedHandler {
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
-		ApiResponse<Void> apiResponse = ApiResponse.error(ErrorCode.PERMISSION_DENIED,
-				accessDeniedException.getLocalizedMessage());
+		String msg = SpringSecurityMessageSource.getAccessor()
+				.getMessage("AbstractAccessDecisionManager.accessDenied", "Access Denied");
+		ApiResponse<Void> apiResponse = ApiResponse.error(ErrorCode.PERMISSION_DENIED, msg);
 
 		try (PrintWriter writer = response.getWriter()) {
 			writer.write(this.jsonMapper.writeValueAsString(apiResponse));

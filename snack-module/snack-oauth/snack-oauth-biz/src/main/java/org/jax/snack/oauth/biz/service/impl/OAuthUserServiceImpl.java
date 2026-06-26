@@ -126,7 +126,20 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 				user.setExpired(YesNoStatus.NO.getCode());
 			}
 
+			if (Objects.equals(dto.getEnabled(), Status.ENABLED.getCode())
+					&& Objects.equals(existing.getEnabled(), Status.DISABLED.getCode())) {
+				user.setLocked(YesNoStatus.NO.getCode());
+				user.setLockCount(0);
+			}
+
 			this.userRepository.updateByDsl(user, UpdateCondition.builder().setNulls(dto).where(where).build());
+
+			if (Objects.equals(dto.getEnabled(), Status.ENABLED.getCode())
+					&& Objects.equals(existing.getEnabled(), Status.DISABLED.getCode())) {
+				OAuthUser clearLock = new OAuthUser();
+				this.userRepository.updateByDsl(clearLock,
+						UpdateCondition.builder().setNull(OAuthUser.Fields.lockUntil).where(where).build());
+			}
 		}
 
 		if (StringUtils.hasText(dto.getPassword())
