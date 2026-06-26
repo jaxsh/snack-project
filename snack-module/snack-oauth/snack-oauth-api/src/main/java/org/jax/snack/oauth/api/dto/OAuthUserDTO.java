@@ -101,11 +101,6 @@ public class OAuthUserDTO {
 	private Integer mfaEnabled;
 
 	/**
-	 * MFA TOTP 密钥(Base32编码).
-	 */
-	private String mfaSecret;
-
-	/**
 	 * MFA 验证码(6位数字，解绑时传入).
 	 */
 	@Pattern(regexp = "^[0-9]{6}$")

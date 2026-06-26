@@ -99,11 +99,6 @@ public class SysUserOAuthDTO {
 	private Integer mfaEnabled;
 
 	/**
-	 * MFA TOTP 密钥.
-	 */
-	private String mfaSecret;
-
-	/**
 	 * MFA 验证码.
 	 */
 	@Pattern(regexp = "^[0-9]{6}$")

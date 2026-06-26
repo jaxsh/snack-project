@@ -81,7 +81,7 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 
 		OAuthUser user = this.converter.toEntity(dto);
 		user.setPassword(this.passwordEncoder.encode(this.securityProperties.getDefaultPassword()));
-		user.setEnabled(Status.ENABLED.getCode());
+		user.setEnabled((dto.getEnabled() != null) ? dto.getEnabled() : Status.ENABLED.getCode());
 		user.setLocked(YesNoStatus.NO.getCode());
 		user.setExpired(YesNoStatus.NO.getCode());
 		user.setInitialPassword(YesNoStatus.YES.getCode());

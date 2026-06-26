@@ -131,11 +131,6 @@ public class SysUserDTO {
 	private Integer mfaEnabled;
 
 	/**
-	 * MFA TOTP 密钥(Base32编码，开启时传入).
-	 */
-	private String mfaSecret;
-
-	/**
 	 * MFA 验证码（开启时用于服务端校验，不存储）.
 	 */
 	@Pattern(regexp = "^[0-9]{6}$")

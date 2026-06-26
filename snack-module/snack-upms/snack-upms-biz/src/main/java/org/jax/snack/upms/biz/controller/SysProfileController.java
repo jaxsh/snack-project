@@ -120,7 +120,6 @@ public class SysProfileController {
 		SysUserOAuthDTO oauthDto = new SysUserOAuthDTO();
 		oauthDto.setMfaEnabled(dto.getMfaEnabled());
 		oauthDto.setMfaCode(dto.getMfaCode());
-		oauthDto.setMfaSecret(dto.getMfaSecret());
 		this.sysUserService.updateOAuth(username, oauthDto);
 	}
 

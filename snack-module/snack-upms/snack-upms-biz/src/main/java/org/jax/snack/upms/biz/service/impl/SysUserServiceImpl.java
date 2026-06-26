@@ -109,13 +109,19 @@ public class SysUserServiceImpl implements SysUserService {
 		oauthUserDto.setUsername(dto.getUsername());
 		oauthUserDto.setMobile(dto.getMobile());
 		oauthUserDto.setEmail(dto.getEmail());
+		oauthUserDto.setEnabled(dto.getStatus());
+		oauthUserDto.setExpireDate(dto.getExpireDate());
 		this.oAuth2UserClient.create(oauthUserDto);
 
 		SysUser entity = this.converter.toEntity(dto);
 		this.repository.save(entity);
 
-		updateUserRoles(dto.getUsername(), dto.getRoleCodes().orElse(Set.of()));
-		updateUserOrgs(dto.getUsername(), dto.getOrgCodes().orElse(Set.of()));
+		if (dto.getRoleCodes().isPresent()) {
+			updateUserRoles(dto.getUsername(), dto.getRoleCodes().orElse(Set.of()));
+		}
+		if (dto.getOrgCodes().isPresent()) {
+			updateUserOrgs(dto.getUsername(), dto.getOrgCodes().orElse(Set.of()));
+		}
 	}
 
 	@Override
