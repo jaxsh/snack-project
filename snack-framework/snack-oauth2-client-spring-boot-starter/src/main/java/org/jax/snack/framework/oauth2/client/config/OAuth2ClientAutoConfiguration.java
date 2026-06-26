@@ -196,10 +196,8 @@ public class OAuth2ClientAutoConfiguration {
 			.sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
 			.sessionConcurrency((concurrency) -> {
 				concurrency.maximumSessions(properties.getMaxSessions()).sessionRegistry(sessionRegistry);
-				if (properties.getMaxSessions() > 0) {
-					concurrency.expiredSessionStrategy(
-							new JsonExpiredSessionStrategy(loginUrl, jsonMapper, oauth2ClientMessageSource()));
-				}
+				concurrency.expiredSessionStrategy(
+						new JsonExpiredSessionStrategy(loginUrl, jsonMapper, oauth2ClientMessageSource()));
 			}));
 
 		http.addFilterAfter(
