@@ -2184,48 +2184,6 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 403
-              - column:
-                  name: parent_id
-                  valueNumeric: 400
-              - column:
-                  name: name
-                  value: 修改密码接口
-              - column:
-                  name: type
-                  valueNumeric: 2
-              - column:
-                  name: path
-                  value: /api/upms/user/password
-              - column:
-                  name: method
-                  value: PUT
-              - column:
-                  name: sort_order
-                  valueNumeric: 0
-              - column:
-                  name: visible
-                  valueNumeric: 0
-              - column:
-                  name: status
-                  valueNumeric: 1
-              - column:
-                  name: create_by
-                  value: system
-              - column:
-                  name: create_time
-                  valueComputed: CURRENT_TIMESTAMP
-              - column:
-                  name: update_by
-                  value: system
-              - column:
-                  name: update_time
-                  valueComputed: CURRENT_TIMESTAMP
-        - insert:
-            tableName: sys_resource
-            columns:
-              - column:
-                  name: id
                   valueNumeric: 404
               - column:
                   name: parent_id
