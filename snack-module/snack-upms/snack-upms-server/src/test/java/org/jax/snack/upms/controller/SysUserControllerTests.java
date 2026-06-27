@@ -79,6 +79,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 		dto.setNickname(username + "_nick");
 		dto.setGender(UserGender.MALE.getCode());
 		dto.setBirthday(JsonNullable.of(LocalDate.of(1990, 1, 1)));
+		dto.setStatus(1);
 		return dto;
 	}
 

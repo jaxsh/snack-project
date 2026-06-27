@@ -179,6 +179,7 @@ class SysFileControllerTests extends UpmsIntegrationTests {
 			userDto.setUsername("lifecycle_mb_user");
 			userDto.setNickname("Mobile User");
 			userDto.setAvatar(JsonNullable.of(urlA));
+			userDto.setStatus(1);
 
 			SysFileControllerTests.this.userService.create(userDto);
 			QueryCondition userCondition = QueryCondition.builder()

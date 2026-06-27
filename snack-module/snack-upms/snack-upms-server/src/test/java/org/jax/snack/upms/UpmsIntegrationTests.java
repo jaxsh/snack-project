@@ -55,8 +55,8 @@ public abstract class UpmsIntegrationTests extends MockMvcTestSupport {
 		@Bean
 		CacheManager cacheManager() {
 			SimpleCacheManager cacheManager = new SimpleCacheManager();
-			cacheManager
-				.setCaches(List.of(new ConcurrentMapCache("upms:user"), new ConcurrentMapCache("registered_clients")));
+			cacheManager.setCaches(List.of(new ConcurrentMapCache("upms:user"),
+					new ConcurrentMapCache("upms:role-resources"), new ConcurrentMapCache("registered_clients")));
 			return cacheManager;
 		}
 
