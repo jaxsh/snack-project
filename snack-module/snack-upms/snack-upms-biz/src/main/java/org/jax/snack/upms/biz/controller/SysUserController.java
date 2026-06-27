@@ -30,7 +30,6 @@ import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
 import org.jax.snack.upms.api.service.SysUserService;
-import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 import org.jax.snack.upms.biz.entity.SysUser;
 
@@ -148,31 +147,12 @@ public class SysUserController {
 	}
 
 	/**
-	 * 强制下线用户.
+	 * 强退用户会话 (不传 sessionId 时强制下线所有会话并撤销 Token).
 	 * @param id 用户 ID
+	 * @param sessionId 会话 ID (可选)
 	 */
-	@DeleteMapping("/{id}/tokens")
-	public void revokeTokens(@PathVariable Long id) {
-		this.service.revokeTokens(id);
-	}
-
-	/**
-	 * 查询用户的活跃 Session 列表.
-	 * @param id 用户 ID
-	 * @return Session 列表
-	 */
-	@GetMapping("/{id}/sessions")
-	public List<SysSessionVO> getSessions(@PathVariable Long id) {
-		return this.service.getSessions(id);
-	}
-
-	/**
-	 * 踢出用户的指定 Session.
-	 * @param id 用户 ID
-	 * @param sessionId Session ID
-	 */
-	@DeleteMapping("/{id}/sessions/{sessionId}")
-	public void revokeSession(@PathVariable Long id, @PathVariable String sessionId) {
+	@DeleteMapping("/{id}/sessions")
+	public void revokeSession(@PathVariable Long id, @RequestParam(required = false) String sessionId) {
 		this.service.revokeSession(id, sessionId);
 	}
 

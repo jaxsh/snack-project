@@ -1,10 +1,8 @@
-# 初始化 admin 角色与资源的关联关系
 databaseChangeLog:
   - changeSet:
       id: insert-sys_role_resource
       author: upms
       changes:
-        # 系统管理目录
         - insert:
             tableName: sys_role_resource
             columns:
@@ -15,7 +13,6 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 角色管理菜单
         - insert:
             tableName: sys_role_resource
             columns:
@@ -26,7 +23,6 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 新增角色按钮
         - insert:
             tableName: sys_role_resource
             columns:
@@ -37,62 +33,56 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 创建角色接口
         - insert:
             tableName: sys_role_resource
             columns:
               - column: { name: id, valueNumeric: 4 }
+              - column: { name: role_code, value: admin }
+              - column: { name: resource_id, valueNumeric: 206 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_role_resource
+            columns:
+              - column: { name: id, valueNumeric: 5 }
               - column: { name: role_code, value: admin }
               - column: { name: resource_id, valueNumeric: 207 }
               - column: { name: create_by, value: system }
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 查询角色列表接口
         - insert:
             tableName: sys_role_resource
             columns:
-              - column: { name: id, valueNumeric: 5 }
+              - column: { name: id, valueNumeric: 6 }
               - column: { name: role_code, value: admin }
               - column: { name: resource_id, valueNumeric: 208 }
               - column: { name: create_by, value: system }
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 查询角色详情接口
         - insert:
             tableName: sys_role_resource
             columns:
-              - column: { name: id, valueNumeric: 6 }
+              - column: { name: id, valueNumeric: 7 }
               - column: { name: role_code, value: admin }
               - column: { name: resource_id, valueNumeric: 209 }
               - column: { name: create_by, value: system }
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 更新角色接口
         - insert:
             tableName: sys_role_resource
             columns:
-              - column: { name: id, valueNumeric: 7 }
+              - column: { name: id, valueNumeric: 8 }
               - column: { name: role_code, value: admin }
               - column: { name: resource_id, valueNumeric: 210 }
               - column: { name: create_by, value: system }
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 删除角色接口
-        - insert:
-            tableName: sys_role_resource
-            columns:
-              - column: { name: id, valueNumeric: 8 }
-              - column: { name: role_code, value: admin }
-              - column: { name: resource_id, valueNumeric: 211 }
-              - column: { name: create_by, value: system }
-              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
-              - column: { name: update_by, value: system }
-              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 权限管理菜单
         - insert:
             tableName: sys_role_resource
             columns:
@@ -103,24 +93,12 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 获取权限树接口
         - insert:
             tableName: sys_role_resource
             columns:
               - column: { name: id, valueNumeric: 10 }
               - column: { name: role_code, value: admin }
-              - column: { name: resource_id, valueNumeric: 316 }
-              - column: { name: create_by, value: system }
-              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
-              - column: { name: update_by, value: system }
-              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        # 查询角色权限接口
-        - insert:
-            tableName: sys_role_resource
-            columns:
-              - column: { name: id, valueNumeric: 11 }
-              - column: { name: role_code, value: admin }
-              - column: { name: resource_id, valueNumeric: 317 }
+              - column: { name: resource_id, valueNumeric: 309 }
               - column: { name: create_by, value: system }
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }

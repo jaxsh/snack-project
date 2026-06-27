@@ -404,7 +404,7 @@ class SysUserControllerTests extends UpmsIntegrationTests {
 
 			Mockito.doNothing().when(SysUserControllerTests.this.oAuth2UserClient).revokeTokens(username);
 
-			deleteJson("/api/upms/users/{id}/tokens", created.getId()).andDo(print())
+			deleteJson("/api/upms/users/{id}/sessions", created.getId()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 

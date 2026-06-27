@@ -16,7 +16,6 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
-import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,17 +155,19 @@ public class SysUserServiceImpl implements SysUserService {
 		else {
 			result = this.converter.toPageResult(this.repository.queryListByDsl(condition));
 		}
-		fillLastActiveTime(result.getRecords());
+		fillSessions(result.getRecords());
 		fillRoleCodes(result.getRecords());
 		return result;
 	}
 
-	private void fillLastActiveTime(List<SysUserVO> records) {
+	private void fillSessions(List<SysUserVO> records) {
 		if (CollectionUtils.isEmpty(records)) {
 			return;
 		}
-		Map<String, ZonedDateTime> lastActiveTimes = this.sessionService.getLastActiveTimes();
-		records.forEach((vo) -> vo.setLastActiveTime(lastActiveTimes.get(vo.getUsername())));
+		records.forEach((vo) -> {
+			List<SysSessionVO> sessions = this.sessionService.getSessions(vo.getUsername());
+			vo.setSessions(sessions);
+		});
 	}
 
 	private void fillRoleCodes(List<SysUserVO> records) {
@@ -189,24 +190,12 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
-	public void revokeTokens(Long id) {
-		SysUser current = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
-		this.oAuth2UserClient.revokeTokens(current.getUsername());
-		this.sessionService.revokeSessionsByUsername(current.getUsername());
-	}
-
-	@Override
-	public List<SysSessionVO> getSessions(Long id) {
-		SysUser current = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
-		return this.sessionService.getSessions(current.getUsername());
-	}
-
-	@Override
 	public void revokeSession(Long id, String sessionId) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
+		if (!StringUtils.hasText(sessionId)) {
+			this.oAuth2UserClient.revokeTokens(current.getUsername());
+		}
 		this.sessionService.revokeSession(current.getUsername(), sessionId);
 	}
 
@@ -320,6 +309,8 @@ public class SysUserServiceImpl implements SysUserService {
 		if (!ObjectUtils.isEmpty(oauthVO)) {
 			vo.setOauthVO(oauthVO);
 		}
+		List<SysSessionVO> sessions = this.sessionService.getSessions(username);
+		vo.setSessions(sessions);
 		return vo;
 	}
 

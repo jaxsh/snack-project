@@ -16,9 +16,7 @@
 
 package org.jax.snack.upms.api.service;
 
-import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.jax.snack.upms.api.vo.SysSessionVO;
 
@@ -37,22 +35,10 @@ public interface SysSessionService {
 	List<SysSessionVO> getSessions(String username);
 
 	/**
-	 * 踢出指定用户的指定 Session.
+	 * 踢出指定用户的活跃 Session.
 	 * @param username 用户名
-	 * @param sessionId Session ID
+	 * @param sessionId Session ID (为 null 或空时清退该用户的所有会话)
 	 */
 	void revokeSession(String username, String sessionId);
-
-	/**
-	 * 踢出指定用户的所有活跃 Session.
-	 * @param username 用户名
-	 */
-	void revokeSessionsByUsername(String username);
-
-	/**
-	 * 查询所有在线用户的最后活跃时间.
-	 * @return username 到最新 lastRequest 的映射(同用户多 Session 取最大值)
-	 */
-	Map<String, ZonedDateTime> getLastActiveTimes();
 
 }

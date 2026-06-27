@@ -113,14 +113,14 @@ public class SysUserVO {
 	private LocalDate expireDate;
 
 	/**
-	 * 最后活跃时间(无活跃 Session 时为 null).
-	 */
-	private ZonedDateTime lastActiveTime;
-
-	/**
 	 * 角色编码列表.
 	 */
 	private List<String> roleCodes;
+
+	/**
+	 * 活跃 Session 列表.
+	 */
+	private List<SysSessionVO> sessions;
 
 	/**
 	 * 认证侧信息(登录/锁定/初始密码/MFA 等), 由 oauth_user 聚合.

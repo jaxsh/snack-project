@@ -16,10 +16,9 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
-import java.time.ZonedDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.exception.BusinessException;
@@ -31,6 +30,7 @@ import org.jax.snack.upms.biz.converter.SysSessionConverter;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * 活跃 Session 管理服务实现.
@@ -47,32 +47,29 @@ public class SysSessionServiceImpl implements SysSessionService {
 
 	@Override
 	public List<SysSessionVO> getSessions(String username) {
-		return sessionsOf(username).stream().map(this.converter::toVO).toList();
+		return sessionsOf(username).stream()
+			.map(this.converter::toVO)
+			.collect(Collectors.toMap(SysSessionVO::getSessionId, (vo) -> vo,
+					(existing, replacement) -> existing.getLastRequest().isAfter(replacement.getLastRequest())
+							? existing : replacement,
+					LinkedHashMap::new))
+			.values()
+			.stream()
+			.toList();
 	}
 
 	@Override
 	public void revokeSession(String username, String sessionId) {
-		sessionsOf(username).stream()
-			.filter((info) -> sessionId.equals(info.getSessionId()))
-			.findFirst()
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Session"))
-			.expireNow();
-	}
-
-	@Override
-	public void revokeSessionsByUsername(String username) {
-		sessionsOf(username).forEach(SessionInformation::expireNow);
-	}
-
-	@Override
-	public Map<String, ZonedDateTime> getLastActiveTimes() {
-		Map<String, ZonedDateTime> result = new HashMap<>();
-		this.sessionRegistry.getAllPrincipals()
-			.stream()
-			.flatMap((p) -> this.sessionRegistry.getAllSessions(p, false).stream())
-			.map(this.converter::toVO)
-			.forEach((vo) -> result.merge(vo.getUsername(), vo.getLastRequest(), (a, b) -> a.isAfter(b) ? a : b));
-		return result;
+		if (!StringUtils.hasText(sessionId)) {
+			sessionsOf(username).forEach(SessionInformation::expireNow);
+		}
+		else {
+			sessionsOf(username).stream()
+				.filter((info) -> sessionId.equals(info.getSessionId()))
+				.findFirst()
+				.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Session"))
+				.expireNow();
+		}
 	}
 
 	private List<SessionInformation> sessionsOf(String username) {

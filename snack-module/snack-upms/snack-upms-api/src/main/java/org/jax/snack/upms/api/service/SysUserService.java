@@ -25,7 +25,6 @@ import org.jax.snack.upms.api.dto.SysUserDTO;
 import org.jax.snack.upms.api.dto.SysUserOAuthDTO;
 import org.jax.snack.upms.api.vo.MfaSetupVO;
 import org.jax.snack.upms.api.vo.SysResourceVO;
-import org.jax.snack.upms.api.vo.SysSessionVO;
 import org.jax.snack.upms.api.vo.SysUserVO;
 
 /**
@@ -69,22 +68,9 @@ public interface SysUserService {
 	void updateOAuth(String username, SysUserOAuthDTO dto);
 
 	/**
-	 * 强制下线用户（吊销所有 token）.
+	 * 强退用户会话 (不传 sessionId 时强制下线所有会话并撤销 Token).
 	 * @param id 用户 ID
-	 */
-	void revokeTokens(Long id);
-
-	/**
-	 * 查询用户的活跃 Session 列表.
-	 * @param id 用户 ID
-	 * @return Session 列表
-	 */
-	List<SysSessionVO> getSessions(Long id);
-
-	/**
-	 * 踢出用户的指定 Session.
-	 * @param id 用户 ID
-	 * @param sessionId Session ID
+	 * @param sessionId 会话 ID (可选，为 null 或空时清退该用户的所有会话)
 	 */
 	void revokeSession(Long id, String sessionId);
 
