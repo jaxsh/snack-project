@@ -42,6 +42,7 @@ import org.jax.snack.oauth.biz.repository.OAuthAuthorizationRepository;
 import org.jax.snack.oauth.biz.repository.OAuthUserRepository;
 import org.jax.snack.oauth.biz.security.OAuthSessionInvalidator;
 import org.jax.snack.oauth.biz.security.config.SecurityProperties;
+import org.jax.snack.oauth.biz.service.LoginAttemptService;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -70,6 +71,8 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 	private final OAuthSessionInvalidator sessionInvalidator;
 
 	private final CodeVerifier mfaCodeVerifier;
+
+	private final LoginAttemptService loginAttemptService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -149,6 +152,13 @@ public class OAuthUserServiceImpl implements OAuthUserService {
 
 		if (Objects.equals(dto.getEnabled(), Status.DISABLED.getCode())) {
 			revokeTokens(username);
+		}
+
+		if (Objects.equals(dto.getLocked(), YesNoStatus.NO.getCode()) || StringUtils.hasText(dto.getPassword())
+				|| (Objects.equals(dto.getEnabled(), Status.ENABLED.getCode())
+						&& Objects.equals(existing.getEnabled(), Status.DISABLED.getCode()))) {
+			this.loginAttemptService.clearLockStatus(username);
+			this.loginAttemptService.resetFailCount(username);
 		}
 	}
 
