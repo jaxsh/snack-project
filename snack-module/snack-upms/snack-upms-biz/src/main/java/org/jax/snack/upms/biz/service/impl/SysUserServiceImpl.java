@@ -17,6 +17,7 @@
 package org.jax.snack.upms.biz.service.impl;
 
 import java.time.ZonedDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,10 +54,7 @@ import org.jax.snack.upms.biz.repository.SysUserRoleRepository;
 import org.jax.snack.upms.biz.vo.SysMfaQrVO;
 import org.openapitools.jackson.nullable.JsonNullable;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -72,8 +70,6 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 public class SysUserServiceImpl implements SysUserService {
-
-	private static final String CACHE_NAME = "upms:user";
 
 	private static final String USER_ENTITY = "User";
 
@@ -96,11 +92,8 @@ public class SysUserServiceImpl implements SysUserService {
 	@Value("${spring.application.name}")
 	private String applicationName;
 
-	private final ObjectProvider<SysUserService> selfProvider;
-
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysUserDTO dto) {
 		QueryCondition condition = QueryCondition.builder().eq(SysUser.Fields.username, dto.getUsername()).build();
 		if (this.repository.existsByDsl(condition)) {
@@ -126,7 +119,6 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
-	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
 		List<SysUser> users = this.repository.queryListByDsl(queryCondition);
@@ -246,7 +238,6 @@ public class SysUserServiceImpl implements SysUserService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void update(Long id, SysUserDTO dto) {
 		SysUser current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, USER_ENTITY));
@@ -297,18 +288,18 @@ public class SysUserServiceImpl implements SysUserService {
 	}
 
 	@Override
-	@Cacheable(value = CACHE_NAME, key = "'enabled-roles:' + #username")
 	public List<String> getEnabledRoleCodesByUsername(String username) {
 		return this.userRoleRepository.selectEnabledRoleCodesByUsername(username, Status.ENABLED.getCode());
 	}
 
 	@Override
 	public List<SysResourceVO> getResourcesByUsername(String username) {
-		return this.selfProvider.getObject()
-			.getEnabledRoleCodesByUsername(username)
+		return this.getEnabledRoleCodesByUsername(username)
 			.stream()
 			.flatMap((code) -> this.sysResourceService.getResourcesByRoleCode(code).stream())
-			.distinct()
+			.collect(Collectors.toMap(SysResourceVO::getId, (v) -> v, (a, b) -> a, LinkedHashMap::new))
+			.values()
+			.stream()
 			.toList();
 	}
 
