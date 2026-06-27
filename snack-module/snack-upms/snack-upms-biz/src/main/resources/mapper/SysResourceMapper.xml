@@ -16,18 +16,4 @@
         ORDER BY res.sort_order ASC
     </select>
 
-    <select id="selectResourcesByUsername" resultType="org.jax.snack.upms.biz.entity.SysResource">
-        SELECT DISTINCT res.*
-        FROM sys_resource res
-                 JOIN sys_role_resource rr ON res.id = rr.resource_id
-                 JOIN sys_role role ON rr.role_code = role.role_code
-                 JOIN sys_user_role ur ON ur.role_code = role.role_code
-        WHERE ur.username = #{username}
-        <if test="status != null">
-            AND role.status = #{status}
-            AND res.status = #{status}
-        </if>
-        ORDER BY res.sort_order ASC
-    </select>
-
 </mapper>

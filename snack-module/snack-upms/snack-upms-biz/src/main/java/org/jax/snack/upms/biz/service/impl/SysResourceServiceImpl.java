@@ -58,7 +58,7 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class SysResourceServiceImpl implements SysResourceService {
 
-	private static final String CACHE_NAME = "upms:user";
+	private static final String CACHE_NAME = "upms:role-resources";
 
 	private final SysResourceRepository repository;
 
@@ -70,7 +70,6 @@ public class SysResourceServiceImpl implements SysResourceService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysResourceDTO dto) {
 		QueryCondition existsCondition = QueryCondition.builder()
 			.eq(SysResource.Fields.name, dto.getName())
@@ -199,14 +198,6 @@ public class SysResourceServiceImpl implements SysResourceService {
 	@Cacheable(value = CACHE_NAME, key = "'resources:role:' + #roleCode")
 	public List<SysResourceVO> getResourcesByRoleCode(String roleCode) {
 		return this.repository.selectResourcesByRoleCodes(List.of(roleCode), Status.ENABLED.getCode())
-			.stream()
-			.map(this.converter::toVO)
-			.toList();
-	}
-
-	@Override
-	public List<SysResourceVO> getEnabledResourcesByUsername(String username) {
-		return this.repository.selectResourcesByUsername(username, Status.ENABLED.getCode())
 			.stream()
 			.map(this.converter::toVO)
 			.toList();

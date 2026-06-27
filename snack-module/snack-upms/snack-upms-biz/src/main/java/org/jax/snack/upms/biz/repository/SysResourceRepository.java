@@ -36,12 +36,4 @@ public interface SysResourceRepository extends BaseRepository<SysResource, Long>
 	 */
 	List<SysResource> selectResourcesByRoleCodes(List<String> roleCodes, Integer status);
 
-	/**
-	 * 根据用户名查询资源，status 可选（null 时不过滤）.
-	 * @param username 用户名
-	 * @param status 资源/角色状态（可为 null）
-	 * @return 资源列表
-	 */
-	List<SysResource> selectResourcesByUsername(String username, Integer status);
-
 }

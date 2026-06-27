@@ -39,9 +39,4 @@ public class SysResourceRepositoryImpl extends AbstractRepository<SysResource, L
 		return getMapper().selectResourcesByRoleCodes(roleCodes, status);
 	}
 
-	@Override
-	public List<SysResource> selectResourcesByUsername(String username, Integer status) {
-		return getMapper().selectResourcesByUsername(username, status);
-	}
-
 }

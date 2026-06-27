@@ -38,12 +38,4 @@ public interface SysResourceMapper extends BaseMapper<SysResource> {
 	List<SysResource> selectResourcesByRoleCodes(@Param("roleCodes") List<String> roleCodes,
 			@Param("status") Integer status);
 
-	/**
-	 * 根据用户名查询资源，status 可选（null 时不过滤）.
-	 * @param username 用户名
-	 * @param status 资源/角色状态（可为 null）
-	 * @return 资源列表
-	 */
-	List<SysResource> selectResourcesByUsername(@Param("username") String username, @Param("status") Integer status);
-
 }

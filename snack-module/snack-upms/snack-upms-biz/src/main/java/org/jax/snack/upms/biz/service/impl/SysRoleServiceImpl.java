@@ -52,7 +52,7 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class SysRoleServiceImpl implements SysRoleService {
 
-	private static final String CACHE_NAME = "upms:user";
+	private static final String CACHE_NAME = "upms:role-resources";
 
 	private final SysRoleRepository repository;
 
@@ -64,7 +64,6 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = CACHE_NAME, allEntries = true)
 	public void create(SysRoleDTO dto) {
 		QueryCondition condition = QueryCondition.builder().eq(SysRole.Fields.roleCode, dto.getRoleCode()).build();
 		if (this.repository.existsByDsl(condition)) {
@@ -87,7 +86,7 @@ public class SysRoleServiceImpl implements SysRoleService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	@CacheEvict(value = CACHE_NAME, allEntries = true)
+	@CacheEvict(value = CACHE_NAME, key = "'resources:role:' + #dto.roleCode")
 	public void update(Long id, SysRoleDTO dto) {
 		SysRole current = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, "Role"));

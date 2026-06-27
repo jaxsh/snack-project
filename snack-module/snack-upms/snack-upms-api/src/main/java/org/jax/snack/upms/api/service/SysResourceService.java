@@ -79,11 +79,4 @@ public interface SysResourceService {
 	 */
 	List<SysResourceVO> getResourcesByRoleCode(String roleCode);
 
-	/**
-	 * 查询用户已启用的资源列表（启用角色 + 启用资源）.
-	 * @param username 用户名
-	 * @return 资源 VO 列表
-	 */
-	List<SysResourceVO> getEnabledResourcesByUsername(String username);
-
 }
