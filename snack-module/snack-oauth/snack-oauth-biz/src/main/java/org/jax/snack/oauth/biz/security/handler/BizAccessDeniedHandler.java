@@ -53,7 +53,7 @@ public class BizAccessDeniedHandler implements AccessDeniedHandler {
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
 		String msg = SpringSecurityMessageSource.getAccessor()
-				.getMessage("AbstractAccessDecisionManager.accessDenied", "Access Denied");
+			.getMessage("AbstractAccessDecisionManager.accessDenied", "Access Denied");
 		ApiResponse<Void> apiResponse = ApiResponse.error(ErrorCode.PERMISSION_DENIED, msg);
 
 		try (PrintWriter writer = response.getWriter()) {
