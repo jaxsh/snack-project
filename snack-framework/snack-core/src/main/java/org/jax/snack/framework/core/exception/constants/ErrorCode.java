@@ -47,6 +47,16 @@ public class ErrorCode {
 	public static final String NOT_FOUND = "1003";
 
 	/**
+	 * 文件大小超出限制.
+	 */
+	public static final String FILE_SIZE_EXCEEDED = "1004";
+
+	/**
+	 * 不允许的文件扩展名.
+	 */
+	public static final String FILE_EXTENSION_NOT_ALLOWED = "1005";
+
+	/**
 	 * 数据已存在. 表示试图创建重复的数据.
 	 */
 	public static final String DATA_ALREADY_EXISTS = "2000";

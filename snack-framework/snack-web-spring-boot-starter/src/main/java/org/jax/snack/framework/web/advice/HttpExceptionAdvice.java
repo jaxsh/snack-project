@@ -47,13 +47,12 @@ public class HttpExceptionAdvice {
 
 	/**
 	 * 处理 404 资源不存在.
-	 * @param e 异常信息
 	 * @return 返回报文
 	 */
 	@ExceptionHandler(NoResourceFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	public ApiResponse<Object> handleNotFound(NoResourceFoundException e) {
-		return ApiResponse.error(ErrorCode.NOT_FOUND, getLocalizedMessage(ErrorCode.NOT_FOUND));
+	public ApiResponse<Object> handleNotFound() {
+		return ApiResponse.error(ErrorCode.NOT_FOUND, getLocalizedMessage());
 	}
 
 	/**
@@ -78,8 +77,8 @@ public class HttpExceptionAdvice {
 		return ApiResponse.error(ErrorCode.PARAM_INVALID, e.getMessage());
 	}
 
-	private String getLocalizedMessage(String code) {
-		return this.messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
+	private String getLocalizedMessage() {
+		return this.messageSource.getMessage(ErrorCode.NOT_FOUND, null, LocaleContextHolder.getLocale());
 	}
 
 }

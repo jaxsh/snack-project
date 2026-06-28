@@ -18,6 +18,10 @@ snack:
       end-session-endpoint-uri: ${snack.oauth2.client.server-url}/connect/logout
       max-sessions: -1
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
   cache:
     type: caffeine
     caffeine:

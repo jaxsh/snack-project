@@ -38,7 +38,7 @@ public class FileStorageProperties {
 	/**
 	 * 存储根路径.
 	 */
-	private String storagePath = "/data/upload";
+	private String storagePath = "./data/upload";
 
 	/**
 	 * 最大文件大小 (bytes).

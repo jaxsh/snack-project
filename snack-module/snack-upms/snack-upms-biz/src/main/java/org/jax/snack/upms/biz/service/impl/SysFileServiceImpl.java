@@ -188,16 +188,18 @@ public class SysFileServiceImpl implements SysFileService {
 
 	private void validateExtension(String extension) {
 		if (!StringUtils.hasText(extension)) {
-			throw new BusinessException(ErrorCode.PARAM_INVALID, "File extension is required");
+			throw new BusinessException(ErrorCode.PARAM_INVALID);
 		}
 		if (!this.properties.getAllowedExtensions().contains(extension.toLowerCase(Locale.ROOT))) {
-			throw new BusinessException(ErrorCode.PARAM_INVALID, "File extension not allowed: " + extension);
+			String allowed = String.join(", ", this.properties.getAllowedExtensions());
+			throw new BusinessException(ErrorCode.FILE_EXTENSION_NOT_ALLOWED, extension, allowed);
 		}
 	}
 
 	private void validateFileSize(long size) {
 		if (size > this.properties.getMaxSize()) {
-			throw new BusinessException(ErrorCode.PARAM_INVALID, "File size exceeds limit");
+			long maxMb = this.properties.getMaxSize() / 1024 / 1024;
+			throw new BusinessException(ErrorCode.FILE_SIZE_EXCEEDED, maxMb);
 		}
 	}
 
