@@ -16,6 +16,7 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ public class SysSessionServiceImpl implements SysSessionService {
 					LinkedHashMap::new))
 			.values()
 			.stream()
+			.sorted(Comparator.comparing(SysSessionVO::getLastRequest).reversed())
 			.toList();
 	}
 
