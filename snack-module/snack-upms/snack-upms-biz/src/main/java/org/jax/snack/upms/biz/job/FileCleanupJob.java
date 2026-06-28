@@ -39,15 +39,13 @@ import org.jax.snack.upms.biz.repository.SysFileRepository;
 import org.jax.snack.upms.biz.repository.SysFileStorageRepository;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -60,10 +58,6 @@ import org.springframework.util.StringUtils;
 @Component
 @RequiredArgsConstructor
 public class FileCleanupJob implements Job {
-
-	private static final String PARAM_TABLES = "tables";
-
-	private static final String PARAM_BATCH_SIZE = "batchSize";
 
 	private static final int DEFAULT_BATCH_SIZE = 1000;
 
@@ -82,27 +76,14 @@ public class FileCleanupJob implements Job {
 	private final TransactionTemplate transactionTemplate;
 
 	@Override
-	public void execute(JobExecutionContext context) throws JobExecutionException {
-		String tablesJson = context.getMergedJobDataMap().getString(PARAM_TABLES);
-		if (!StringUtils.hasText(tablesJson)) {
-			log.warn("File cleanup job skipped: 'tables' parameter is empty.");
-			return;
+	public void execute(JobExecutionContext context) {
+		FileCleanupConfig config = this.jsonMapper.convertValue(context.getMergedJobDataMap(), FileCleanupConfig.class);
+
+		if (CollectionUtils.isEmpty(config.tables())) {
+			throw new IllegalArgumentException("File cleanup parameter 'tables' is required and cannot be empty.");
 		}
 
-		int batchSize = DEFAULT_BATCH_SIZE;
-		if (context.getMergedJobDataMap().containsKey(PARAM_BATCH_SIZE)) {
-			batchSize = context.getMergedJobDataMap().getIntValue(PARAM_BATCH_SIZE);
-		}
-
-		try {
-			List<TableConfig> configs = this.jsonMapper.readValue(tablesJson, new TypeReference<>() {
-			});
-			cleanup(configs, batchSize);
-		}
-		catch (JacksonException ex) {
-			log.error("Failed to parse 'tables' parameter: {}", tablesJson, ex);
-			throw new JobExecutionException(ex);
-		}
+		cleanup(config.tables(), config.getBatchSizeOrDefault());
 	}
 
 	public void cleanup(List<TableConfig> configs, int batchSize) {
@@ -115,32 +96,27 @@ public class FileCleanupJob implements Job {
 				log.warn("Ignored invalid table config: {}", config);
 				continue;
 			}
-			try {
-				String sql = "SELECT DISTINCT " + config.column() + " FROM " + config.table() + " WHERE "
-						+ config.column() + " IS NOT NULL";
-				List<String> results = this.jdbcTemplate.queryForList(sql, String.class);
+			String sql = "SELECT DISTINCT " + config.column() + " FROM " + config.table() + " WHERE " + config.column()
+					+ " IS NOT NULL";
+			List<String> results = this.jdbcTemplate.queryForList(sql, String.class);
 
-				if (config.richText()) {
-					String prefix = this.properties.getUrlPrefix();
-					Pattern pattern = Pattern.compile("([\"'])(" + Pattern.quote(prefix) + "/[\\w./-]+)\\1");
-					for (String content : results) {
-						if (!StringUtils.hasText(content)) {
-							continue;
-						}
-						Matcher matcher = pattern.matcher(content);
-						while (matcher.find()) {
-							String fullMatch = matcher.group(2);
-							String storagePath = fullMatch.substring(prefix.length() + 1);
-							activePaths.add(storagePath);
-						}
+			if (config.richText()) {
+				String prefix = this.properties.getUrlPrefix();
+				Pattern pattern = Pattern.compile("([\"'])(" + Pattern.quote(prefix) + "/[\\w./-]+)\\1");
+				for (String content : results) {
+					if (!StringUtils.hasText(content)) {
+						continue;
+					}
+					Matcher matcher = pattern.matcher(content);
+					while (matcher.find()) {
+						String fullMatch = matcher.group(2);
+						String storagePath = fullMatch.substring(prefix.length() + 1);
+						activePaths.add(storagePath);
 					}
 				}
-				else {
-					activePaths.addAll(results);
-				}
 			}
-			catch (DataAccessException ex) {
-				log.error("Failed to query table: {}", config.table(), ex);
+			else {
+				activePaths.addAll(results);
 			}
 		}
 
@@ -236,6 +212,12 @@ public class FileCleanupJob implements Job {
 	}
 
 	public record TableConfig(String table, String column, boolean richText) {
+	}
+
+	public record FileCleanupConfig(List<TableConfig> tables, Integer batchSize) {
+		public int getBatchSizeOrDefault() {
+			return (this.batchSize != null) ? this.batchSize : DEFAULT_BATCH_SIZE;
+		}
 	}
 
 }

@@ -654,3 +654,313 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+
+  - changeSet:
+      id: insert-sys_resource-scheduler-job
+      author: upms
+      changes:
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 500 }
+              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: name, value: 定时任务 }
+              - column: { name: type, valueNumeric: 0 }
+              - column: { name: path, value: /system/scheduler-jobs }
+              - column: { name: component, value: system/scheduler-job }
+              - column: { name: sort_order, valueNumeric: 50 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 501 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 新增任务 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:create }
+              - column: { name: sort_order, valueNumeric: 1 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 502 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 编辑任务 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:update }
+              - column: { name: sort_order, valueNumeric: 2 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 503 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 删除任务 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:delete }
+              - column: { name: sort_order, valueNumeric: 3 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 504 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 手动执行 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:trigger }
+              - column: { name: sort_order, valueNumeric: 4 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 505 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 查看日志 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:log }
+              - column: { name: sort_order, valueNumeric: 5 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 506 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 状态变更 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:status }
+              - column: { name: sort_order, valueNumeric: 6 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 510 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 查询定时任务列表接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/query }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 10 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 511 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 查询定时任务详情接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/* }
+              - column: { name: method, value: GET }
+              - column: { name: sort_order, valueNumeric: 11 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 512 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 创建定时任务接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 12 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 513 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 更新定时任务接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/* }
+              - column: { name: method, value: PUT }
+              - column: { name: sort_order, valueNumeric: 13 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 514 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 删除定时任务接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/* }
+              - column: { name: method, value: DELETE }
+              - column: { name: sort_order, valueNumeric: 14 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 515 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 暂停定时任务接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/*/pause }
+              - column: { name: method, value: PUT }
+              - column: { name: sort_order, valueNumeric: 15 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 516 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 恢复定时任务接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/*/resume }
+              - column: { name: method, value: PUT }
+              - column: { name: sort_order, valueNumeric: 16 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 517 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 手动触发定时任务接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/*/trigger }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 17 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 518 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 查询任务日志接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/logs/query }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 18 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 519 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 按任务ID查询日志接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/scheduler-jobs/*/logs/query }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 19 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+
+  - changeSet:
+      id: insert-sys_resource-file-management
+      author: upms
+      changes:
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 600 }
+              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: name, value: 文件管理 }
+              - column: { name: type, valueNumeric: 0 }
+              - column: { name: path, value: /system/files }
+              - column: { name: component, value: system/file }
+              - column: { name: sort_order, valueNumeric: 60 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 601 }
+              - column: { name: parent_id, valueNumeric: 600 }
+              - column: { name: name, value: 文件上传接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/files }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 1 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+
+

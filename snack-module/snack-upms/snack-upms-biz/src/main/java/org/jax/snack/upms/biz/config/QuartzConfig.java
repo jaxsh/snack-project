@@ -16,12 +16,11 @@
 
 package org.jax.snack.upms.biz.config;
 
-import lombok.RequiredArgsConstructor;
 import org.jax.snack.upms.biz.manager.JobLogListener;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -30,8 +29,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Jax Jiang
  */
 @Configuration
-@RequiredArgsConstructor
-@ConditionalOnBean(Scheduler.class)
+@ConditionalOnClass(Scheduler.class)
 public class QuartzConfig {
 
 	/**

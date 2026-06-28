@@ -195,7 +195,7 @@ public class SchedulerManager {
 			throws ClassNotFoundException, JacksonException {
 		Class<?> clazz = Class.forName(jobClassName);
 		Class<? extends Job> jobClass = clazz.asSubclass(Job.class);
-		JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(jobName, DEFAULT_GROUP).build();
+		JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(jobName, DEFAULT_GROUP).storeDurably().build();
 
 		if (!ObjectUtils.isEmpty(jobData)) {
 			Map<String, ?> jobDataMap = this.jsonMapper.readValue(jobData, new TypeReference<>() {

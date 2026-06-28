@@ -34,13 +34,11 @@ import org.jax.snack.upms.biz.repository.SysFileStorageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -90,15 +88,15 @@ public class FileCleanupJobTests {
 	void shouldCleanupOrphanFiles(@TempDir Path tempDir) throws Exception {
 		JobExecutionContext context = mock(JobExecutionContext.class);
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put("tables", "[{\"table\":\"sys_user\",\"column\":\"avatar\"}]");
+		jobDataMap.put("tables", List.of(new FileCleanupJob.TableConfig("sys_user", "avatar", false)));
 		jobDataMap.put("batchSize", 100);
 		given(context.getMergedJobDataMap()).willReturn(jobDataMap);
 
 		given(this.properties.getOrphanDays()).willReturn(1);
 
-		given(this.jsonMapper.readValue(anyString(),
-				ArgumentMatchers.<TypeReference<List<FileCleanupJob.TableConfig>>>any()))
-			.willReturn(List.of(new FileCleanupJob.TableConfig("sys_user", "avatar", false)));
+		given(this.jsonMapper.convertValue(any(JobDataMap.class), eq(FileCleanupJob.FileCleanupConfig.class)))
+			.willReturn(new FileCleanupJob.FileCleanupConfig(
+					List.of(new FileCleanupJob.TableConfig("sys_user", "avatar", false)), 100));
 
 		given(this.jdbcTemplate.queryForList(anyString(), eq(String.class))).willReturn(List.of("active.jpg"));
 
