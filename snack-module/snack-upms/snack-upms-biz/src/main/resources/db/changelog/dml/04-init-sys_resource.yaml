@@ -925,6 +925,21 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 507 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 批量删除 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:batch-delete }
+              - column: { name: sort_order, valueNumeric: 7 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
 
   - changeSet:
       id: insert-sys_resource-file-management
