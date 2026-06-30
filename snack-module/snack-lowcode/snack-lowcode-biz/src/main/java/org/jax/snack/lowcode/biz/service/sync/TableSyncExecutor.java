@@ -23,7 +23,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import liquibase.Liquibase;
 import liquibase.change.AddColumnConfig;
 import liquibase.change.Change;
 import liquibase.change.ColumnConfig;
@@ -39,13 +38,13 @@ import liquibase.change.core.DropIndexChange;
 import liquibase.change.core.DropNotNullConstraintChange;
 import liquibase.change.core.ModifyDataTypeChange;
 import liquibase.change.core.RenameColumnChange;
-import liquibase.changelog.ChangeSet;
-import liquibase.changelog.DatabaseChangeLog;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.sql.Sql;
+import liquibase.sqlgenerator.SqlGeneratorFactory;
+import liquibase.statement.SqlStatement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jax.snack.lowcode.biz.model.FieldDefinition;
@@ -121,7 +120,7 @@ public class TableSyncExecutor {
 				createTable.addColumn(buildColumn(field.getDbColumn(), xDatabase));
 			}
 
-			executeChanges(conn, schemaName, List.of(createTable));
+			executeChanges(conn, List.of(createTable));
 
 			log.info("Table created successfully: {}", metadata.getTableName());
 		}
@@ -153,7 +152,7 @@ public class TableSyncExecutor {
 			}
 
 			if (!liquibaseChanges.isEmpty()) {
-				executeChanges(conn, schemaName, liquibaseChanges);
+				executeChanges(conn, liquibaseChanges);
 				log.info("Table structure updated successfully: {}, Changes: {}", tableName, liquibaseChanges.size());
 			}
 		}
@@ -255,21 +254,16 @@ public class TableSyncExecutor {
 		};
 	}
 
-	private void executeChanges(Connection conn, String schemaName, List<Change> changes) throws LiquibaseException {
+	private void executeChanges(Connection conn, List<Change> changes) throws LiquibaseException, SQLException {
 		Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(conn));
-
-		String uniqueId = "sync-" + schemaName + "-" + System.currentTimeMillis();
-		DatabaseChangeLog changeLog = new DatabaseChangeLog("dynamic/" + schemaName + ".yaml");
-		ChangeSet changeSet = new ChangeSet(uniqueId, "lowcode", false, false, "dynamic/" + schemaName, null, null,
-				changeLog);
-
-		for (Change change : changes) {
-			changeSet.addChange(change);
-		}
-		changeLog.addChangeSet(changeSet);
-
-		try (Liquibase liquibase = new Liquibase(changeLog, new ClassLoaderResourceAccessor(), database)) {
-			liquibase.update("");
+		try (java.sql.Statement stmt = conn.createStatement()) {
+			for (Change change : changes) {
+				for (SqlStatement sqlStatement : change.generateStatements(database)) {
+					for (Sql sql : SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database)) {
+						stmt.execute(sql.toSql());
+					}
+				}
+			}
 		}
 	}
 
