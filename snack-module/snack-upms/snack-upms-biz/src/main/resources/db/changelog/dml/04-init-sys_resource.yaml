@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: insert-sys_resource-system-management
+      id: insert-sys_resource
       author: upms
       changes:
         - insert:
@@ -19,11 +19,6 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-
-  - changeSet:
-      id: insert-sys_resource-user-management
-      author: upms
-      changes:
         - insert:
             tableName: sys_resource
             columns:
@@ -318,11 +313,6 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-
-  - changeSet:
-      id: insert-sys_resource-role-management
-      author: upms
-      changes:
         - insert:
             tableName: sys_resource
             columns:
@@ -417,13 +407,28 @@ databaseChangeLog:
         - insert:
             tableName: sys_resource
             columns:
+              - column: { name: id, valueNumeric: 211 }
+              - column: { name: parent_id, valueNumeric: 200 }
+              - column: { name: name, value: 分配权限 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:role:assign }
+              - column: { name: sort_order, valueNumeric: 6 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
               - column: { name: id, valueNumeric: 206 }
               - column: { name: parent_id, valueNumeric: 200 }
               - column: { name: name, value: 创建角色接口 }
               - column: { name: type, valueNumeric: 2 }
               - column: { name: path, value: /api/upms/roles }
               - column: { name: method, value: POST }
-              - column: { name: sort_order, valueNumeric: 6 }
+              - column: { name: sort_order, valueNumeric: 7 }
               - column: { name: visible, valueNumeric: 0 }
               - column: { name: status, valueNumeric: 1 }
               - column: { name: create_by, value: system }
@@ -439,22 +444,6 @@ databaseChangeLog:
               - column: { name: type, valueNumeric: 2 }
               - column: { name: path, value: /api/upms/roles/query }
               - column: { name: method, value: POST }
-              - column: { name: sort_order, valueNumeric: 7 }
-              - column: { name: visible, valueNumeric: 0 }
-              - column: { name: status, valueNumeric: 1 }
-              - column: { name: create_by, value: system }
-              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
-              - column: { name: update_by, value: system }
-              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        - insert:
-            tableName: sys_resource
-            columns:
-              - column: { name: id, valueNumeric: 210 }
-              - column: { name: parent_id, valueNumeric: 200 }
-              - column: { name: name, value: 查询角色权限接口 }
-              - column: { name: type, valueNumeric: 2 }
-              - column: { name: path, value: /api/upms/roles/*/resources }
-              - column: { name: method, value: GET }
               - column: { name: sort_order, valueNumeric: 8 }
               - column: { name: visible, valueNumeric: 0 }
               - column: { name: status, valueNumeric: 1 }
@@ -494,11 +483,22 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-
-  - changeSet:
-      id: insert-sys_resource-resource-management
-      author: upms
-      changes:
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 210 }
+              - column: { name: parent_id, valueNumeric: 200 }
+              - column: { name: name, value: 查询角色权限接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/roles/*/resources }
+              - column: { name: method, value: GET }
+              - column: { name: sort_order, valueNumeric: 11 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
         - insert:
             tableName: sys_resource
             columns:
@@ -609,29 +609,13 @@ databaseChangeLog:
         - insert:
             tableName: sys_resource
             columns:
-              - column: { name: id, valueNumeric: 309 }
-              - column: { name: parent_id, valueNumeric: 300 }
-              - column: { name: name, value: 获取权限树接口 }
-              - column: { name: type, valueNumeric: 2 }
-              - column: { name: path, value: /api/upms/resources/tree }
-              - column: { name: method, value: GET }
-              - column: { name: sort_order, valueNumeric: 7 }
-              - column: { name: visible, valueNumeric: 0 }
-              - column: { name: status, valueNumeric: 1 }
-              - column: { name: create_by, value: system }
-              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
-              - column: { name: update_by, value: system }
-              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        - insert:
-            tableName: sys_resource
-            columns:
               - column: { name: id, valueNumeric: 307 }
               - column: { name: parent_id, valueNumeric: 300 }
               - column: { name: name, value: 更新权限接口 }
               - column: { name: type, valueNumeric: 2 }
               - column: { name: path, value: /api/upms/resources/* }
               - column: { name: method, value: PUT }
-              - column: { name: sort_order, valueNumeric: 8 }
+              - column: { name: sort_order, valueNumeric: 7 }
               - column: { name: visible, valueNumeric: 0 }
               - column: { name: status, valueNumeric: 1 }
               - column: { name: create_by, value: system }
@@ -647,6 +631,22 @@ databaseChangeLog:
               - column: { name: type, valueNumeric: 2 }
               - column: { name: path, value: /api/upms/resources/* }
               - column: { name: method, value: DELETE }
+              - column: { name: sort_order, valueNumeric: 8 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 309 }
+              - column: { name: parent_id, valueNumeric: 300 }
+              - column: { name: name, value: 获取权限树接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/resources/tree }
+              - column: { name: method, value: GET }
               - column: { name: sort_order, valueNumeric: 9 }
               - column: { name: visible, valueNumeric: 0 }
               - column: { name: status, valueNumeric: 1 }
@@ -654,11 +654,6 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-
-  - changeSet:
-      id: insert-sys_resource-scheduler-job
-      author: upms
-      changes:
         - insert:
             tableName: sys_resource
             columns:
@@ -759,6 +754,21 @@ databaseChangeLog:
               - column: { name: type, valueNumeric: 1 }
               - column: { name: permission, value: sys:scheduler-job:status }
               - column: { name: sort_order, valueNumeric: 6 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 507 }
+              - column: { name: parent_id, valueNumeric: 500 }
+              - column: { name: name, value: 批量删除 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:scheduler-job:batch-delete }
+              - column: { name: sort_order, valueNumeric: 7 }
               - column: { name: visible, valueNumeric: 1 }
               - column: { name: status, valueNumeric: 1 }
               - column: { name: create_by, value: system }
@@ -928,26 +938,6 @@ databaseChangeLog:
         - insert:
             tableName: sys_resource
             columns:
-              - column: { name: id, valueNumeric: 507 }
-              - column: { name: parent_id, valueNumeric: 500 }
-              - column: { name: name, value: 批量删除 }
-              - column: { name: type, valueNumeric: 1 }
-              - column: { name: permission, value: sys:scheduler-job:batch-delete }
-              - column: { name: sort_order, valueNumeric: 7 }
-              - column: { name: visible, valueNumeric: 1 }
-              - column: { name: status, valueNumeric: 1 }
-              - column: { name: create_by, value: system }
-              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
-              - column: { name: update_by, value: system }
-              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-
-  - changeSet:
-      id: insert-sys_resource-file-management
-      author: upms
-      changes:
-        - insert:
-            tableName: sys_resource
-            columns:
               - column: { name: id, valueNumeric: 600 }
               - column: { name: parent_id, valueNumeric: 10 }
               - column: { name: name, value: 文件管理 }
@@ -977,5 +967,3 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-
-
