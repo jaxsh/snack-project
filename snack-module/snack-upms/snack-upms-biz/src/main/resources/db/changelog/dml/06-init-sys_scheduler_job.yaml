@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-sys_scheduler_job-file-cleanup
+      author: upms
+      changes:
+        - insert:
+            tableName: sys_scheduler_job
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: job_name, value: user-avatar-file-cleanup }
+              - column: { name: job_class_name, value: org.jax.snack.upms.biz.job.FileCleanupJob }
+              - column: { name: cron_expression, value: '0 0 2 * * ?' }
+              - column: { name: job_data, value: '{"tables":[{"table":"sys_user","column":"avatar","richText":false}]}' }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
