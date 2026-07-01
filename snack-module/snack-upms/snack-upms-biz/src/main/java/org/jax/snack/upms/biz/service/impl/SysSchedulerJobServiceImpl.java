@@ -130,28 +130,6 @@ public class SysSchedulerJobServiceImpl implements SysSchedulerJobService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void pause(Long id) throws SchedulerException {
-		SysSchedulerJob job = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, SCHEDULER_JOB));
-
-		job.setStatus(Status.DISABLED.getCode());
-		this.repository.update(job);
-		this.schedulerManager.pauseJob(job.getJobName());
-	}
-
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void resume(Long id) throws SchedulerException {
-		SysSchedulerJob job = this.repository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, SCHEDULER_JOB));
-
-		job.setStatus(Status.ENABLED.getCode());
-		this.repository.update(job);
-		this.schedulerManager.resumeJob(job.getJobName());
-	}
-
-	@Override
 	public void trigger(Long id) throws SchedulerException {
 		SysSchedulerJob job = this.repository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.DATA_NOT_FOUND, SCHEDULER_JOB));

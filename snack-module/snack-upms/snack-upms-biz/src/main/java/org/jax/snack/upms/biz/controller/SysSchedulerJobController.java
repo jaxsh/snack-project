@@ -28,7 +28,6 @@ import org.jax.snack.upms.api.dto.SysSchedulerJobDTO;
 import org.jax.snack.upms.api.vo.SysSchedulerJobLogVO;
 import org.jax.snack.upms.api.vo.SysSchedulerJobVO;
 import org.jax.snack.upms.biz.entity.SysSchedulerJob;
-import org.jax.snack.upms.biz.entity.SysSchedulerJobLog;
 import org.jax.snack.upms.biz.service.SysSchedulerJobService;
 import org.quartz.SchedulerException;
 import tools.jackson.core.JacksonException;
@@ -108,24 +107,6 @@ public class SysSchedulerJobController {
 	}
 
 	/**
-	 * 暂停定时任务.
-	 * @param id 任务 ID.
-	 */
-	@PutMapping("/{id}/pause")
-	public void pause(@PathVariable Long id) throws SchedulerException {
-		this.schedulerJobService.pause(id);
-	}
-
-	/**
-	 * 恢复定时任务.
-	 * @param id 任务 ID.
-	 */
-	@PutMapping("/{id}/resume")
-	public void resume(@PathVariable Long id) throws SchedulerException {
-		this.schedulerJobService.resume(id);
-	}
-
-	/**
 	 * 手动触发定时任务.
 	 * @param id 任务 ID.
 	 */
@@ -142,25 +123,6 @@ public class SysSchedulerJobController {
 	@PostMapping("/logs/query")
 	public PageResult<SysSchedulerJobLogVO> queryLogs(@RequestBody QueryCondition condition) {
 		return this.schedulerJobService.queryLogsByDsl(condition);
-	}
-
-	/**
-	 * 按任务 ID 查询执行日志.
-	 * @param jobId 任务 ID
-	 * @param condition 查询条件
-	 * @return 分页结果
-	 */
-	@PostMapping("/{jobId}/logs/query")
-	public PageResult<SysSchedulerJobLogVO> queryLogsByJobId(@PathVariable Long jobId,
-			@RequestBody QueryCondition condition) {
-		QueryCondition finalCondition = QueryCondition.builder()
-			.where(condition.getWhere())
-			.eq(SysSchedulerJobLog.Fields.jobId, jobId)
-			.current(condition.getCurrent())
-			.size(condition.getSize())
-			.orderBy(condition.getOrderBy())
-			.build();
-		return this.schedulerJobService.queryLogsByDsl(finalCondition);
 	}
 
 }

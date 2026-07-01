@@ -58,10 +58,6 @@ class SysSchedulerJobControllerTests extends UpmsIntegrationTests {
 
 	private static final String API_SCHEDULER_JOBS_IDS = "/api/upms/scheduler-jobs/{ids}";
 
-	private static final String API_SCHEDULER_JOBS_PAUSE = "/api/upms/scheduler-jobs/{id}/pause";
-
-	private static final String API_SCHEDULER_JOBS_RESUME = "/api/upms/scheduler-jobs/{id}/resume";
-
 	private static final String API_SCHEDULER_JOBS_TRIGGER = "/api/upms/scheduler-jobs/{id}/trigger";
 
 	private static final String DEMO_JOB_CLASS = SysSchedulerJobControllerTests.DemoJob.class.getName();
@@ -251,41 +247,6 @@ class SysSchedulerJobControllerTests extends UpmsIntegrationTests {
 				.andExpectAll(ApiResponseMatchers.isSuccess());
 
 			assertThat(existsById(id)).isFalse();
-		}
-
-	}
-
-	@Nested
-	class PauseAndResumeJob {
-
-		@Test
-		void shouldPauseJob() throws Exception {
-			String jobName = "pause_test_" + System.currentTimeMillis();
-			SysSchedulerJobControllerTests.this.schedulerJobService
-				.create(buildDto(jobName, "0 0/9 * * * ?", Status.ENABLED.getCode()));
-			Long id = queryByJobName(jobName).getId();
-
-			putJson(API_SCHEDULER_JOBS_PAUSE, Map.of(), id).andDo(print())
-				.andExpect(status().isOk())
-				.andExpectAll(ApiResponseMatchers.isSuccess());
-
-			SysSchedulerJobVO updated = queryById(id);
-			assertThat(updated.getStatus()).isEqualTo(Status.DISABLED.getCode());
-		}
-
-		@Test
-		void shouldResumeJob() throws Exception {
-			String jobName = "resume_test_" + System.currentTimeMillis();
-			SysSchedulerJobControllerTests.this.schedulerJobService
-				.create(buildDto(jobName, "0 1/5 * * * ?", Status.DISABLED.getCode()));
-			Long id = queryByJobName(jobName).getId();
-
-			putJson(API_SCHEDULER_JOBS_RESUME, Map.of(), id).andDo(print())
-				.andExpect(status().isOk())
-				.andExpectAll(ApiResponseMatchers.isSuccess());
-
-			SysSchedulerJobVO updated = queryById(id);
-			assertThat(updated.getStatus()).isEqualTo(Status.ENABLED.getCode());
 		}
 
 	}

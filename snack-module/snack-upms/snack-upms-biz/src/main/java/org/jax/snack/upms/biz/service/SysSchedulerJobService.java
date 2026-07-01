@@ -59,18 +59,6 @@ public interface SysSchedulerJobService {
 	PageResult<SysSchedulerJobVO> queryByDsl(QueryCondition condition);
 
 	/**
-	 * 暂停定时任务.
-	 * @param id 任务 ID.
-	 */
-	void pause(Long id) throws SchedulerException;
-
-	/**
-	 * 恢复定时任务.
-	 * @param id 任务 ID.
-	 */
-	void resume(Long id) throws SchedulerException;
-
-	/**
 	 * 手动触发定时任务.
 	 * @param id 任务 ID.
 	 */
