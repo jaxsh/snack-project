@@ -28,6 +28,7 @@ import org.jax.snack.framework.core.validation.ValidationGroups.Update;
 import org.jax.snack.framework.utils.tree.TreeNode;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
 import org.jax.snack.upms.api.service.SysOrgService;
+import org.jax.snack.upms.api.vo.SysOrgLevelNameVO;
 import org.jax.snack.upms.api.vo.SysOrgVO;
 import org.jax.snack.upms.biz.entity.SysOrg;
 
@@ -115,6 +116,16 @@ public class SysOrgController {
 	@PutMapping("/{id}")
 	public void update(@PathVariable Long id, @Validated(Update.class) @RequestBody SysOrgDTO dto) {
 		this.sysOrgService.update(id, dto);
+	}
+
+	/**
+	 * 查询根节点的层级名称配置.
+	 * @param rootId 根节点 ID
+	 * @return 层级名称列表
+	 */
+	@GetMapping("/{rootId}/level-names")
+	public List<SysOrgLevelNameVO> getLevelNames(@PathVariable Long rootId) {
+		return this.sysOrgService.findLevelNames(rootId);
 	}
 
 	/**

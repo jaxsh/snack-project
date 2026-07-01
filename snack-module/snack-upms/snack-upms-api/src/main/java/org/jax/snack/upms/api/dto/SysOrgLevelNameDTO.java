@@ -35,7 +35,6 @@ public class SysOrgLevelNameDTO {
 	/**
 	 * 关联根节点ID.
 	 */
-	@NotNull(groups = Create.class)
 	private Long rootId;
 
 	/**

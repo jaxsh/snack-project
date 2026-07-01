@@ -16,6 +16,9 @@
 
 package org.jax.snack.upms.api.dto;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -103,5 +106,11 @@ public class SysOrgDTO {
 	 */
 	@NotNull(groups = Create.class)
 	private Integer status;
+
+	/**
+	 * 层级名称配置列表 (仅根节点有效).
+	 */
+	@Valid
+	private List<SysOrgLevelNameDTO> levelNames;
 
 }

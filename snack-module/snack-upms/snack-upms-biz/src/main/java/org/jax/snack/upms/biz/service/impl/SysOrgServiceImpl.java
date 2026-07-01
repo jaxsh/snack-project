@@ -16,10 +16,13 @@
 
 package org.jax.snack.upms.biz.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.jax.snack.framework.core.api.query.QueryCondition;
@@ -34,12 +37,16 @@ import org.jax.snack.framework.utils.tree.TreeNode;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
 import org.jax.snack.upms.api.service.SysIdRuleService;
 import org.jax.snack.upms.api.service.SysOrgService;
+import org.jax.snack.upms.api.vo.SysOrgLevelNameVO;
 import org.jax.snack.upms.api.vo.SysOrgVO;
 import org.jax.snack.upms.biz.converter.SysOrgConverter;
+import org.jax.snack.upms.biz.converter.SysOrgLevelNameConverter;
 import org.jax.snack.upms.biz.entity.SysOrg;
 import org.jax.snack.upms.biz.entity.SysOrgLevelName;
+import org.jax.snack.upms.biz.entity.SysUserOrg;
 import org.jax.snack.upms.biz.repository.SysOrgLevelNameRepository;
 import org.jax.snack.upms.biz.repository.SysOrgRepository;
+import org.jax.snack.upms.biz.repository.SysUserOrgRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,9 +69,13 @@ public class SysOrgServiceImpl implements SysOrgService {
 
 	private final SysOrgLevelNameRepository levelNameRepository;
 
+	private final SysUserOrgRepository userOrgRepository;
+
 	private final SysIdRuleService idRuleService;
 
 	private final SysOrgConverter converter;
+
+	private final SysOrgLevelNameConverter levelNameConverter;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -88,6 +99,12 @@ public class SysOrgServiceImpl implements SysOrgService {
 		}
 
 		this.repository.save(entity);
+
+		if (!CollectionUtils.isEmpty(dto.getLevelNames()) && !StringUtils.hasText(dto.getParentCode())) {
+			List<SysOrgLevelName> levelNames = this.levelNameConverter.toEntity(dto.getLevelNames());
+			levelNames.forEach((ln) -> ln.setRootId(entity.getId()));
+			this.levelNameRepository.saveBatch(levelNames);
+		}
 	}
 
 	@Override
@@ -117,6 +134,19 @@ public class SysOrgServiceImpl implements SysOrgService {
 			entity.setLevel(newParent.getLevel() + 1);
 			entity.setAncestors(buildAncestors(newParent));
 		}
+		else if ("".equals(newParentCode) && StringUtils.hasText(currentParentCode)) {
+			String oldPrefix = buildAncestorsPrefix(current);
+			int levelDiff = -current.getLevel();
+
+			this.repository.batchUpdateDescendants(oldPrefix, current.getOrgCode(), levelDiff);
+
+			SysOrg rootFields = new SysOrg();
+			rootFields.setLevel(0);
+			rootFields.setAncestors("");
+			WhereCondition idWhere = WhereCondition.builder().eq(SysOrg.Fields.id, id).build();
+			this.repository.updateByDsl(rootFields,
+					UpdateCondition.builder().setNull(SysOrg.Fields.parentCode).where(idWhere).build());
+		}
 
 		if (Status.DISABLED.getCode().equals(dto.getStatus())) {
 			String ancestorsPrefix = buildAncestorsPrefix(current);
@@ -127,23 +157,52 @@ public class SysOrgServiceImpl implements SysOrgService {
 		}
 
 		this.repository.update(entity);
+
+		if (!CollectionUtils.isEmpty(dto.getLevelNames()) && !StringUtils.hasText(dto.getParentCode())) {
+			WhereCondition where = WhereCondition.builder().eq(SysOrgLevelName.Fields.rootId, id).build();
+			this.levelNameRepository.deleteByDsl(where);
+			List<SysOrgLevelName> levelNames = this.levelNameConverter.toEntity(dto.getLevelNames());
+			levelNames.forEach((ln) -> ln.setRootId(id));
+			this.levelNameRepository.saveBatch(levelNames);
+		}
+
+		if (!StringUtils.hasText(currentParentCode) && StringUtils.hasText(newParentCode)) {
+			WhereCondition where = WhereCondition.builder().eq(SysOrgLevelName.Fields.rootId, id).build();
+			this.levelNameRepository.deleteByDsl(where);
+		}
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteByDsl(WhereCondition condition) {
 		QueryCondition queryCondition = QueryCondition.builder().where(condition.getWhere()).build();
-		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {
-			String ancestorsPrefix = buildAncestorsPrefix(entity);
-			List<Long> descendantIds = findDescendantIds(ancestorsPrefix);
+		List<String> allOrgCodes = new ArrayList<>();
 
-			if (!CollectionUtils.isEmpty(descendantIds)) {
+		this.repository.queryListByDsl(queryCondition).forEach((entity) -> {
+			allOrgCodes.add(entity.getOrgCode());
+
+			List<SysOrg> descendants = findByAncestorsPrefix(buildAncestorsPrefix(entity));
+			if (!CollectionUtils.isEmpty(descendants)) {
+				descendants.forEach((d) -> allOrgCodes.add(d.getOrgCode()));
+				List<Long> descendantIds = descendants.stream().map(SysOrg::getId).toList();
 				WhereCondition where = WhereCondition.builder().in(SysOrg.Fields.id, descendantIds).build();
 				this.repository.deleteByDsl(where);
+			}
+
+			if (!StringUtils.hasText(entity.getParentCode())) {
+				WhereCondition where = WhereCondition.builder()
+					.eq(SysOrgLevelName.Fields.rootId, entity.getId())
+					.build();
+				this.levelNameRepository.deleteByDsl(where);
 			}
 		});
 
 		this.repository.deleteByDsl(condition);
+
+		if (!CollectionUtils.isEmpty(allOrgCodes)) {
+			WhereCondition where = WhereCondition.builder().in(SysUserOrg.Fields.orgCode, allOrgCodes).build();
+			this.userOrgRepository.deleteByDsl(where);
+		}
 	}
 
 	@Override
@@ -159,7 +218,17 @@ public class SysOrgServiceImpl implements SysOrgService {
 	@Override
 	public List<TreeNode<SysOrgVO>> buildTree(String... orgCodes) {
 		List<SysOrg> allOrgs = findAll();
-		List<SysOrgVO> voList = allOrgs.stream().map(this::toVoWithLevelName).toList();
+		Map<String, SysOrg> orgByCode = allOrgs.stream().collect(Collectors.toMap(SysOrg::getOrgCode, (org) -> org));
+		Set<Long> rootIds = allOrgs.stream()
+			.filter((org) -> !StringUtils.hasText(org.getParentCode()))
+			.map(SysOrg::getId)
+			.collect(Collectors.toSet());
+		Map<Long, Map<Integer, String>> levelNameMap = queryLevelNames(rootIds).stream()
+			.collect(Collectors.groupingBy(SysOrgLevelName::getRootId,
+					Collectors.toMap(SysOrgLevelName::getLevel, SysOrgLevelName::getLevelName)));
+		List<SysOrgVO> voList = allOrgs.stream()
+			.map((entity) -> toVoWithLevelName(entity, orgByCode, levelNameMap))
+			.toList();
 
 		return TreeBuilder.build(voList, null, SysOrgVO::getOrgCode, SysOrgVO::getParentCode, orgCodes);
 	}
@@ -180,6 +249,11 @@ public class SysOrgServiceImpl implements SysOrgService {
 		return result;
 	}
 
+	@Override
+	public List<SysOrgLevelNameVO> findLevelNames(Long rootId) {
+		return this.levelNameConverter.toVO(queryLevelNames(Set.of(rootId)));
+	}
+
 	private Optional<SysOrg> findByOrgCode(String orgCode) {
 		QueryCondition condition = QueryCondition.builder().eq(SysOrg.Fields.orgCode, orgCode).build();
 		List<SysOrg> result = this.repository.queryListByDsl(condition);
@@ -195,28 +269,25 @@ public class SysOrgServiceImpl implements SysOrgService {
 		return this.repository.queryListByDsl(condition);
 	}
 
-	private List<Long> findDescendantIds(String ancestorsPrefix) {
-		return findByAncestorsPrefix(ancestorsPrefix).stream().map(SysOrg::getId).toList();
-	}
-
-	private SysOrgVO toVoWithLevelName(SysOrg entity) {
+	private SysOrgVO toVoWithLevelName(SysOrg entity, Map<String, SysOrg> orgByCode,
+			Map<Long, Map<Integer, String>> levelNameMap) {
 		SysOrgVO vo = this.converter.toVO(entity);
 
 		Optional.ofNullable(getRootOrgCode(entity))
-			.flatMap(this::findByOrgCode)
-			.flatMap((root) -> findLevelName(root.getId(), entity.getLevel()))
-			.ifPresent((levelName) -> vo.setLevelName(levelName.getLevelName()));
+			.map(orgByCode::get)
+			.map((root) -> levelNameMap.getOrDefault(root.getId(), Map.of()).get(entity.getLevel()))
+			.ifPresent(vo::setLevelName);
 
 		return vo;
 	}
 
-	private Optional<SysOrgLevelName> findLevelName(Long rootId, Integer level) {
-		QueryCondition condition = QueryCondition.builder()
-			.eq(SysOrgLevelName.Fields.rootId, rootId)
-			.eq(SysOrgLevelName.Fields.level, level)
-			.build();
-		List<SysOrgLevelName> result = this.levelNameRepository.queryListByDsl(condition);
-		return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+	private List<SysOrgLevelName> queryLevelNames(Set<Long> rootIds) {
+		if (CollectionUtils.isEmpty(rootIds)) {
+			return List.of();
+		}
+		WhereCondition where = WhereCondition.builder().in(SysOrgLevelName.Fields.rootId, rootIds).build();
+		QueryCondition condition = QueryCondition.builder().where(where.getWhere()).build();
+		return this.levelNameRepository.queryListByDsl(condition);
 	}
 
 	private String buildAncestors(SysOrg parent) {

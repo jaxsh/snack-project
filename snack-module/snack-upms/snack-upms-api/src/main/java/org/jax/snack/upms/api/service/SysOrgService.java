@@ -24,6 +24,7 @@ import org.jax.snack.framework.core.api.query.WhereCondition;
 import org.jax.snack.framework.core.api.result.PageResult;
 import org.jax.snack.framework.utils.tree.TreeNode;
 import org.jax.snack.upms.api.dto.SysOrgDTO;
+import org.jax.snack.upms.api.vo.SysOrgLevelNameVO;
 import org.jax.snack.upms.api.vo.SysOrgVO;
 
 /**
@@ -72,5 +73,12 @@ public interface SysOrgService {
 	 * @return 所有子孙节点 orgCode 集合
 	 */
 	Set<String> findDescendantOrgCodes(String... orgCodes);
+
+	/**
+	 * 查询根节点的层级名称配置.
+	 * @param rootId 根节点 ID
+	 * @return 层级名称列表
+	 */
+	List<SysOrgLevelNameVO> findLevelNames(Long rootId);
 
 }

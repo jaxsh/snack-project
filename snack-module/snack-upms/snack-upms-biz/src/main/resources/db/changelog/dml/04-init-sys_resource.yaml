@@ -794,22 +794,6 @@ databaseChangeLog:
         - insert:
             tableName: sys_resource
             columns:
-              - column: { name: id, valueNumeric: 511 }
-              - column: { name: parent_id, valueNumeric: 500 }
-              - column: { name: name, value: 查询定时任务详情接口 }
-              - column: { name: type, valueNumeric: 2 }
-              - column: { name: path, value: /api/upms/scheduler-jobs/* }
-              - column: { name: method, value: GET }
-              - column: { name: sort_order, valueNumeric: 11 }
-              - column: { name: visible, valueNumeric: 0 }
-              - column: { name: status, valueNumeric: 1 }
-              - column: { name: create_by, value: system }
-              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
-              - column: { name: update_by, value: system }
-              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
-        - insert:
-            tableName: sys_resource
-            columns:
               - column: { name: id, valueNumeric: 512 }
               - column: { name: parent_id, valueNumeric: 500 }
               - column: { name: name, value: 创建定时任务接口 }
@@ -913,6 +897,181 @@ databaseChangeLog:
               - column: { name: path, value: /api/upms/files }
               - column: { name: method, value: POST }
               - column: { name: sort_order, valueNumeric: 1 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+  - changeSet:
+      id: insert-sys_org_resource
+      author: upms
+      changes:
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 700 }
+              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: name, value: 组织管理 }
+              - column: { name: type, valueNumeric: 0 }
+              - column: { name: path, value: /system/org }
+              - column: { name: component, value: system/org }
+              - column: { name: sort_order, valueNumeric: 70 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 701 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 新增组织 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:org:create }
+              - column: { name: sort_order, valueNumeric: 1 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 702 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 编辑组织 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:org:update }
+              - column: { name: sort_order, valueNumeric: 2 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 703 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 状态变更 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:org:status }
+              - column: { name: sort_order, valueNumeric: 3 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 704 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 删除组织 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:org:delete }
+              - column: { name: sort_order, valueNumeric: 4 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 705 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 批量删除 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:org:batch-delete }
+              - column: { name: sort_order, valueNumeric: 5 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 706 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 获取组织树接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/orgs/tree }
+              - column: { name: method, value: GET }
+              - column: { name: sort_order, valueNumeric: 6 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 707 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 新增组织接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/orgs }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 7 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 708 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 编辑组织接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/orgs/* }
+              - column: { name: method, value: PUT }
+              - column: { name: sort_order, valueNumeric: 8 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 709 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 删除组织接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/orgs/* }
+              - column: { name: method, value: DELETE }
+              - column: { name: sort_order, valueNumeric: 9 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 711 }
+              - column: { name: parent_id, valueNumeric: 700 }
+              - column: { name: name, value: 层级名称查询接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/orgs/*/level-names }
+              - column: { name: method, value: GET }
+              - column: { name: sort_order, valueNumeric: 11 }
               - column: { name: visible, valueNumeric: 0 }
               - column: { name: status, valueNumeric: 1 }
               - column: { name: create_by, value: system }

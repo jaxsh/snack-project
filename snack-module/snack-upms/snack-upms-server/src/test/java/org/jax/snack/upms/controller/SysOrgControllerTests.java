@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -73,6 +74,15 @@ class SysOrgControllerTests extends UpmsIntegrationTests {
 
 	@Autowired
 	private SysIdRuleService sysIdRuleService;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@BeforeEach
+	void cleanupSysOrg() {
+		this.jdbcTemplate.execute("DELETE FROM sys_org_level_name");
+		this.jdbcTemplate.execute("DELETE FROM sys_org");
+	}
 
 	@BeforeEach
 	void setupOrgCodeRule() {
