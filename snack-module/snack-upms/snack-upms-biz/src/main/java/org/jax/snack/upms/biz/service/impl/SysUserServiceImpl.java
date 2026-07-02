@@ -157,6 +157,7 @@ public class SysUserServiceImpl implements SysUserService {
 		}
 		fillSessions(result.getRecords());
 		fillRoleCodes(result.getRecords());
+		fillOrgCodes(result.getRecords());
 		return result;
 	}
 
@@ -197,6 +198,20 @@ public class SysUserServiceImpl implements SysUserService {
 			this.oAuth2UserClient.revokeTokens(current.getUsername());
 		}
 		this.sessionService.revokeSession(current.getUsername(), sessionId);
+	}
+
+	private void fillOrgCodes(List<SysUserVO> records) {
+		if (CollectionUtils.isEmpty(records)) {
+			return;
+		}
+		List<String> usernames = records.stream().map(SysUserVO::getUsername).toList();
+		WhereCondition whereCondition = WhereCondition.builder().in(SysUserOrg.Fields.username, usernames).build();
+		QueryCondition queryCondition = QueryCondition.builder().where(whereCondition.getWhere()).build();
+		List<SysUserOrg> userOrgs = this.userOrgRepository.queryListByDsl(queryCondition);
+		Map<String, List<String>> orgsByUser = userOrgs.stream()
+			.collect(Collectors.groupingBy(SysUserOrg::getUsername,
+					Collectors.mapping(SysUserOrg::getOrgCode, Collectors.toList())));
+		records.forEach((vo) -> vo.setOrgCodes(orgsByUser.getOrDefault(vo.getUsername(), List.of())));
 	}
 
 	private void updateUserRoles(String username, Set<String> roleCodes) {

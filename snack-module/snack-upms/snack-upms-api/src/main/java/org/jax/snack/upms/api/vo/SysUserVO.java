@@ -118,6 +118,11 @@ public class SysUserVO {
 	private List<String> roleCodes;
 
 	/**
+	 * 组织编码列表.
+	 */
+	private List<String> orgCodes;
+
+	/**
 	 * 活跃 Session 列表.
 	 */
 	private List<SysSessionVO> sessions;
