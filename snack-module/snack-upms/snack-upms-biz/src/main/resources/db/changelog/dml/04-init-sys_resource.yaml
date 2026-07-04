@@ -8,11 +8,43 @@ databaseChangeLog:
             columns:
               - column: { name: id, valueNumeric: 10 }
               - column: { name: parent_id, valueNumeric: 0 }
-              - column: { name: name, value: 系统管理 }
+              - column: { name: name, value: 用户权限 }
               - column: { name: type, valueNumeric: 0 }
-              - column: { name: path, value: /system }
-              - column: { name: icon, value: SettingOutlined }
+              - column: { name: path, value: /system/permission }
+              - column: { name: icon, value: TeamOutlined }
               - column: { name: sort_order, valueNumeric: 1 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 11 }
+              - column: { name: parent_id, valueNumeric: 0 }
+              - column: { name: name, value: 系统配置 }
+              - column: { name: type, valueNumeric: 0 }
+              - column: { name: path, value: /system/config }
+              - column: { name: icon, value: ToolOutlined }
+              - column: { name: sort_order, valueNumeric: 2 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 12 }
+              - column: { name: parent_id, valueNumeric: 0 }
+              - column: { name: name, value: 系统运维 }
+              - column: { name: type, valueNumeric: 0 }
+              - column: { name: path, value: /system/ops }
+              - column: { name: icon, value: MonitorOutlined }
+              - column: { name: sort_order, valueNumeric: 3 }
               - column: { name: visible, valueNumeric: 1 }
               - column: { name: status, valueNumeric: 1 }
               - column: { name: create_by, value: system }
@@ -658,7 +690,7 @@ databaseChangeLog:
             tableName: sys_resource
             columns:
               - column: { name: id, valueNumeric: 500 }
-              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: parent_id, valueNumeric: 12 }
               - column: { name: name, value: 定时任务 }
               - column: { name: type, valueNumeric: 0 }
               - column: { name: path, value: /system/scheduler-jobs }
@@ -875,7 +907,7 @@ databaseChangeLog:
             tableName: sys_resource
             columns:
               - column: { name: id, valueNumeric: 600 }
-              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: parent_id, valueNumeric: 12 }
               - column: { name: name, value: 文件管理 }
               - column: { name: type, valueNumeric: 0 }
               - column: { name: path, value: /system/files }
@@ -1082,7 +1114,7 @@ databaseChangeLog:
             tableName: sys_resource
             columns:
               - column: { name: id, valueNumeric: 800 }
-              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: parent_id, valueNumeric: 11 }
               - column: { name: name, value: ID规则管理 }
               - column: { name: type, valueNumeric: 0 }
               - column: { name: path, value: /system/id-rules }
@@ -1242,7 +1274,7 @@ databaseChangeLog:
             tableName: sys_resource
             columns:
               - column: { name: id, valueNumeric: 820 }
-              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: parent_id, valueNumeric: 12 }
               - column: { name: name, value: 登录日志 }
               - column: { name: type, valueNumeric: 0 }
               - column: { name: path, value: /system/login-logs }
@@ -1278,7 +1310,7 @@ databaseChangeLog:
             tableName: sys_resource
             columns:
               - column: { name: id, valueNumeric: 830 }
-              - column: { name: parent_id, valueNumeric: 10 }
+              - column: { name: parent_id, valueNumeric: 11 }
               - column: { name: name, value: 字典管理 }
               - column: { name: type, valueNumeric: 0 }
               - column: { name: path, value: /system/dict }
