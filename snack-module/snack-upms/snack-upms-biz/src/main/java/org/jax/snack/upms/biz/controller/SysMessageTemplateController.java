@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/message-template")
+@RequestMapping("/api/upms/message-template")
 public class SysMessageTemplateController {
 
 	private final SysMessageTemplateService sysMessageTemplateService;

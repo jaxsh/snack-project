@@ -1617,3 +1617,143 @@ databaseChangeLog:
               - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
               - column: { name: update_by, value: system }
               - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 850 }
+              - column: { name: parent_id, valueNumeric: 11 }
+              - column: { name: name, value: 消息模板 }
+              - column: { name: type, valueNumeric: 0 }
+              - column: { name: path, value: /system/message-template }
+              - column: { name: component, value: system/message-template }
+              - column: { name: sort_order, valueNumeric: 30 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 851 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 新建消息模板 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:message-template:create }
+              - column: { name: sort_order, valueNumeric: 1 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 852 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 编辑消息模板 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:message-template:update }
+              - column: { name: sort_order, valueNumeric: 2 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 853 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 删除消息模板 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:message-template:delete }
+              - column: { name: sort_order, valueNumeric: 3 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 854 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 批量删除消息模板 }
+              - column: { name: type, valueNumeric: 1 }
+              - column: { name: permission, value: sys:message-template:batch-delete }
+              - column: { name: sort_order, valueNumeric: 4 }
+              - column: { name: visible, valueNumeric: 1 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 860 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 查询消息模板列表接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/message-template/query }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 10 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 862 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 创建消息模板接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/message-template }
+              - column: { name: method, value: POST }
+              - column: { name: sort_order, valueNumeric: 12 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 863 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 更新消息模板接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/message-template/* }
+              - column: { name: method, value: PUT }
+              - column: { name: sort_order, valueNumeric: 13 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: sys_resource
+            columns:
+              - column: { name: id, valueNumeric: 864 }
+              - column: { name: parent_id, valueNumeric: 850 }
+              - column: { name: name, value: 删除消息模板接口 }
+              - column: { name: type, valueNumeric: 2 }
+              - column: { name: path, value: /api/upms/message-template/* }
+              - column: { name: method, value: DELETE }
+              - column: { name: sort_order, valueNumeric: 14 }
+              - column: { name: visible, valueNumeric: 0 }
+              - column: { name: status, valueNumeric: 1 }
+              - column: { name: create_by, value: system }
+              - column: { name: create_time, valueComputed: CURRENT_TIMESTAMP }
+              - column: { name: update_by, value: system }
+              - column: { name: update_time, valueComputed: CURRENT_TIMESTAMP }
