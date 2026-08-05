@@ -47,13 +47,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SysMessageTemplateControllerTests extends UpmsIntegrationTests {
 
-	private static final String API_TEMPLATE = "/message-template";
+	private static final String API_TEMPLATE = "/api/upms/message-template";
 
-	private static final String API_TEMPLATE_QUERY = "/message-template/query";
+	private static final String API_TEMPLATE_QUERY = "/api/upms/message-template/query";
 
-	private static final String API_TEMPLATE_ID = "/message-template/{id}";
+	private static final String API_TEMPLATE_ID = "/api/upms/message-template/{id}";
 
-	private static final String API_TEMPLATE_IDS = "/message-template/{ids}";
+	private static final String API_TEMPLATE_IDS = "/api/upms/message-template/{ids}";
 
 	private static final String TYPE_SMS = "SMS";
 
